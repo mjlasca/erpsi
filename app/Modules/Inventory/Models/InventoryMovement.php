@@ -71,31 +71,37 @@ class InventoryMovement extends Model
         });
     }
 
+    /** @return BelongsTo<Product, $this> */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
+    /** @return BelongsTo<ProductVariant, $this> */
     public function variant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 
+    /** @return BelongsTo<Warehouse, $this> */
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
     }
 
+    /** @return BelongsTo<InventoryLot, $this> */
     public function lot(): BelongsTo
     {
         return $this->belongsTo(InventoryLot::class, 'inventory_lot_id');
     }
 
+    /** @return MorphTo<Model, $this> */
     public function reference(): MorphTo
     {
         return $this->morphTo('reference', 'reference_type', 'reference_id');
     }
 
+    /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

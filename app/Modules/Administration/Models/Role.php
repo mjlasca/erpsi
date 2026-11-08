@@ -34,6 +34,7 @@ class Role extends Model
         ];
     }
 
+    /** @return HasMany<User, $this> */
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
@@ -54,6 +55,10 @@ class Role extends Model
         return false;
     }
 
+    /**
+     * @param  Builder<Role>  $query
+     * @return Builder<Role>
+     */
     #[Scope]
     protected function active(Builder $query): Builder
     {

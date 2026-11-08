@@ -7,7 +7,6 @@ use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Catalog\Requests\ProductVariantRequest;
 use App\Modules\Catalog\Resources\ProductVariantResource;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -33,8 +32,8 @@ class ProductVariantController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return Inertia::render('catalog/variants/index', [
-            'variants' => ProductVariantResource::collection($variants)->resolve(),
+        return Inertia::render('Catalog/Variants/Index', [
+            'variants' => $variants->through(fn ($variant): array => (new ProductVariantResource($variant))->resolve()),
             'filters' => $request->only('search', 'product_id'),
             'products' => Product::query()->orderBy('name')->get(['id', 'name']),
         ]);
@@ -44,7 +43,7 @@ class ProductVariantController extends Controller
     {
         $this->authorize('create', ProductVariant::class);
 
-        return Inertia::render('catalog/variants/create', [
+        return Inertia::render('Catalog/Variants/Create', [
             'products' => Product::query()->orderBy('name')->get(['id', 'name']),
             'selectedProductId' => $request->integer('product_id') ?: null,
         ]);
@@ -67,7 +66,7 @@ class ProductVariantController extends Controller
 
         $variant->load('product')->loadCount('attributes');
 
-        return Inertia::render('catalog/variants/show', [
+        return Inertia::render('Catalog/Variants/Show', [
             'variant' => (new ProductVariantResource($variant))->resolve(),
         ]);
     }
@@ -78,7 +77,7 @@ class ProductVariantController extends Controller
 
         $variant->load('product');
 
-        return Inertia::render('catalog/variants/edit', [
+        return Inertia::render('Catalog/Variants/Edit', [
             'variant' => (new ProductVariantResource($variant))->resolve(),
             'products' => Product::query()->orderBy('name')->get(['id', 'name']),
         ]);
@@ -99,11 +98,15 @@ class ProductVariantController extends Controller
     {
         $this->authorize('delete', $variant);
 
-        try {
-            $variant->delete();
-        } catch (QueryException) {
+        if ($variant->stockItems()->exists()
+            || $variant->lots()->exists()
+            || $variant->movements()->exists()
+            || $variant->purchaseDetails()->exists()
+            || $variant->saleDetails()->exists()) {
             return back()->with('error', 'No se puede eliminar la variante porque tiene registros relacionados.');
         }
+
+        $variant->delete();
 
         return redirect()
             ->route('catalog.variants.index')

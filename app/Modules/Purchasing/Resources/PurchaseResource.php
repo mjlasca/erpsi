@@ -5,9 +5,13 @@ namespace App\Modules\Purchasing\Resources;
 use App\Modules\Administration\Resources\UserResource;
 use App\Modules\Inventory\Resources\WarehouseResource;
 use App\Modules\Payments\Resources\PaymentAllocationResource;
+use App\Modules\Purchasing\Models\Purchase;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin Purchase
+ */
 class PurchaseResource extends JsonResource
 {
     /**

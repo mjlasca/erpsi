@@ -16,7 +16,7 @@ class RecalculateDocumentBalance
             $document = $document::query()->lockForUpdate()->findOrFail($document->id);
 
             $paidAmount = Decimal::sum($document->allocations()->pluck('amount'), 2);
-            $balance = Decimal::maxZero(bcsub((string) $document->total, $paidAmount, 2));
+            $balance = Decimal::maxZero(Decimal::sub((string) $document->total, $paidAmount, 2));
 
             $attributes = [
                 'paid_amount' => $paidAmount,
@@ -33,11 +33,11 @@ class RecalculateDocumentBalance
 
     protected function saleStatus(string $paidAmount, string $total): SaleStatus
     {
-        if (bccomp($paidAmount, '0', 2) === 0) {
+        if (Decimal::compare($paidAmount, '0', 2) === 0) {
             return SaleStatus::Confirmed;
         }
 
-        if (bccomp($paidAmount, $total, 2) >= 0) {
+        if (Decimal::compare($paidAmount, $total, 2) >= 0) {
             return SaleStatus::Paid;
         }
 

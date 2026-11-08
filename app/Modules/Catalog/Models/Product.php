@@ -70,57 +70,74 @@ class Product extends Model
         ];
     }
 
+    /** @return BelongsTo<ProductCategory, $this> */
     public function category(): BelongsTo
     {
         return $this->belongsTo(ProductCategory::class, 'category_id');
     }
 
+    /** @return BelongsTo<Unit, $this> */
     public function unit(): BelongsTo
     {
         return $this->belongsTo(Unit::class);
     }
 
+    /** @return HasMany<ProductVariant, $this> */
     public function variants(): HasMany
     {
         return $this->hasMany(ProductVariant::class);
     }
 
+    /** @return HasMany<ProductAttribute, $this> */
     public function attributes(): HasMany
     {
         return $this->hasMany(ProductAttribute::class);
     }
 
+    /** @return HasMany<InventoryStock, $this> */
     public function stockItems(): HasMany
     {
         return $this->hasMany(InventoryStock::class);
     }
 
+    /** @return HasMany<InventoryLot, $this> */
     public function lots(): HasMany
     {
         return $this->hasMany(InventoryLot::class);
     }
 
+    /** @return HasMany<InventoryMovement, $this> */
     public function movements(): HasMany
     {
         return $this->hasMany(InventoryMovement::class);
     }
 
+    /** @return HasMany<PurchaseDetail, $this> */
     public function purchaseDetails(): HasMany
     {
         return $this->hasMany(PurchaseDetail::class);
     }
 
+    /** @return HasMany<SaleDetail, $this> */
     public function saleDetails(): HasMany
     {
         return $this->hasMany(SaleDetail::class);
     }
 
+    /**
+     * @param  Builder<Product>  $query
+     * @return Builder<Product>
+     */
     #[Scope]
     protected function active(Builder $query): Builder
     {
         return $query->where('is_active', true);
     }
 
+    /**
+     * @param  Builder<Product>  $query
+     * @return Builder<Product>
+     */
     #[Scope]
     protected function trackedByLots(Builder $query): Builder
     {

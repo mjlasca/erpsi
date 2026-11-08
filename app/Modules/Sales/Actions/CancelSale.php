@@ -7,6 +7,7 @@ use App\Modules\Inventory\Actions\RecordInventoryMovement;
 use App\Modules\Inventory\Enums\MovementType;
 use App\Modules\Sales\Enums\SaleStatus;
 use App\Modules\Sales\Models\Sale;
+use App\Support\Decimal;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -25,7 +26,7 @@ class CancelSale
                 ]);
             }
 
-            if ($sale->allocations()->exists() || bccomp((string) $sale->paid_amount, '0', 2) > 0) {
+            if ($sale->allocations()->exists() || Decimal::compare((string) $sale->paid_amount, '0', 2) > 0) {
                 throw ValidationException::withMessages([
                     'status' => 'No se puede cancelar una venta con pagos aplicados.',
                 ]);

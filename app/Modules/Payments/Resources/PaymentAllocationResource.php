@@ -2,11 +2,15 @@
 
 namespace App\Modules\Payments\Resources;
 
+use App\Modules\Payments\Models\PaymentAllocation;
 use App\Modules\Purchasing\Resources\PurchaseResource;
 use App\Modules\Sales\Resources\SaleResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin PaymentAllocation
+ */
 class PaymentAllocationResource extends JsonResource
 {
     /**

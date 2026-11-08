@@ -20,9 +20,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $product_id
  * @property int|null $product_variant_id
  * @property int $warehouse_id
- * @property string $quantity_on_hand
- * @property string $quantity_reserved
- * @property string $quantity_minimum
+ * @property numeric-string $quantity_on_hand
+ * @property numeric-string $quantity_reserved
+ * @property numeric-string $quantity_minimum
  * @property-read string $quantity_available
  */
 #[Table('inventory_stock')]
@@ -51,6 +51,7 @@ class InventoryStock extends Model
         ];
     }
 
+    /** @return Attribute<numeric-string, never> */
     protected function quantityAvailable(): Attribute
     {
         return Attribute::get(
@@ -58,21 +59,28 @@ class InventoryStock extends Model
         );
     }
 
+    /** @return BelongsTo<Product, $this> */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
+    /** @return BelongsTo<ProductVariant, $this> */
     public function variant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 
+    /** @return BelongsTo<Warehouse, $this> */
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
     }
 
+    /**
+     * @param  Builder<InventoryStock>  $query
+     * @return Builder<InventoryStock>
+     */
     #[Scope]
     protected function lowStock(Builder $query): Builder
     {

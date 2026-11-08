@@ -2,6 +2,7 @@
 
 namespace App\Modules\Catalog\Requests;
 
+use App\Modules\Catalog\Models\ProductCategory;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -18,7 +19,7 @@ class ProductCategoryRequest extends FormRequest
     public function rules(): array
     {
         $category = $this->route('category');
-        $notSelf = $category === null ? [] : [$category->id];
+        $notSelf = $category instanceof ProductCategory ? [$category->id] : [];
 
         return [
             'parent_id' => [

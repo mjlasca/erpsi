@@ -27,7 +27,7 @@ class DashboardController extends Controller
             SaleStatus::Partial->value,
         ];
 
-        return Inertia::render('DashBoard', [
+        return Inertia::render('DashBoard/Index', [
             'stats' => [
                 'active_products' => Product::query()->active()->count(),
                 'active_customers' => Customer::query()->active()->count(),

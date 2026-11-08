@@ -60,26 +60,31 @@ class PurchaseDetail extends Model
         ];
     }
 
+    /** @return BelongsTo<Purchase, $this> */
     public function purchase(): BelongsTo
     {
         return $this->belongsTo(Purchase::class);
     }
 
+    /** @return BelongsTo<Product, $this> */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
+    /** @return BelongsTo<ProductVariant, $this> */
     public function variant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 
+    /** @return BelongsTo<TaxRate, $this> */
     public function taxRate(): BelongsTo
     {
         return $this->belongsTo(TaxRate::class);
     }
 
+    /** @return HasMany<InventoryLot, $this> */
     public function lots(): HasMany
     {
         return $this->hasMany(InventoryLot::class);

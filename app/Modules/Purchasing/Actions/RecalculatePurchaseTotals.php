@@ -12,7 +12,7 @@ class RecalculatePurchaseTotals
     {
         return DB::transaction(function () use ($purchase): Purchase {
             $purchase = Purchase::query()->lockForUpdate()->findOrFail($purchase->id);
-            $purchase->load('details.taxRate');
+            $purchase->load('details');
 
             $subtotal = '0.00';
             $discount = '0.00';
@@ -20,11 +20,11 @@ class RecalculatePurchaseTotals
             $total = '0.00';
 
             foreach ($purchase->details as $detail) {
-                $gross = bcmul((string) $detail->quantity, (string) $detail->unit_price, 4);
-                $lineSubtotal = Decimal::maxZero(bcsub($gross, (string) $detail->discount, 4), 4);
-                $rate = (string) ($detail->taxRate?->rate ?? $detail->tax_rate);
-                $lineTax = Decimal::round2(bcmul($lineSubtotal, bcdiv($rate, '100', 8), 4));
-                $lineTotal = bcadd(Decimal::round2($lineSubtotal), $lineTax, 2);
+                $gross = Decimal::multiply((string) $detail->quantity, (string) $detail->unit_price, 4);
+                $lineSubtotal = Decimal::maxZero(Decimal::sub($gross, (string) $detail->discount, 4), 4);
+                $rate = (string) $detail->tax_rate;
+                $lineTax = Decimal::round2(Decimal::multiply($lineSubtotal, Decimal::divide($rate, '100', 8), 4));
+                $lineTotal = Decimal::add(Decimal::round2($lineSubtotal), $lineTax, 2);
 
                 $detail->update([
                     'tax_rate' => $rate,
@@ -33,13 +33,13 @@ class RecalculatePurchaseTotals
                     'total' => $lineTotal,
                 ]);
 
-                $subtotal = bcadd($subtotal, Decimal::round2($gross), 2);
-                $discount = bcadd($discount, Decimal::round2((string) $detail->discount), 2);
-                $taxAmount = bcadd($taxAmount, $lineTax, 2);
-                $total = bcadd($total, $lineTotal, 2);
+                $subtotal = Decimal::add($subtotal, Decimal::round2($gross), 2);
+                $discount = Decimal::add($discount, Decimal::round2((string) $detail->discount), 2);
+                $taxAmount = Decimal::add($taxAmount, $lineTax, 2);
+                $total = Decimal::add($total, $lineTotal, 2);
             }
 
-            $balance = Decimal::maxZero(bcsub($total, (string) $purchase->paid_amount, 2));
+            $balance = Decimal::maxZero(Decimal::sub($total, (string) $purchase->paid_amount, 2));
 
             $purchase->update([
                 'subtotal' => $subtotal,

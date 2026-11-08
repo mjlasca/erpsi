@@ -35,31 +35,40 @@ class Warehouse extends Model
         ];
     }
 
+    /** @return HasMany<InventoryStock, $this> */
     public function stockItems(): HasMany
     {
         return $this->hasMany(InventoryStock::class);
     }
 
+    /** @return HasMany<InventoryLot, $this> */
     public function lots(): HasMany
     {
         return $this->hasMany(InventoryLot::class);
     }
 
+    /** @return HasMany<InventoryMovement, $this> */
     public function movements(): HasMany
     {
         return $this->hasMany(InventoryMovement::class);
     }
 
+    /** @return HasMany<Purchase, $this> */
     public function purchases(): HasMany
     {
         return $this->hasMany(Purchase::class);
     }
 
+    /** @return HasMany<Sale, $this> */
     public function sales(): HasMany
     {
         return $this->hasMany(Sale::class);
     }
 
+    /**
+     * @param  Builder<Warehouse>  $query
+     * @return Builder<Warehouse>
+     */
     #[Scope]
     protected function active(Builder $query): Builder
     {

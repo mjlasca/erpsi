@@ -5,9 +5,13 @@ namespace App\Modules\Sales\Resources;
 use App\Modules\Administration\Resources\UserResource;
 use App\Modules\Inventory\Resources\WarehouseResource;
 use App\Modules\Payments\Resources\PaymentAllocationResource;
+use App\Modules\Sales\Models\Sale;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin Sale
+ */
 class SaleResource extends JsonResource
 {
     /**

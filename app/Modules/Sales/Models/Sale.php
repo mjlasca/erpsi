@@ -76,26 +76,31 @@ class Sale extends Model
         ];
     }
 
+    /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /** @return BelongsTo<Warehouse, $this> */
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** @return HasMany<SaleDetail, $this> */
     public function details(): HasMany
     {
         return $this->hasMany(SaleDetail::class);
     }
 
+    /** @return HasMany<PaymentAllocation, $this> */
     public function allocations(): HasMany
     {
         return $this->hasMany(PaymentAllocation::class);
@@ -116,6 +121,10 @@ class Sale extends Model
         return $this->status === SaleStatus::Cancelled;
     }
 
+    /**
+     * @param  Builder<Sale>  $query
+     * @return Builder<Sale>
+     */
     #[Scope]
     protected function draft(Builder $query): Builder
     {

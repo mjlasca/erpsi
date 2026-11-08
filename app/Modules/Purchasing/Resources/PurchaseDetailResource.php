@@ -5,9 +5,13 @@ namespace App\Modules\Purchasing\Resources;
 use App\Modules\Administration\Resources\TaxRateResource;
 use App\Modules\Catalog\Resources\ProductResource;
 use App\Modules\Catalog\Resources\ProductVariantResource;
+use App\Modules\Purchasing\Models\PurchaseDetail;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin PurchaseDetail
+ */
 class PurchaseDetailResource extends JsonResource
 {
     /**

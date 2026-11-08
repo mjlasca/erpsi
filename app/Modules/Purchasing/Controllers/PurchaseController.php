@@ -53,8 +53,8 @@ class PurchaseController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return Inertia::render('purchasing/purchases/index', [
-            'purchases' => PurchaseResource::collection($purchases)->resolve(),
+        return Inertia::render('Purchasing/Purchases/Index', [
+            'purchases' => $purchases->through(fn ($purchase): array => (new PurchaseResource($purchase))->resolve()),
             'filters' => $request->only('search', 'status', 'supplier_id'),
             'suppliers' => Supplier::query()->orderBy('name')->get(['id', 'name']),
             'statuses' => PurchaseStatus::options(),
@@ -65,7 +65,7 @@ class PurchaseController extends Controller
     {
         $this->authorize('create', Purchase::class);
 
-        return Inertia::render('purchasing/purchases/create', $this->formOptions());
+        return Inertia::render('Purchasing/Purchases/Create', $this->formOptions());
     }
 
     public function store(PurchaseRequest $request): RedirectResponse
@@ -109,7 +109,7 @@ class PurchaseController extends Controller
             'allocations.payment',
         ]);
 
-        return Inertia::render('purchasing/purchases/show', [
+        return Inertia::render('Purchasing/Purchases/Show', [
             'purchase' => (new PurchaseResource($purchase))->resolve(),
         ]);
     }
@@ -120,7 +120,7 @@ class PurchaseController extends Controller
 
         $purchase->load(['supplier', 'warehouse', 'details.product', 'details.variant', 'details.taxRate']);
 
-        return Inertia::render('purchasing/purchases/edit', [
+        return Inertia::render('Purchasing/Purchases/Edit', [
             'purchase' => (new PurchaseResource($purchase))->resolve(),
             ...$this->formOptions(),
         ]);
@@ -202,7 +202,7 @@ class PurchaseController extends Controller
             }
 
             $taxRate = isset($row['tax_rate_id'])
-                ? TaxRate::query()->find($row['tax_rate_id'])
+                ? TaxRate::query()->whereKey((int) $row['tax_rate_id'])->value('rate')
                 : null;
 
             $detail->fill([
@@ -213,7 +213,7 @@ class PurchaseController extends Controller
                 'unit_price' => $row['unit_price'],
                 'discount' => $row['discount'] ?? 0,
                 'tax_rate_id' => $row['tax_rate_id'] ?? null,
-                'tax_rate' => $taxRate?->rate ?? 0,
+                'tax_rate' => $taxRate ?? 0,
             ]);
 
             $detail->save();

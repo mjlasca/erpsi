@@ -75,26 +75,31 @@ class Purchase extends Model
         ];
     }
 
+    /** @return BelongsTo<Supplier, $this> */
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
     }
 
+    /** @return BelongsTo<Warehouse, $this> */
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** @return HasMany<PurchaseDetail, $this> */
     public function details(): HasMany
     {
         return $this->hasMany(PurchaseDetail::class);
     }
 
+    /** @return HasMany<PaymentAllocation, $this> */
     public function allocations(): HasMany
     {
         return $this->hasMany(PaymentAllocation::class);
@@ -115,6 +120,10 @@ class Purchase extends Model
         return $this->status === PurchaseStatus::Cancelled;
     }
 
+    /**
+     * @param  Builder<Purchase>  $query
+     * @return Builder<Purchase>
+     */
     #[Scope]
     protected function draft(Builder $query): Builder
     {

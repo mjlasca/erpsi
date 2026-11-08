@@ -59,26 +59,31 @@ class SaleDetail extends Model
         ];
     }
 
+    /** @return BelongsTo<Sale, $this> */
     public function sale(): BelongsTo
     {
         return $this->belongsTo(Sale::class);
     }
 
+    /** @return BelongsTo<Product, $this> */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
+    /** @return BelongsTo<ProductVariant, $this> */
     public function variant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 
+    /** @return BelongsTo<TaxRate, $this> */
     public function taxRate(): BelongsTo
     {
         return $this->belongsTo(TaxRate::class);
     }
 
+    /** @return HasMany<SaleDetailLotAllocation, $this> */
     public function lotAllocations(): HasMany
     {
         return $this->hasMany(SaleDetailLotAllocation::class);

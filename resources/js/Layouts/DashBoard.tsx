@@ -1,4 +1,3 @@
-
 import type { ReactNode } from 'react';
 import AppSidebar from '@/Layouts/AppSidebar';
 import AppHeader from '@/Layouts/AppHeader';
@@ -20,14 +19,9 @@ export default function DashboardLayout({
             <AppSidebar />
 
             <div className="flex min-w-0 flex-1 flex-col">
-                <AppHeader
-                    name={user.name}
-                    avatarUrl={user.avatarUrl}
-                />
+                <AppHeader name={user.name} avatarUrl={user.avatarUrl} />
 
-                <main className="flex-1 overflow-y-auto p-6">
-                    {children}
-                </main>
+                <main className="flex-1 overflow-y-auto p-6">{children}</main>
             </div>
         </div>
     );

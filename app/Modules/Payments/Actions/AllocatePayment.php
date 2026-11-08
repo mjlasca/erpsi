@@ -21,7 +21,7 @@ class AllocatePayment
     ): PaymentAllocation {
         $amount = Decimal::round2($amount);
 
-        if (bccomp($amount, '0', 2) <= 0) {
+        if (Decimal::compare($amount, '0', 2) <= 0) {
             throw ValidationException::withMessages([
                 'amount' => 'El monto a aplicar debe ser mayor que cero.',
             ]);
@@ -60,15 +60,15 @@ class AllocatePayment
             }
 
             $allocated = Decimal::sum($payment->allocations()->pluck('amount'), 2);
-            $paymentBalance = Decimal::maxZero(bcsub((string) $payment->amount, $allocated, 2));
+            $paymentBalance = Decimal::maxZero(Decimal::sub((string) $payment->amount, $allocated, 2));
 
-            if (bccomp($amount, $paymentBalance, 2) > 0) {
+            if (Decimal::compare($amount, $paymentBalance, 2) > 0) {
                 throw ValidationException::withMessages([
                     'amount' => 'El monto excede el saldo disponible del pago.',
                 ]);
             }
 
-            if (bccomp($amount, (string) $document->balance, 2) > 0) {
+            if (Decimal::compare($amount, (string) $document->balance, 2) > 0) {
                 throw ValidationException::withMessages([
                     'amount' => 'El monto excede el saldo del documento.',
                 ]);

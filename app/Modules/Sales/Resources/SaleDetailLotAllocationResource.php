@@ -3,9 +3,13 @@
 namespace App\Modules\Sales\Resources;
 
 use App\Modules\Inventory\Resources\InventoryLotResource;
+use App\Modules\Sales\Models\SaleDetailLotAllocation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin SaleDetailLotAllocation
+ */
 class SaleDetailLotAllocationResource extends JsonResource
 {
     /**

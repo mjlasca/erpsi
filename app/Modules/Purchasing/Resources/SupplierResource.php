@@ -2,9 +2,13 @@
 
 namespace App\Modules\Purchasing\Resources;
 
+use App\Modules\Purchasing\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin Supplier
+ */
 class SupplierResource extends JsonResource
 {
     /**

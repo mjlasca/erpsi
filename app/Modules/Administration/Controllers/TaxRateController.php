@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Modules\Administration\Models\TaxRate;
 use App\Modules\Administration\Requests\TaxRateRequest;
 use App\Modules\Administration\Resources\TaxRateResource;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -30,8 +29,8 @@ class TaxRateController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return Inertia::render('admin/tax-rates/index', [
-            'taxRates' => TaxRateResource::collection($taxRates)->resolve(),
+        return Inertia::render('Admin/TaxRates/Index', [
+            'taxRates' => $taxRates->through(fn ($taxRate): array => (new TaxRateResource($taxRate))->resolve()),
             'filters' => $request->only('search'),
         ]);
     }
@@ -40,7 +39,7 @@ class TaxRateController extends Controller
     {
         $this->authorize('create', TaxRate::class);
 
-        return Inertia::render('admin/tax-rates/create');
+        return Inertia::render('Admin/TaxRates/Create');
     }
 
     public function store(TaxRateRequest $request): RedirectResponse
@@ -60,7 +59,7 @@ class TaxRateController extends Controller
 
         $taxRate->loadCount(['purchaseDetails', 'saleDetails']);
 
-        return Inertia::render('admin/tax-rates/show', [
+        return Inertia::render('Admin/TaxRates/Show', [
             'taxRate' => (new TaxRateResource($taxRate))->resolve(),
         ]);
     }
@@ -69,7 +68,7 @@ class TaxRateController extends Controller
     {
         $this->authorize('update', $taxRate);
 
-        return Inertia::render('admin/tax-rates/edit', [
+        return Inertia::render('Admin/TaxRates/Edit', [
             'taxRate' => (new TaxRateResource($taxRate))->resolve(),
         ]);
     }
@@ -89,11 +88,11 @@ class TaxRateController extends Controller
     {
         $this->authorize('delete', $taxRate);
 
-        try {
-            $taxRate->delete();
-        } catch (QueryException) {
+        if ($taxRate->purchaseDetails()->exists() || $taxRate->saleDetails()->exists()) {
             return back()->with('error', 'No se puede eliminar el impuesto porque tiene documentos asociados.');
         }
+
+        $taxRate->delete();
 
         return redirect()
             ->route('admin.tax-rates.index')

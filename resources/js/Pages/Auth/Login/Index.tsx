@@ -1,45 +1,17 @@
-import { useState } from 'react';
 import AuthLayout from '@/Layouts/AuthLayout';
 import LoginForm from '@/Components/Auth/LoginForm';
-import RegisterForm from '@/Components/Auth/RegisterForm';
 
-export default function Login() {
-    const [mode, setMode] = useState('login');
-
+export default function Login({ status }: { status?: string | null }) {
     return (
         <AuthLayout>
-            <div className="w-full max-w-md mx-auto">
-
-                <div className="flex mb-6 border-b">
-                    <button
-                        onClick={() => setMode('login')}
-                        className={`w-1/2 py-3 ${
-                            mode === 'login'
-                                ? 'border-b-2 border-blue-600 font-bold'
-                                : ''
-                        }`}
-                    >
-                        Iniciar sesión
-                    </button>
-
-                    <button
-                        onClick={() => setMode('register')}
-                        className={`w-1/2 py-3 ${
-                            mode === 'register'
-                                ? 'border-b-2 border-blue-600 font-bold'
-                                : ''
-                        }`}
-                    >
-                        Registrarse
-                    </button>
-                </div>
-
-                {mode === 'login' ? (
-                    <LoginForm />
-                ) : (
-                    <RegisterForm />
+            <div className="mx-auto w-full max-w-md">
+                {status && (
+                    <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+                        {status}
+                    </div>
                 )}
 
+                <LoginForm />
             </div>
         </AuthLayout>
     );

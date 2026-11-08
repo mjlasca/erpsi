@@ -51,7 +51,7 @@ class HandleInertiaRequests extends Middleware
                         'id' => $user->role->id,
                         'name' => $user->role->name,
                     ],
-                    'permissions' => $user->role?->permissions ?? [],
+                    'permissions' => $user->role === null ? [] : $user->role->permissions,
                 ],
             ],
             'flash' => [

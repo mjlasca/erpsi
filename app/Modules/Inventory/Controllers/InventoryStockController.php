@@ -30,8 +30,8 @@ class InventoryStockController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return Inertia::render('inventory/stock/index', [
-            'stock' => InventoryStockResource::collection($stock)->resolve(),
+        return Inertia::render('Inventory/Stock/Index', [
+            'stock' => $stock->through(fn ($item): array => (new InventoryStockResource($item))->resolve()),
             'filters' => $request->only('search', 'warehouse_id', 'low_stock'),
             'warehouses' => Warehouse::query()->orderBy('name')->get(['id', 'name', 'code']),
         ]);
@@ -43,7 +43,7 @@ class InventoryStockController extends Controller
 
         $stock->load(['product', 'variant', 'warehouse']);
 
-        return Inertia::render('inventory/stock/show', [
+        return Inertia::render('Inventory/Stock/Show', [
             'stock' => (new InventoryStockResource($stock))->resolve(),
         ]);
     }

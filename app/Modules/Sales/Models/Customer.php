@@ -54,6 +54,7 @@ class Customer extends Model
         ];
     }
 
+    /** @return Attribute<string, never> */
     protected function fullName(): Attribute
     {
         return Attribute::get(
@@ -61,16 +62,22 @@ class Customer extends Model
         );
     }
 
+    /** @return HasMany<Sale, $this> */
     public function sales(): HasMany
     {
         return $this->hasMany(Sale::class);
     }
 
+    /** @return HasMany<Payment, $this> */
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
     }
 
+    /**
+     * @param  Builder<Customer>  $query
+     * @return Builder<Customer>
+     */
     #[Scope]
     protected function active(Builder $query): Builder
     {

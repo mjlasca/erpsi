@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Modules\Sales\Models\Customer;
 use App\Modules\Sales\Requests\CustomerRequest;
 use App\Modules\Sales\Resources\CustomerResource;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -33,8 +32,8 @@ class CustomerController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return Inertia::render('sales/customers/index', [
-            'customers' => CustomerResource::collection($customers)->resolve(),
+        return Inertia::render('Sales/Customers/Index', [
+            'customers' => $customers->through(fn ($customer): array => (new CustomerResource($customer))->resolve()),
             'filters' => $request->only('search'),
         ]);
     }
@@ -43,7 +42,7 @@ class CustomerController extends Controller
     {
         $this->authorize('create', Customer::class);
 
-        return Inertia::render('sales/customers/create');
+        return Inertia::render('Sales/Customers/Create');
     }
 
     public function store(CustomerRequest $request): RedirectResponse
@@ -63,7 +62,7 @@ class CustomerController extends Controller
 
         $customer->loadCount(['sales', 'payments']);
 
-        return Inertia::render('sales/customers/show', [
+        return Inertia::render('Sales/Customers/Show', [
             'customer' => (new CustomerResource($customer))->resolve(),
         ]);
     }
@@ -72,7 +71,7 @@ class CustomerController extends Controller
     {
         $this->authorize('update', $customer);
 
-        return Inertia::render('sales/customers/edit', [
+        return Inertia::render('Sales/Customers/Edit', [
             'customer' => (new CustomerResource($customer))->resolve(),
         ]);
     }
@@ -92,11 +91,11 @@ class CustomerController extends Controller
     {
         $this->authorize('delete', $customer);
 
-        try {
-            $customer->delete();
-        } catch (QueryException) {
+        if ($customer->sales()->exists() || $customer->payments()->exists()) {
             return back()->with('error', 'No se puede eliminar el cliente porque tiene registros relacionados.');
         }
+
+        $customer->delete();
 
         return redirect()
             ->route('sales.customers.index')

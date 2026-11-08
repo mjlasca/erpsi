@@ -48,16 +48,22 @@ class Supplier extends Model
         ];
     }
 
+    /** @return HasMany<Purchase, $this> */
     public function purchases(): HasMany
     {
         return $this->hasMany(Purchase::class);
     }
 
+    /** @return HasMany<Payment, $this> */
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
     }
 
+    /**
+     * @param  Builder<Supplier>  $query
+     * @return Builder<Supplier>
+     */
     #[Scope]
     protected function active(Builder $query): Builder
     {

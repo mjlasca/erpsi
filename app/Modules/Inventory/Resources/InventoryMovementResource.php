@@ -5,9 +5,13 @@ namespace App\Modules\Inventory\Resources;
 use App\Modules\Administration\Resources\UserResource;
 use App\Modules\Catalog\Resources\ProductResource;
 use App\Modules\Catalog\Resources\ProductVariantResource;
+use App\Modules\Inventory\Models\InventoryMovement;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin InventoryMovement
+ */
 class InventoryMovementResource extends JsonResource
 {
     /**

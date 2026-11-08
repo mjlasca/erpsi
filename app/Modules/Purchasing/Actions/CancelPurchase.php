@@ -8,6 +8,7 @@ use App\Modules\Inventory\Enums\LotStatus;
 use App\Modules\Inventory\Enums\MovementType;
 use App\Modules\Purchasing\Enums\PurchaseStatus;
 use App\Modules\Purchasing\Models\Purchase;
+use App\Support\Decimal;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -26,7 +27,7 @@ class CancelPurchase
                 ]);
             }
 
-            if ($purchase->allocations()->exists() || bccomp((string) $purchase->paid_amount, '0', 2) > 0) {
+            if ($purchase->allocations()->exists() || Decimal::compare((string) $purchase->paid_amount, '0', 2) > 0) {
                 throw ValidationException::withMessages([
                     'status' => 'No se puede cancelar una compra con pagos aplicados.',
                 ]);
@@ -54,7 +55,7 @@ class CancelPurchase
                                 continue;
                             }
 
-                            if (bccomp((string) $lot->quantity_available, (string) $lot->quantity_initial, 3) !== 0) {
+                            if (Decimal::compare((string) $lot->quantity_available, (string) $lot->quantity_initial, 3) !== 0) {
                                 throw ValidationException::withMessages([
                                     'status' => 'No se puede cancelar una compra cuyo inventario ya fue utilizado.',
                                 ]);
@@ -64,7 +65,7 @@ class CancelPurchase
                                 product: $product,
                                 warehouse: $purchase->warehouse,
                                 movementType: MovementType::Return,
-                                quantity: bcsub('0', (string) $lot->quantity_available, 3),
+                                quantity: Decimal::sub('0', (string) $lot->quantity_available, 3),
                                 variant: $detail->variant,
                                 lot: $lot,
                                 unitCost: (string) $lot->unit_cost,
@@ -80,7 +81,7 @@ class CancelPurchase
                             product: $product,
                             warehouse: $purchase->warehouse,
                             movementType: MovementType::Return,
-                            quantity: bcsub('0', (string) $detail->quantity, 3),
+                            quantity: Decimal::sub('0', (string) $detail->quantity, 3),
                             variant: $detail->variant,
                             unitCost: (string) $detail->unit_price,
                             reference: $purchase,

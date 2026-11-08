@@ -4,10 +4,14 @@ namespace App\Modules\Inventory\Resources;
 
 use App\Modules\Catalog\Resources\ProductResource;
 use App\Modules\Catalog\Resources\ProductVariantResource;
+use App\Modules\Inventory\Models\InventoryLot;
 use App\Modules\Purchasing\Resources\PurchaseDetailResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin InventoryLot
+ */
 class InventoryLotResource extends JsonResource
 {
     /**

@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Modules\Catalog\Models\ProductCategory;
 use App\Modules\Catalog\Requests\ProductCategoryRequest;
 use App\Modules\Catalog\Resources\ProductCategoryResource;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -26,8 +25,8 @@ class ProductCategoryController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return Inertia::render('catalog/categories/index', [
-            'categories' => ProductCategoryResource::collection($categories)->resolve(),
+        return Inertia::render('Catalog/Categories/Index', [
+            'categories' => $categories->through(fn ($category): array => (new ProductCategoryResource($category))->resolve()),
             'filters' => $request->only('search'),
         ]);
     }
@@ -36,7 +35,7 @@ class ProductCategoryController extends Controller
     {
         $this->authorize('create', ProductCategory::class);
 
-        return Inertia::render('catalog/categories/create', $this->formOptions());
+        return Inertia::render('Catalog/Categories/Create', $this->formOptions());
     }
 
     public function store(ProductCategoryRequest $request): RedirectResponse
@@ -56,7 +55,7 @@ class ProductCategoryController extends Controller
 
         $category->load(['parent', 'children'])->loadCount('products');
 
-        return Inertia::render('catalog/categories/show', [
+        return Inertia::render('Catalog/Categories/Show', [
             'category' => (new ProductCategoryResource($category))->resolve(),
         ]);
     }
@@ -67,7 +66,7 @@ class ProductCategoryController extends Controller
 
         $category->load('parent');
 
-        return Inertia::render('catalog/categories/edit', [
+        return Inertia::render('Catalog/Categories/Edit', [
             'category' => (new ProductCategoryResource($category))->resolve(),
             ...$this->formOptions($category),
         ]);
@@ -88,11 +87,11 @@ class ProductCategoryController extends Controller
     {
         $this->authorize('delete', $category);
 
-        try {
-            $category->delete();
-        } catch (QueryException) {
+        if ($category->children()->exists() || $category->products()->exists()) {
             return back()->with('error', 'No se puede eliminar la categoría porque tiene registros relacionados.');
         }
+
+        $category->delete();
 
         return redirect()
             ->route('catalog.categories.index')

@@ -45,8 +45,8 @@ class PaymentController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return Inertia::render('payments/payments/index', [
-            'payments' => PaymentResource::collection($payments)->resolve(),
+        return Inertia::render('Payments/Payments/Index', [
+            'payments' => $payments->through(fn ($payment): array => (new PaymentResource($payment))->resolve()),
             'filters' => $request->only('search', 'payment_type', 'payment_method', 'from', 'to'),
             'paymentTypes' => PaymentType::options(),
             'paymentMethods' => PaymentMethod::options(),
@@ -57,7 +57,7 @@ class PaymentController extends Controller
     {
         $this->authorize('create', Payment::class);
 
-        return Inertia::render('payments/payments/create', [
+        return Inertia::render('Payments/Payments/Create', [
             'customers' => Customer::query()->active()->orderBy('last_name')->orderBy('first_name')->get(),
             'suppliers' => Supplier::query()->active()->orderBy('name')->get(['id', 'name']),
             'paymentTypes' => PaymentType::options(),
@@ -108,7 +108,7 @@ class PaymentController extends Controller
                 ->get()
             : collect();
 
-        return Inertia::render('payments/payments/show', [
+        return Inertia::render('Payments/Payments/Show', [
             'payment' => (new PaymentResource($payment))->resolve(),
             'openSales' => SaleResource::collection($openSales)->resolve(),
             'openPurchases' => PurchaseResource::collection($openPurchases)->resolve(),
@@ -119,7 +119,7 @@ class PaymentController extends Controller
     {
         $this->authorize('update', $payment);
 
-        return Inertia::render('payments/payments/edit', [
+        return Inertia::render('Payments/Payments/Edit', [
             'payment' => (new PaymentResource($payment->load(['customer', 'supplier', 'allocations'])))->resolve(),
             'customers' => Customer::query()->active()->orderBy('last_name')->orderBy('first_name')->get(),
             'suppliers' => Supplier::query()->active()->orderBy('name')->get(['id', 'name']),

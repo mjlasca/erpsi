@@ -29,7 +29,7 @@ class UserRequest extends FormRequest
             'password' => [
                 $creating ? 'required' : 'nullable',
                 'string',
-                Password::defaults() ?? Password::min(8),
+                Password::defaults(),
                 'confirmed',
             ],
         ];

@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $payment_id
  * @property int|null $sale_id
  * @property int|null $purchase_id
- * @property string $amount
+ * @property numeric-string $amount
  */
 #[Fillable(['payment_id', 'sale_id', 'purchase_id', 'amount'])]
 #[UseFactory(PaymentAllocationFactory::class)]
@@ -32,16 +32,19 @@ class PaymentAllocation extends Model
         ];
     }
 
+    /** @return BelongsTo<Payment, $this> */
     public function payment(): BelongsTo
     {
         return $this->belongsTo(Payment::class);
     }
 
+    /** @return BelongsTo<Sale, $this> */
     public function sale(): BelongsTo
     {
         return $this->belongsTo(Sale::class);
     }
 
+    /** @return BelongsTo<Purchase, $this> */
     public function purchase(): BelongsTo
     {
         return $this->belongsTo(Purchase::class);

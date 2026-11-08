@@ -2,10 +2,14 @@
 
 namespace App\Modules\Administration\Resources;
 
+use App\Modules\Administration\Models\Role;
 use App\Modules\Administration\Support\Permissions;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin Role
+ */
 class RoleResource extends JsonResource
 {
     /**

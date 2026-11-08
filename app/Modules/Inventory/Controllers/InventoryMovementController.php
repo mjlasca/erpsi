@@ -44,8 +44,8 @@ class InventoryMovementController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return Inertia::render('inventory/movements/index', [
-            'movements' => InventoryMovementResource::collection($movements)->resolve(),
+        return Inertia::render('Inventory/Movements/Index', [
+            'movements' => $movements->through(fn ($movement): array => (new InventoryMovementResource($movement))->resolve()),
             'filters' => $request->only('search', 'warehouse_id', 'movement_type', 'from', 'to'),
             'warehouses' => Warehouse::query()->orderBy('name')->get(['id', 'name', 'code']),
             'movementTypes' => MovementType::options(),
@@ -56,7 +56,7 @@ class InventoryMovementController extends Controller
     {
         $this->authorize('create', InventoryMovement::class);
 
-        return Inertia::render('inventory/movements/create', [
+        return Inertia::render('Inventory/Movements/Create', [
             'products' => ProductResource::collection(
                 Product::query()->with('variants')->active()->orderBy('name')->get(),
             )->resolve(),
@@ -115,7 +115,7 @@ class InventoryMovementController extends Controller
 
         $movement->load(['product', 'variant', 'warehouse', 'lot', 'creator']);
 
-        return Inertia::render('inventory/movements/show', [
+        return Inertia::render('Inventory/Movements/Show', [
             'movement' => (new InventoryMovementResource($movement))->resolve(),
             'warehouse' => new WarehouseResource($movement->warehouse),
         ]);

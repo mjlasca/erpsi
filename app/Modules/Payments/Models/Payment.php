@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $customer_id
  * @property int|null $supplier_id
  * @property string $payment_date
- * @property string $amount
+ * @property numeric-string $amount
  * @property PaymentMethod $payment_method
  * @property string|null $reference
  * @property string|null $notes
@@ -56,21 +56,25 @@ class Payment extends Model
         ];
     }
 
+    /** @return BelongsTo<Customer, $this> */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /** @return BelongsTo<Supplier, $this> */
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /** @return HasMany<PaymentAllocation, $this> */
     public function allocations(): HasMany
     {
         return $this->hasMany(PaymentAllocation::class);
@@ -86,12 +90,20 @@ class Payment extends Model
         return $this->payment_type === PaymentType::SupplierPayment;
     }
 
+    /**
+     * @param  Builder<Payment>  $query
+     * @return Builder<Payment>
+     */
     #[Scope]
     protected function customerPayments(Builder $query): Builder
     {
         return $query->where('payment_type', PaymentType::CustomerPayment);
     }
 
+    /**
+     * @param  Builder<Payment>  $query
+     * @return Builder<Payment>
+     */
     #[Scope]
     protected function supplierPayments(Builder $query): Builder
     {

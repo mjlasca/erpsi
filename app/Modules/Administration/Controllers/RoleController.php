@@ -7,7 +7,6 @@ use App\Modules\Administration\Models\Role;
 use App\Modules\Administration\Requests\RoleRequest;
 use App\Modules\Administration\Resources\RoleResource;
 use App\Modules\Administration\Support\Permissions;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -27,8 +26,8 @@ class RoleController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return Inertia::render('admin/roles/index', [
-            'roles' => RoleResource::collection($roles)->resolve(),
+        return Inertia::render('Admin/Roles/Index', [
+            'roles' => $roles->through(fn ($role): array => (new RoleResource($role))->resolve()),
             'filters' => $request->only('search'),
         ]);
     }
@@ -37,7 +36,7 @@ class RoleController extends Controller
     {
         $this->authorize('create', Role::class);
 
-        return Inertia::render('admin/roles/create', [
+        return Inertia::render('Admin/Roles/Create', [
             'permissionGroups' => Permissions::groups(),
         ]);
     }
@@ -62,7 +61,7 @@ class RoleController extends Controller
 
         $role->loadCount('users');
 
-        return Inertia::render('admin/roles/show', [
+        return Inertia::render('Admin/Roles/Show', [
             'role' => (new RoleResource($role))->resolve(),
             'permissionGroups' => Permissions::groups(),
         ]);
@@ -72,7 +71,7 @@ class RoleController extends Controller
     {
         $this->authorize('update', $role);
 
-        return Inertia::render('admin/roles/edit', [
+        return Inertia::render('Admin/Roles/Edit', [
             'role' => (new RoleResource($role))->resolve(),
             'permissionGroups' => Permissions::groups(),
         ]);
@@ -103,11 +102,15 @@ class RoleController extends Controller
     {
         $this->authorize('delete', $role);
 
-        try {
-            $role->delete();
-        } catch (QueryException) {
+        if ($role->name === 'Administrator') {
+            return back()->with('error', 'El rol Administrator está protegido y no se puede eliminar.');
+        }
+
+        if ($role->users()->exists()) {
             return back()->with('error', 'No se puede eliminar el rol porque tiene usuarios asignados.');
         }
+
+        $role->delete();
 
         return redirect()
             ->route('admin.roles.index')

@@ -2,9 +2,13 @@
 
 namespace App\Modules\Catalog\Resources;
 
+use App\Modules\Catalog\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin ProductVariant
+ */
 class ProductVariantResource extends JsonResource
 {
     /**

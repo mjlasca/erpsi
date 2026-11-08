@@ -48,6 +48,7 @@ class User extends Authenticatable
         ];
     }
 
+    /** @return BelongsTo<Role, $this> */
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
@@ -72,6 +73,10 @@ class User extends Authenticatable
         return $this->hasPermission('*');
     }
 
+    /**
+     * @param  Builder<User>  $query
+     * @return Builder<User>
+     */
     #[Scope]
     protected function active(Builder $query): Builder
     {

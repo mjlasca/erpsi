@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Modules\Inventory\Models\Warehouse;
 use App\Modules\Inventory\Requests\WarehouseRequest;
 use App\Modules\Inventory\Resources\WarehouseResource;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -30,8 +29,8 @@ class WarehouseController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return Inertia::render('inventory/warehouses/index', [
-            'warehouses' => WarehouseResource::collection($warehouses)->resolve(),
+        return Inertia::render('Inventory/Warehouses/Index', [
+            'warehouses' => $warehouses->through(fn ($warehouse): array => (new WarehouseResource($warehouse))->resolve()),
             'filters' => $request->only('search'),
         ]);
     }
@@ -40,7 +39,7 @@ class WarehouseController extends Controller
     {
         $this->authorize('create', Warehouse::class);
 
-        return Inertia::render('inventory/warehouses/create');
+        return Inertia::render('Inventory/Warehouses/Create');
     }
 
     public function store(WarehouseRequest $request): RedirectResponse
@@ -60,7 +59,7 @@ class WarehouseController extends Controller
 
         $warehouse->loadCount(['stockItems', 'movements']);
 
-        return Inertia::render('inventory/warehouses/show', [
+        return Inertia::render('Inventory/Warehouses/Show', [
             'warehouse' => (new WarehouseResource($warehouse))->resolve(),
         ]);
     }
@@ -69,7 +68,7 @@ class WarehouseController extends Controller
     {
         $this->authorize('update', $warehouse);
 
-        return Inertia::render('inventory/warehouses/edit', [
+        return Inertia::render('Inventory/Warehouses/Edit', [
             'warehouse' => (new WarehouseResource($warehouse))->resolve(),
         ]);
     }
@@ -89,11 +88,15 @@ class WarehouseController extends Controller
     {
         $this->authorize('delete', $warehouse);
 
-        try {
-            $warehouse->delete();
-        } catch (QueryException) {
+        if ($warehouse->stockItems()->exists()
+            || $warehouse->lots()->exists()
+            || $warehouse->movements()->exists()
+            || $warehouse->purchases()->exists()
+            || $warehouse->sales()->exists()) {
             return back()->with('error', 'No se puede eliminar el almacén porque tiene registros relacionados.');
         }
+
+        $warehouse->delete();
 
         return redirect()
             ->route('inventory.warehouses.index')

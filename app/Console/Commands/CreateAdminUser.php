@@ -28,7 +28,7 @@ class CreateAdminUser extends Command
             [
                 'email' => ['required', 'email'],
                 'name' => ['required', 'string', 'max:255'],
-                'password' => ['required', 'string', Password::defaults() ?? Password::min(8)],
+                'password' => ['required', 'string', Password::defaults()],
             ],
         );
 

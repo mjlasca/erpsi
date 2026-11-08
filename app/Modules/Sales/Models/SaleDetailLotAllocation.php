@@ -31,11 +31,13 @@ class SaleDetailLotAllocation extends Model
         ];
     }
 
+    /** @return BelongsTo<SaleDetail, $this> */
     public function saleDetail(): BelongsTo
     {
         return $this->belongsTo(SaleDetail::class);
     }
 
+    /** @return BelongsTo<InventoryLot, $this> */
     public function lot(): BelongsTo
     {
         return $this->belongsTo(InventoryLot::class, 'inventory_lot_id');

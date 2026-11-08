@@ -3,11 +3,16 @@
 namespace App\Modules\Payments\Resources;
 
 use App\Modules\Administration\Resources\UserResource;
+use App\Modules\Payments\Models\Payment;
+use App\Modules\Payments\Models\PaymentAllocation;
 use App\Modules\Purchasing\Resources\SupplierResource;
 use App\Modules\Sales\Resources\CustomerResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin Payment
+ */
 class PaymentResource extends JsonResource
 {
     /**
@@ -19,7 +24,7 @@ class PaymentResource extends JsonResource
 
         if ($this->relationLoaded('allocations')) {
             $allocated = $this->allocations->reduce(
-                fn (string $carry, $allocation): string => bcadd($carry, (string) $allocation->amount, 2),
+                fn (string $carry, PaymentAllocation $allocation): string => bcadd($carry, $allocation->amount, 2),
                 '0.00',
             );
         }
@@ -33,7 +38,7 @@ class PaymentResource extends JsonResource
             'payment_date' => $this->payment_date,
             'amount' => $this->amount,
             'allocated_amount' => $allocated,
-            'unallocated_amount' => bcsub((string) $this->amount, (string) $allocated, 2),
+            'unallocated_amount' => bcsub($this->amount, $allocated, 2),
             'payment_method' => $this->payment_method->value,
             'payment_method_label' => $this->payment_method->label(),
             'reference' => $this->reference,

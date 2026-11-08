@@ -18,7 +18,7 @@ class TaxRateFactory extends Factory
             'name' => 'Impuesto '.fake()->unique()->numberBetween(1, 9999),
             'rate' => fake()->randomFloat(4, 0, 20),
             'tax_type' => fake()->randomElement(['SALES_TAX', 'VAT']),
-            'jurisdiction' => fake()->state(),
+            'jurisdiction' => fake()->randomElement(['CDMX', 'Jalisco', 'Nuevo León']),
             'is_active' => true,
         ];
     }

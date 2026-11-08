@@ -38,7 +38,7 @@ class RecordInventoryMovement
             ]);
         }
 
-        if (bccomp($quantity, '0', 3) === 0) {
+        if (Decimal::compare($quantity, '0', 3) === 0) {
             throw ValidationException::withMessages([
                 'quantity' => 'La cantidad debe ser distinta de cero.',
             ]);
@@ -89,9 +89,9 @@ class RecordInventoryMovement
                 ]);
             }
 
-            $newOnHand = Decimal::round3(bcadd((string) $stock->quantity_on_hand, $quantity, 3));
+            $newOnHand = Decimal::round3(Decimal::add((string) $stock->quantity_on_hand, $quantity, 3));
 
-            if (bccomp($newOnHand, '0', 3) < 0) {
+            if (Decimal::compare($newOnHand, '0', 3) < 0) {
                 throw ValidationException::withMessages([
                     'quantity' => 'No hay existencias suficientes en el almacén.',
                 ]);
@@ -101,9 +101,9 @@ class RecordInventoryMovement
 
             if ($lot !== null) {
                 $lot = InventoryLot::query()->lockForUpdate()->findOrFail($lot->id);
-                $newAvailable = Decimal::round3(bcadd((string) $lot->quantity_available, $quantity, 3));
+                $newAvailable = Decimal::round3(Decimal::add((string) $lot->quantity_available, $quantity, 3));
 
-                if (bccomp($newAvailable, '0', 3) < 0) {
+                if (Decimal::compare($newAvailable, '0', 3) < 0) {
                     throw ValidationException::withMessages([
                         'quantity' => 'No hay cantidad disponible suficiente en el lote.',
                     ]);
@@ -136,11 +136,11 @@ class RecordInventoryMovement
 
     protected function lotStatus(InventoryLot $lot, string $newAvailable): LotStatus
     {
-        if (bccomp($newAvailable, '0', 3) === 0) {
+        if (Decimal::compare($newAvailable, '0', 3) === 0) {
             return LotStatus::Sold;
         }
 
-        if (bccomp($newAvailable, (string) $lot->quantity_initial, 3) >= 0) {
+        if (Decimal::compare($newAvailable, (string) $lot->quantity_initial, 3) >= 0) {
             return LotStatus::Available;
         }
 

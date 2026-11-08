@@ -2,9 +2,13 @@
 
 namespace App\Modules\Inventory\Resources;
 
+use App\Modules\Inventory\Models\Warehouse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin Warehouse
+ */
 class WarehouseResource extends JsonResource
 {
     /**

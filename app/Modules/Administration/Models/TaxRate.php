@@ -36,16 +36,22 @@ class TaxRate extends Model
         ];
     }
 
+    /** @return HasMany<PurchaseDetail, $this> */
     public function purchaseDetails(): HasMany
     {
         return $this->hasMany(PurchaseDetail::class);
     }
 
+    /** @return HasMany<SaleDetail, $this> */
     public function saleDetails(): HasMany
     {
         return $this->hasMany(SaleDetail::class);
     }
 
+    /**
+     * @param  Builder<TaxRate>  $query
+     * @return Builder<TaxRate>
+     */
     #[Scope]
     protected function active(Builder $query): Builder
     {

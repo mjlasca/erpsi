@@ -70,46 +70,58 @@ class InventoryLot extends Model
         ];
     }
 
+    /** @return BelongsTo<Product, $this> */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
+    /** @return BelongsTo<ProductVariant, $this> */
     public function variant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 
+    /** @return BelongsTo<Warehouse, $this> */
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
     }
 
+    /** @return BelongsTo<PurchaseDetail, $this> */
     public function purchaseDetail(): BelongsTo
     {
         return $this->belongsTo(PurchaseDetail::class);
     }
 
+    /** @return BelongsTo<self, $this> */
     public function parentLot(): BelongsTo
     {
         return $this->belongsTo(self::class, 'parent_lot_id');
     }
 
+    /** @return HasMany<self, $this> */
     public function childLots(): HasMany
     {
         return $this->hasMany(self::class, 'parent_lot_id');
     }
 
+    /** @return HasMany<InventoryMovement, $this> */
     public function movements(): HasMany
     {
         return $this->hasMany(InventoryMovement::class);
     }
 
+    /** @return HasMany<SaleDetailLotAllocation, $this> */
     public function allocations(): HasMany
     {
         return $this->hasMany(SaleDetailLotAllocation::class);
     }
 
+    /**
+     * @param  Builder<InventoryLot>  $query
+     * @return Builder<InventoryLot>
+     */
     #[Scope]
     protected function available(Builder $query): Builder
     {

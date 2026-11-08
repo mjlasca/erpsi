@@ -7,7 +7,6 @@ use App\Modules\Catalog\Enums\UnitType;
 use App\Modules\Catalog\Models\Unit;
 use App\Modules\Catalog\Requests\UnitRequest;
 use App\Modules\Catalog\Resources\UnitResource;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -31,8 +30,8 @@ class UnitController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return Inertia::render('catalog/units/index', [
-            'units' => UnitResource::collection($units)->resolve(),
+        return Inertia::render('Catalog/Units/Index', [
+            'units' => $units->through(fn ($unit): array => (new UnitResource($unit))->resolve()),
             'filters' => $request->only('search'),
         ]);
     }
@@ -41,7 +40,7 @@ class UnitController extends Controller
     {
         $this->authorize('create', Unit::class);
 
-        return Inertia::render('catalog/units/create', [
+        return Inertia::render('Catalog/Units/Create', [
             'unitTypes' => UnitType::options(),
         ]);
     }
@@ -63,7 +62,7 @@ class UnitController extends Controller
 
         $unit->loadCount('products');
 
-        return Inertia::render('catalog/units/show', [
+        return Inertia::render('Catalog/Units/Show', [
             'unit' => (new UnitResource($unit))->resolve(),
         ]);
     }
@@ -72,7 +71,7 @@ class UnitController extends Controller
     {
         $this->authorize('update', $unit);
 
-        return Inertia::render('catalog/units/edit', [
+        return Inertia::render('Catalog/Units/Edit', [
             'unit' => (new UnitResource($unit))->resolve(),
             'unitTypes' => UnitType::options(),
         ]);
@@ -93,11 +92,11 @@ class UnitController extends Controller
     {
         $this->authorize('delete', $unit);
 
-        try {
-            $unit->delete();
-        } catch (QueryException) {
+        if ($unit->products()->exists()) {
             return back()->with('error', 'No se puede eliminar la unidad porque tiene productos asociados.');
         }
+
+        $unit->delete();
 
         return redirect()
             ->route('catalog.units.index')

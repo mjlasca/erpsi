@@ -9,7 +9,6 @@ use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Catalog\Models\Unit;
 use App\Modules\Catalog\Requests\ProductAttributeRequest;
 use App\Modules\Catalog\Resources\ProductAttributeResource;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -30,8 +29,8 @@ class ProductAttributeController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return Inertia::render('catalog/attributes/index', [
-            'attributes' => ProductAttributeResource::collection($attributes)->resolve(),
+        return Inertia::render('Catalog/Attributes/Index', [
+            'attributes' => $attributes->through(fn ($attribute): array => (new ProductAttributeResource($attribute))->resolve()),
             'filters' => $request->only('search', 'product_id'),
             'products' => Product::query()->orderBy('name')->get(['id', 'name']),
         ]);
@@ -41,7 +40,7 @@ class ProductAttributeController extends Controller
     {
         $this->authorize('create', ProductAttribute::class);
 
-        return Inertia::render('catalog/attributes/create', [
+        return Inertia::render('Catalog/Attributes/Create', [
             ...$this->formOptions(),
             'selectedProductId' => $request->integer('product_id') ?: null,
         ]);
@@ -64,7 +63,7 @@ class ProductAttributeController extends Controller
 
         $attribute->load(['product', 'variant', 'unit']);
 
-        return Inertia::render('catalog/attributes/show', [
+        return Inertia::render('Catalog/Attributes/Show', [
             'attribute' => (new ProductAttributeResource($attribute))->resolve(),
         ]);
     }
@@ -75,7 +74,7 @@ class ProductAttributeController extends Controller
 
         $attribute->load(['product', 'variant', 'unit']);
 
-        return Inertia::render('catalog/attributes/edit', [
+        return Inertia::render('Catalog/Attributes/Edit', [
             'attribute' => (new ProductAttributeResource($attribute))->resolve(),
             ...$this->formOptions(),
         ]);
@@ -96,11 +95,7 @@ class ProductAttributeController extends Controller
     {
         $this->authorize('delete', $attribute);
 
-        try {
-            $attribute->delete();
-        } catch (QueryException) {
-            return back()->with('error', 'No se puede eliminar el atributo.');
-        }
+        $attribute->delete();
 
         return redirect()
             ->route('catalog.attributes.index')

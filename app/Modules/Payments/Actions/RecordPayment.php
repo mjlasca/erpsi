@@ -22,7 +22,7 @@ class RecordPayment
 
         $amount = Decimal::round2((string) $data['amount']);
 
-        if (bccomp($amount, '0', 2) <= 0) {
+        if (Decimal::compare($amount, '0', 2) <= 0) {
             throw ValidationException::withMessages([
                 'amount' => 'El monto del pago debe ser mayor que cero.',
             ]);

@@ -4,9 +4,13 @@ namespace App\Modules\Inventory\Resources;
 
 use App\Modules\Catalog\Resources\ProductResource;
 use App\Modules\Catalog\Resources\ProductVariantResource;
+use App\Modules\Inventory\Models\InventoryStock;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
+/**
+ * @mixin InventoryStock
+ */
 class InventoryStockResource extends JsonResource
 {
     /**

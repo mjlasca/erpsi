@@ -11,6 +11,7 @@ use App\Modules\Sales\Enums\SaleStatus;
 use App\Modules\Sales\Models\Sale;
 use App\Modules\Sales\Models\SaleDetail;
 use App\Modules\Sales\Models\SaleDetailLotAllocation;
+use App\Support\Decimal;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -45,7 +46,7 @@ class ConfirmSale
             }
 
             foreach ($sale->details as $detail) {
-                if (bccomp((string) $detail->quantity, '0', 3) <= 0) {
+                if (Decimal::compare((string) $detail->quantity, '0', 3) <= 0) {
                     throw ValidationException::withMessages([
                         'details' => 'Todas las cantidades deben ser mayores que cero.',
                     ]);
@@ -73,7 +74,7 @@ class ConfirmSale
                             product: $product,
                             warehouse: $sale->warehouse,
                             movementType: MovementType::Sale,
-                            quantity: bcsub('0', $quantity, 3),
+                            quantity: Decimal::sub('0', $quantity, 3),
                             variant: $detail->variant,
                             lot: $lot,
                             unitCost: (string) $lot->unit_cost,
@@ -90,7 +91,7 @@ class ConfirmSale
                     product: $product,
                     warehouse: $sale->warehouse,
                     movementType: MovementType::Sale,
-                    quantity: bcsub('0', (string) $detail->quantity, 3),
+                    quantity: Decimal::sub('0', (string) $detail->quantity, 3),
                     variant: $detail->variant,
                     unitCost: (string) $product->cost_price,
                     reference: $sale,
@@ -121,7 +122,7 @@ class ConfirmSale
             foreach ($provided as $lotId => $quantity) {
                 $quantity = (string) $quantity;
 
-                if (bccomp($quantity, '0', 3) <= 0) {
+                if (Decimal::compare($quantity, '0', 3) <= 0) {
                     throw ValidationException::withMessages([
                         'lot_allocations' => 'Las cantidades asignadas a los lotes deben ser mayores que cero.',
                     ]);
@@ -134,17 +135,17 @@ class ConfirmSale
                     || $lot->product_variant_id !== $detail->product_variant_id
                     || $lot->warehouse_id !== $sale->warehouse_id
                     || ! in_array($lot->status, [LotStatus::Available, LotStatus::Partial], true)
-                    || bccomp((string) $lot->quantity_available, $quantity, 3) < 0) {
+                    || Decimal::compare((string) $lot->quantity_available, $quantity, 3) < 0) {
                     throw ValidationException::withMessages([
                         'lot_allocations' => 'Uno de los lotes seleccionados no está disponible en el almacén.',
                     ]);
                 }
 
                 $allocations[(int) $lotId] = $quantity;
-                $total = bcadd($total, $quantity, 3);
+                $total = Decimal::add($total, $quantity, 3);
             }
 
-            if (bccomp($total, (string) $detail->quantity, 3) !== 0) {
+            if (Decimal::compare($total, (string) $detail->quantity, 3) !== 0) {
                 throw ValidationException::withMessages([
                     'lot_allocations' => 'La cantidad asignada a lotes debe coincidir con la cantidad de la línea.',
                 ]);
@@ -168,23 +169,23 @@ class ConfirmSale
             ->get();
 
         foreach ($lots as $lot) {
-            if (bccomp($remaining, '0', 3) <= 0) {
+            if (Decimal::compare($remaining, '0', 3) <= 0) {
                 break;
             }
 
-            $take = bccomp((string) $lot->quantity_available, $remaining, 3) >= 0
+            $take = Decimal::compare((string) $lot->quantity_available, $remaining, 3) >= 0
                 ? $remaining
                 : (string) $lot->quantity_available;
 
-            if (bccomp($take, '0', 3) <= 0) {
+            if (Decimal::compare($take, '0', 3) <= 0) {
                 continue;
             }
 
             $allocations[$lot->id] = $take;
-            $remaining = bcsub($remaining, $take, 3);
+            $remaining = Decimal::sub($remaining, $take, 3);
         }
 
-        if (bccomp($remaining, '0', 3) > 0) {
+        if (Decimal::compare($remaining, '0', 3) > 0) {
             throw ValidationException::withMessages([
                 'details' => 'No hay lotes disponibles suficientes para confirmar la venta.',
             ]);

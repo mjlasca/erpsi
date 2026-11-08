@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Modules\Purchasing\Models\Supplier;
 use App\Modules\Purchasing\Requests\SupplierRequest;
 use App\Modules\Purchasing\Resources\SupplierResource;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -31,8 +30,8 @@ class SupplierController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return Inertia::render('purchasing/suppliers/index', [
-            'suppliers' => SupplierResource::collection($suppliers)->resolve(),
+        return Inertia::render('Purchasing/Suppliers/Index', [
+            'suppliers' => $suppliers->through(fn ($supplier): array => (new SupplierResource($supplier))->resolve()),
             'filters' => $request->only('search'),
         ]);
     }
@@ -41,7 +40,7 @@ class SupplierController extends Controller
     {
         $this->authorize('create', Supplier::class);
 
-        return Inertia::render('purchasing/suppliers/create');
+        return Inertia::render('Purchasing/Suppliers/Create');
     }
 
     public function store(SupplierRequest $request): RedirectResponse
@@ -61,7 +60,7 @@ class SupplierController extends Controller
 
         $supplier->loadCount(['purchases', 'payments']);
 
-        return Inertia::render('purchasing/suppliers/show', [
+        return Inertia::render('Purchasing/Suppliers/Show', [
             'supplier' => (new SupplierResource($supplier))->resolve(),
         ]);
     }
@@ -70,7 +69,7 @@ class SupplierController extends Controller
     {
         $this->authorize('update', $supplier);
 
-        return Inertia::render('purchasing/suppliers/edit', [
+        return Inertia::render('Purchasing/Suppliers/Edit', [
             'supplier' => (new SupplierResource($supplier))->resolve(),
         ]);
     }
@@ -90,11 +89,11 @@ class SupplierController extends Controller
     {
         $this->authorize('delete', $supplier);
 
-        try {
-            $supplier->delete();
-        } catch (QueryException) {
+        if ($supplier->purchases()->exists() || $supplier->payments()->exists()) {
             return back()->with('error', 'No se puede eliminar el proveedor porque tiene registros relacionados.');
         }
+
+        $supplier->delete();
 
         return redirect()
             ->route('purchasing.suppliers.index')

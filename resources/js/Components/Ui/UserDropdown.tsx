@@ -1,21 +1,14 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Link, router } from '@inertiajs/react';
-import {
-    ChevronDown,
-    UserRound,
-    LogOut,
-} from 'lucide-react';
+import { ChevronDown, UserRound, LogOut } from 'lucide-react';
+import { dashboard, logout } from '@/routes';
 
 interface UserDropdownProps {
     name: string;
     avatarUrl?: string | null;
 }
 
-export default function UserDropdown({
-    name,
-    avatarUrl,
-}: UserDropdownProps) {
+export default function UserDropdown({ name, avatarUrl }: UserDropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -23,7 +16,7 @@ export default function UserDropdown({
         .split(' ')
         .filter(Boolean)
         .slice(0, 2)
-        .map(part => part[0])
+        .map((part) => part[0])
         .join('')
         .toUpperCase();
 
@@ -46,7 +39,7 @@ export default function UserDropdown({
     }, []);
 
     const handleLogout = () => {
-        router.post('/logout');
+        router.post(logout.url());
         setIsOpen(false);
     };
 
@@ -86,15 +79,14 @@ export default function UserDropdown({
 
             {/* Dropdown menu */}
             {isOpen && (
-                <div className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
-
+                <div className="absolute top-full right-0 z-50 mt-2 w-52 overflow-hidden rounded-lg border border-gray-200 bg-white py-1 shadow-lg">
                     <Link
-                        href="/profile"
+                        href={dashboard.url()}
                         onClick={() => setIsOpen(false)}
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
                     >
                         <UserRound size={17} className="text-gray-400" />
-                        Mi perfil
+                        Ir al panel
                     </Link>
 
                     <div className="my-1 border-t border-gray-100" />

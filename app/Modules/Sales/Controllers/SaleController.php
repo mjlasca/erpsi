@@ -58,8 +58,8 @@ class SaleController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return Inertia::render('sales/sales/index', [
-            'sales' => SaleResource::collection($sales)->resolve(),
+        return Inertia::render('Sales/Sales/Index', [
+            'sales' => $sales->through(fn ($sale): array => (new SaleResource($sale))->resolve()),
             'filters' => $request->only('search', 'status', 'customer_id'),
             'customers' => Customer::query()->orderBy('last_name')->orderBy('first_name')->get(['id', 'first_name', 'last_name', 'company_name']),
             'statuses' => SaleStatus::options(),
@@ -70,7 +70,7 @@ class SaleController extends Controller
     {
         $this->authorize('create', Sale::class);
 
-        return Inertia::render('sales/sales/create', $this->formOptions());
+        return Inertia::render('Sales/Sales/Create', $this->formOptions());
     }
 
     public function store(SaleRequest $request): RedirectResponse
@@ -115,7 +115,7 @@ class SaleController extends Controller
             'allocations.payment',
         ]);
 
-        return Inertia::render('sales/sales/show', [
+        return Inertia::render('Sales/Sales/Show', [
             'sale' => (new SaleResource($sale))->resolve(),
         ]);
     }
@@ -126,7 +126,7 @@ class SaleController extends Controller
 
         $sale->load(['customer', 'warehouse', 'details.product', 'details.variant', 'details.taxRate']);
 
-        return Inertia::render('sales/sales/edit', [
+        return Inertia::render('Sales/Sales/Edit', [
             'sale' => (new SaleResource($sale))->resolve(),
             ...$this->formOptions(),
         ]);
@@ -212,7 +212,7 @@ class SaleController extends Controller
             }
 
             $taxRate = isset($row['tax_rate_id'])
-                ? TaxRate::query()->find($row['tax_rate_id'])
+                ? TaxRate::query()->whereKey((int) $row['tax_rate_id'])->value('rate')
                 : null;
 
             $detail->fill([
@@ -223,7 +223,7 @@ class SaleController extends Controller
                 'unit_price' => $row['unit_price'],
                 'discount' => $row['discount'] ?? 0,
                 'tax_rate_id' => $row['tax_rate_id'] ?? null,
-                'tax_rate' => $taxRate?->rate ?? 0,
+                'tax_rate' => $taxRate ?? 0,
             ]);
 
             $detail->save();

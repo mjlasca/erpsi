@@ -9,6 +9,7 @@ use App\Modules\Inventory\Enums\MovementType;
 use App\Modules\Inventory\Models\InventoryLot;
 use App\Modules\Purchasing\Enums\PurchaseStatus;
 use App\Modules\Purchasing\Models\Purchase;
+use App\Support\Decimal;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -41,7 +42,7 @@ class ReceivePurchase
             }
 
             foreach ($purchase->details as $detail) {
-                if (bccomp((string) $detail->quantity, '0', 3) <= 0) {
+                if (Decimal::compare((string) $detail->quantity, '0', 3) <= 0) {
                     throw ValidationException::withMessages([
                         'details' => 'Todas las cantidades deben ser mayores que cero.',
                     ]);
@@ -61,7 +62,7 @@ class ReceivePurchase
                         'purchase_detail_id' => $detail->id,
                         'code' => 'LOT-'.Str::upper((string) Str::ulid()),
                         'quantity_initial' => $detail->quantity,
-                        'quantity_available' => $detail->quantity,
+                        'quantity_available' => '0.000',
                         'unit_cost' => $detail->unit_price,
                         'status' => LotStatus::Available,
                         'received_at' => now(),

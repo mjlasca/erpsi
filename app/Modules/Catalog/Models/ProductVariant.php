@@ -43,41 +43,52 @@ class ProductVariant extends Model
         ];
     }
 
+    /** @return BelongsTo<Product, $this> */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
+    /** @return HasMany<ProductAttribute, $this> */
     public function attributes(): HasMany
     {
         return $this->hasMany(ProductAttribute::class);
     }
 
+    /** @return HasMany<InventoryStock, $this> */
     public function stockItems(): HasMany
     {
         return $this->hasMany(InventoryStock::class);
     }
 
+    /** @return HasMany<InventoryLot, $this> */
     public function lots(): HasMany
     {
         return $this->hasMany(InventoryLot::class);
     }
 
+    /** @return HasMany<InventoryMovement, $this> */
     public function movements(): HasMany
     {
         return $this->hasMany(InventoryMovement::class);
     }
 
+    /** @return HasMany<PurchaseDetail, $this> */
     public function purchaseDetails(): HasMany
     {
         return $this->hasMany(PurchaseDetail::class);
     }
 
+    /** @return HasMany<SaleDetail, $this> */
     public function saleDetails(): HasMany
     {
         return $this->hasMany(SaleDetail::class);
     }
 
+    /**
+     * @param  Builder<ProductVariant>  $query
+     * @return Builder<ProductVariant>
+     */
     #[Scope]
     protected function active(Builder $query): Builder
     {

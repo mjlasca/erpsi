@@ -13,7 +13,6 @@ use App\Modules\Inventory\Models\InventoryLot;
 use App\Modules\Inventory\Models\Warehouse;
 use App\Modules\Inventory\Requests\InventoryLotRequest;
 use App\Modules\Inventory\Resources\InventoryLotResource;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -43,8 +42,8 @@ class InventoryLotController extends Controller
             ->paginate(20)
             ->withQueryString();
 
-        return Inertia::render('inventory/lots/index', [
-            'lots' => InventoryLotResource::collection($lots)->resolve(),
+        return Inertia::render('Inventory/Lots/Index', [
+            'lots' => $lots->through(fn ($lot): array => (new InventoryLotResource($lot))->resolve()),
             'filters' => $request->only('search', 'product_id', 'warehouse_id', 'status'),
             'products' => Product::query()->trackedByLots()->orderBy('name')->get(['id', 'name']),
             'warehouses' => Warehouse::query()->orderBy('name')->get(['id', 'name', 'code']),
@@ -56,7 +55,7 @@ class InventoryLotController extends Controller
     {
         $this->authorize('create', InventoryLot::class);
 
-        return Inertia::render('inventory/lots/create', [
+        return Inertia::render('Inventory/Lots/Create', [
             'products' => ProductResource::collection(
                 Product::query()->with('variants')->trackedByLots()->active()->orderBy('name')->get(),
             )->resolve(),
@@ -125,7 +124,7 @@ class InventoryLotController extends Controller
 
         $lot->load(['product', 'variant', 'warehouse', 'purchaseDetail', 'movements', 'allocations']);
 
-        return Inertia::render('inventory/lots/show', [
+        return Inertia::render('Inventory/Lots/Show', [
             'lot' => (new InventoryLotResource($lot))->resolve(),
         ]);
     }
@@ -136,7 +135,7 @@ class InventoryLotController extends Controller
 
         $lot->load(['product', 'variant', 'warehouse']);
 
-        return Inertia::render('inventory/lots/edit', [
+        return Inertia::render('Inventory/Lots/Edit', [
             'lot' => (new InventoryLotResource($lot))->resolve(),
             'warehouses' => Warehouse::query()->orderBy('name')->get(['id', 'name', 'code']),
             'statuses' => LotStatus::options(),
@@ -164,11 +163,11 @@ class InventoryLotController extends Controller
     {
         $this->authorize('delete', $lot);
 
-        try {
-            $lot->delete();
-        } catch (QueryException) {
+        if ($lot->movements()->exists() || $lot->allocations()->exists() || $lot->childLots()->exists()) {
             return back()->with('error', 'No se puede eliminar el lote porque tiene registros relacionados.');
         }
+
+        $lot->delete();
 
         return redirect()
             ->route('inventory.lots.index')

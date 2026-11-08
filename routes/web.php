@@ -27,8 +27,7 @@ Route::redirect('/', '/dashboard');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('login', [LoginController::class, 'index'])->name('login.index');
-    Route::post('register', [LoginController::class, 'register'])->name('register');
-    Route::post('login', [LoginController::class, 'login'])->name('login.login');
+    Route::post('login', [LoginController::class, 'store'])->name('login.store');
 });
 
 Route::post('logout', [LoginController::class, 'destroy'])
@@ -67,21 +66,21 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         ->name('purchasing.purchases.cancel');
 
     Route::resource('sales/customers', CustomerController::class)->names('sales.customers');
-    Route::resource('sales/sales', SaleController::class)->names('sales.sales');
-    Route::post('sales/sales/{sale}/confirm', [SaleController::class, 'confirm'])
+    Route::resource('sales', SaleController::class)->names('sales.sales');
+    Route::post('sales/{sale}/confirm', [SaleController::class, 'confirm'])
         ->name('sales.sales.confirm');
-    Route::post('sales/sales/{sale}/cancel', [SaleController::class, 'cancel'])
+    Route::post('sales/{sale}/cancel', [SaleController::class, 'cancel'])
         ->name('sales.sales.cancel');
 
-    Route::resource('payments/payments', PaymentController::class)->names('payments.payments');
-    Route::post('payments/payments/{payment}/allocations', [PaymentAllocationController::class, 'store'])
+    Route::resource('payments', PaymentController::class)->names('payments.payments');
+    Route::post('payments/{payment}/allocations', [PaymentAllocationController::class, 'store'])
         ->name('payments.allocations.store');
-    Route::delete('payments/payments/{payment}/allocations/{allocation}', [PaymentAllocationController::class, 'destroy'])
+    Route::delete('payments/{payment}/allocations/{allocation}', [PaymentAllocationController::class, 'destroy'])
         ->name('payments.allocations.destroy');
 
-    Route::resource('admin/roles', RoleController::class)->names('admin.roles');
-    Route::resource('admin/users', UserController::class)->names('admin.users');
-    Route::resource('admin/tax-rates', TaxRateController::class)
+    Route::resource('administration/roles', RoleController::class)->names('admin.roles');
+    Route::resource('administration/users', UserController::class)->names('admin.users');
+    Route::resource('administration/tax-rates', TaxRateController::class)
         ->parameters(['tax-rates' => 'taxRate'])
         ->names('admin.tax-rates');
 });

@@ -13,7 +13,6 @@ use App\Modules\Inventory\Models\Warehouse;
 use App\Modules\Inventory\Requests\TransferInventoryRequest;
 use App\Modules\Inventory\Resources\InventoryLotResource;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -23,7 +22,7 @@ class TransferInventoryController extends Controller
     {
         $this->authorize('create', InventoryMovement::class);
 
-        return Inertia::render('inventory/transfers/create', [
+        return Inertia::render('Inventory/Transfers/Create', [
             'products' => ProductResource::collection(
                 Product::query()->with('variants')->active()->orderBy('name')->get(),
             )->resolve(),
