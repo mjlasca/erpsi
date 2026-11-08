@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceIndex, { FilterSelect } from '@/Components/Ui/ResourceIndex';
 import {
@@ -32,6 +33,7 @@ export default function PaymentsIndex({
                 filters={filters}
                 searchPlaceholder="Buscar referencia o notas..."
                 createHref={create.url()}
+                createPermission="payments.payments.create"
                 createLabel="Registrar pago"
                 filterControls={
                     <>
@@ -115,11 +117,17 @@ export default function PaymentsIndex({
                 actions={(payment) => (
                     <>
                         <RowLink href={show.url(payment.id)}>Ver</RowLink>
-                        <RowLink href={edit.url(payment.id)}>Editar</RowLink>
-                        <DeleteButton
-                            url={destroy.url(payment.id)}
-                            confirmMessage="¿Eliminar este pago?"
-                        />
+                        <Can permission="payments.payments.update">
+                            <RowLink href={edit.url(payment.id)}>
+                                Editar
+                            </RowLink>
+                        </Can>
+                        <Can permission="payments.payments.delete">
+                            <DeleteButton
+                                url={destroy.url(payment.id)}
+                                confirmMessage="¿Eliminar este pago?"
+                            />
+                        </Can>
                     </>
                 )}
             />

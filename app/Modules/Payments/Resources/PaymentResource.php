@@ -44,10 +44,10 @@ class PaymentResource extends JsonResource
             'reference' => $this->reference,
             'notes' => $this->notes,
             'created_by' => $this->created_by,
-            'customer' => new CustomerResource($this->whenLoaded('customer')),
-            'supplier' => new SupplierResource($this->whenLoaded('supplier')),
-            'creator' => new UserResource($this->whenLoaded('creator')),
-            'allocations' => PaymentAllocationResource::collection($this->whenLoaded('allocations')),
+            'customer' => $this->whenLoaded('customer', fn (): array => (new CustomerResource($this->customer))->resolve()),
+            'supplier' => $this->whenLoaded('supplier', fn (): array => (new SupplierResource($this->supplier))->resolve()),
+            'creator' => $this->whenLoaded('creator', fn (): array => (new UserResource($this->creator))->resolve()),
+            'allocations' => $this->whenLoaded('allocations', fn (): array => PaymentAllocationResource::collection($this->allocations)->resolve()),
         ];
     }
 }

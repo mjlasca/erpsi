@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceShow from '@/Components/Ui/ResourceShow';
 import { DeleteButton, LinkButton } from '@/Components/Ui/Primitives';
@@ -18,13 +19,17 @@ export default function AttributesShow({
                         <LinkButton href={index.url()} variant="secondary">
                             Volver
                         </LinkButton>
-                        <LinkButton href={edit.url(attribute.id)}>
-                            Editar
-                        </LinkButton>
-                        <DeleteButton
-                            url={destroy.url(attribute.id)}
-                            confirmMessage="¿Eliminar este atributo?"
-                        />
+                        <Can permission="catalog.attributes.update">
+                            <LinkButton href={edit.url(attribute.id)}>
+                                Editar
+                            </LinkButton>
+                        </Can>
+                        <Can permission="catalog.attributes.delete">
+                            <DeleteButton
+                                url={destroy.url(attribute.id)}
+                                confirmMessage="¿Eliminar este atributo?"
+                            />
+                        </Can>
                     </>
                 }
                 fields={[

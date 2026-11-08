@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceShow from '@/Components/Ui/ResourceShow';
 import {
@@ -25,13 +26,17 @@ export default function CategoriesShow({
                         <LinkButton href={index.url()} variant="secondary">
                             Volver
                         </LinkButton>
-                        <LinkButton href={edit.url(category.id)}>
-                            Editar
-                        </LinkButton>
-                        <DeleteButton
-                            url={destroy.url(category.id)}
-                            confirmMessage="¿Eliminar esta categoría?"
-                        />
+                        <Can permission="catalog.categories.update">
+                            <LinkButton href={edit.url(category.id)}>
+                                Editar
+                            </LinkButton>
+                        </Can>
+                        <Can permission="catalog.categories.delete">
+                            <DeleteButton
+                                url={destroy.url(category.id)}
+                                confirmMessage="¿Eliminar esta categoría?"
+                            />
+                        </Can>
                     </>
                 }
                 fields={[

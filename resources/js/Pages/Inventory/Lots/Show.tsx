@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceShow from '@/Components/Ui/ResourceShow';
 import { Badge, DeleteButton, LinkButton } from '@/Components/Ui/Primitives';
@@ -29,11 +30,17 @@ export default function LotsShow({ lot }: { lot: InventoryLot }) {
                         <LinkButton href={index.url()} variant="secondary">
                             Volver
                         </LinkButton>
-                        <LinkButton href={edit.url(lot.id)}>Editar</LinkButton>
-                        <DeleteButton
-                            url={destroy.url(lot.id)}
-                            confirmMessage="¿Eliminar este lote?"
-                        />
+                        <Can permission="inventory.lots.update">
+                            <LinkButton href={edit.url(lot.id)}>
+                                Editar
+                            </LinkButton>
+                        </Can>
+                        <Can permission="inventory.lots.delete">
+                            <DeleteButton
+                                url={destroy.url(lot.id)}
+                                confirmMessage="¿Eliminar este lote?"
+                            />
+                        </Can>
                     </>
                 }
                 fields={[

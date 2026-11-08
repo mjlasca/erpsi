@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceIndex, { FilterSelect } from '@/Components/Ui/ResourceIndex';
 import { Badge, DeleteButton, RowLink } from '@/Components/Ui/Primitives';
@@ -26,6 +27,7 @@ export default function VariantsIndex({
                 filters={filters}
                 searchPlaceholder="Buscar por nombre, SKU o código..."
                 createHref={create.url()}
+                createPermission="catalog.variants.create"
                 createLabel="Nueva variante"
                 filterControls={
                     <FilterSelect
@@ -72,11 +74,17 @@ export default function VariantsIndex({
                 actions={(variant) => (
                     <>
                         <RowLink href={show.url(variant.id)}>Ver</RowLink>
-                        <RowLink href={edit.url(variant.id)}>Editar</RowLink>
-                        <DeleteButton
-                            url={destroy.url(variant.id)}
-                            confirmMessage="¿Eliminar esta variante?"
-                        />
+                        <Can permission="catalog.variants.update">
+                            <RowLink href={edit.url(variant.id)}>
+                                Editar
+                            </RowLink>
+                        </Can>
+                        <Can permission="catalog.variants.delete">
+                            <DeleteButton
+                                url={destroy.url(variant.id)}
+                                confirmMessage="¿Eliminar esta variante?"
+                            />
+                        </Can>
                     </>
                 )}
             />

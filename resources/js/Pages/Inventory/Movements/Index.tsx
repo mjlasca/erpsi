@@ -4,7 +4,7 @@ import { Badge, Input, RowLink } from '@/Components/Ui/Primitives';
 import { formatDate, formatNumber } from '@/lib/format';
 import type { InventoryMovement } from '@/types/models';
 import type { Filters, Paginated, SelectOption } from '@/types/erp';
-import { index, show } from '@/routes/inventory/movements';
+import { create, index, show } from '@/routes/inventory/movements';
 
 const typeTone = (type: string) => {
     switch (type) {
@@ -40,7 +40,8 @@ export default function MovementsIndex({
                 baseUrl={index.url()}
                 filters={filters}
                 searchPlaceholder="Buscar producto o SKU..."
-                createHref={index.url().replace('/index', '') + '/create'}
+                createHref={create.url()}
+                createPermission="inventory.movements.create"
                 createLabel="Registrar movimiento"
                 filterControls={
                     <>

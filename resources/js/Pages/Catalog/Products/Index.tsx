@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceIndex, { FilterSelect } from '@/Components/Ui/ResourceIndex';
 import { Badge, DeleteButton, RowLink } from '@/Components/Ui/Primitives';
@@ -26,6 +27,7 @@ export default function ProductsIndex({
                 filters={filters}
                 searchPlaceholder="Buscar por nombre, SKU o código de barras..."
                 createHref={create.url()}
+                createPermission="catalog.products.create"
                 createLabel="Nuevo producto"
                 filterControls={
                     <>
@@ -99,11 +101,17 @@ export default function ProductsIndex({
                 actions={(product) => (
                     <>
                         <RowLink href={show.url(product.id)}>Ver</RowLink>
-                        <RowLink href={edit.url(product.id)}>Editar</RowLink>
-                        <DeleteButton
-                            url={destroy.url(product.id)}
-                            confirmMessage="¿Eliminar este producto?"
-                        />
+                        <Can permission="catalog.products.update">
+                            <RowLink href={edit.url(product.id)}>
+                                Editar
+                            </RowLink>
+                        </Can>
+                        <Can permission="catalog.products.delete">
+                            <DeleteButton
+                                url={destroy.url(product.id)}
+                                confirmMessage="¿Eliminar este producto?"
+                            />
+                        </Can>
                     </>
                 )}
             />

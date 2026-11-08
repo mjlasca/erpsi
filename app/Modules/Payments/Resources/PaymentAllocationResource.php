@@ -24,9 +24,9 @@ class PaymentAllocationResource extends JsonResource
             'sale_id' => $this->sale_id,
             'purchase_id' => $this->purchase_id,
             'amount' => $this->amount,
-            'payment' => new PaymentResource($this->whenLoaded('payment')),
-            'sale' => new SaleResource($this->whenLoaded('sale')),
-            'purchase' => new PurchaseResource($this->whenLoaded('purchase')),
+            'payment' => $this->whenLoaded('payment', fn (): array => (new PaymentResource($this->payment))->resolve()),
+            'sale' => $this->whenLoaded('sale', fn (): array => (new SaleResource($this->sale))->resolve()),
+            'purchase' => $this->whenLoaded('purchase', fn (): array => (new PurchaseResource($this->purchase))->resolve()),
         ];
     }
 }

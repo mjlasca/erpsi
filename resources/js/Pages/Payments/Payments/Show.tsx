@@ -1,11 +1,13 @@
 import { FormEvent } from 'react';
 import { router, useForm } from '@inertiajs/react';
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceShow from '@/Components/Ui/ResourceShow';
 import {
     Badge,
     Button,
     Card,
+    ConfirmButton,
     CardHeader,
     DeleteButton,
     Field,
@@ -65,20 +67,6 @@ export default function PaymentsShow({
         });
     };
 
-    const removeAllocation = (allocationId: number) => {
-        if (!window.confirm('¿Eliminar esta aplicación de pago?')) {
-            return;
-        }
-
-        router.delete(
-            destroyAllocation.url({
-                payment: payment.id,
-                allocation: allocationId,
-            }),
-            { preserveScroll: true },
-        );
-    };
-
     return (
         <ErpLayout>
             <ResourceShow
@@ -89,13 +77,17 @@ export default function PaymentsShow({
                         <LinkButton href={index.url()} variant="secondary">
                             Volver
                         </LinkButton>
-                        <LinkButton href={edit.url(payment.id)}>
-                            Editar
-                        </LinkButton>
-                        <DeleteButton
-                            url={destroy.url(payment.id)}
-                            confirmMessage="¿Eliminar este pago?"
-                        />
+                        <Can permission="payments.payments.update">
+                            <LinkButton href={edit.url(payment.id)}>
+                                Editar
+                            </LinkButton>
+                        </Can>
+                        <Can permission="payments.payments.delete">
+                            <DeleteButton
+                                url={destroy.url(payment.id)}
+                                confirmMessage="¿Eliminar este pago?"
+                            />
+                        </Can>
                     </>
                 }
                 fields={[
@@ -181,15 +173,27 @@ export default function PaymentsShow({
                                         <span className="font-medium text-gray-900">
                                             {formatMoney(allocation.amount)}
                                         </span>
-                                        <Button
-                                            type="button"
-                                            variant="danger"
-                                            onClick={() =>
-                                                removeAllocation(allocation.id)
-                                            }
-                                        >
-                                            Eliminar
-                                        </Button>
+                                        <Can permission="payments.allocations.manage">
+                                            <ConfirmButton
+                                                message="¿Eliminar esta aplicación de pago?"
+                                                confirmLabel="Eliminar"
+                                                title="Eliminar aplicación"
+                                                onConfirm={() =>
+                                                    router.delete(
+                                                        destroyAllocation.url({
+                                                            payment: payment.id,
+                                                            allocation:
+                                                                allocation.id,
+                                                        }),
+                                                        {
+                                                            preserveScroll: true,
+                                                        },
+                                                    )
+                                                }
+                                            >
+                                                Eliminar
+                                            </ConfirmButton>
+                                        </Can>
                                     </div>
                                 </div>
                             ))}
@@ -212,88 +216,103 @@ export default function PaymentsShow({
                             No hay documentos con saldo pendiente.
                         </p>
                     ) : (
-                        <form
-                            onSubmit={submitAllocation}
-                            className="grid grid-cols-1 gap-4 px-5 py-4 md:grid-cols-3"
-                        >
-                            <Field
-                                label="Documento"
-                                htmlFor="allocation-document"
-                                required
-                            >
-                                <Select
-                                    id="allocation-document"
-                                    value={selectedDocumentId}
-                                    onChange={(event) =>
-                                        selectDocument(event.target.value)
-                                    }
-                                >
-                                    <option value="">
-                                        Selecciona documento
-                                    </option>
-                                    {isCustomerPayment
-                                        ? openSales.map((sale) => (
-                                              <option
-                                                  key={sale.id}
-                                                  value={sale.id}
-                                              >
-                                                  {sale.invoice_number} ·{' '}
-                                                  {formatMoney(sale.balance)}
-                                              </option>
-                                          ))
-                                        : openPurchases.map((purchase) => (
-                                              <option
-                                                  key={purchase.id}
-                                                  value={purchase.id}
-                                              >
-                                                  {purchase.purchase_number} ·{' '}
-                                                  {formatMoney(
-                                                      purchase.balance,
-                                                  )}
-                                              </option>
-                                          ))}
-                                </Select>
-                            </Field>
-
-                            <Field
-                                label="Monto a aplicar"
-                                htmlFor="allocation-amount"
-                                required
-                            >
-                                <Input
-                                    id="allocation-amount"
-                                    type="number"
-                                    step="0.01"
-                                    min="0.01"
-                                    value={allocationForm.data.amount}
-                                    onChange={(event) =>
-                                        allocationForm.setData(
-                                            'amount',
-                                            event.target.value,
-                                        )
-                                    }
-                                />
-                            </Field>
-
-                            <div className="flex items-end">
-                                <Button
-                                    type="submit"
-                                    disabled={allocationForm.processing}
-                                    className="w-full"
-                                >
-                                    {allocationForm.processing && <Spinner />}
-                                    Aplicar pago
-                                </Button>
-                            </div>
-
-                            {Object.keys(allocationForm.errors).length > 0 && (
-                                <p className="text-sm text-red-600 md:col-span-3">
-                                    {Object.values(allocationForm.errors).join(
-                                        ' ',
-                                    )}
+                        <Can
+                            permission="payments.allocations.manage"
+                            fallback={
+                                <p className="px-5 py-8 text-center text-sm text-gray-500">
+                                    No tienes permiso para aplicar pagos.
                                 </p>
-                            )}
-                        </form>
+                            }
+                        >
+                            <form
+                                onSubmit={submitAllocation}
+                                className="grid grid-cols-1 gap-4 px-5 py-4 md:grid-cols-3"
+                            >
+                                <Field
+                                    label="Documento"
+                                    htmlFor="allocation-document"
+                                    required
+                                >
+                                    <Select
+                                        id="allocation-document"
+                                        value={selectedDocumentId}
+                                        onChange={(event) =>
+                                            selectDocument(event.target.value)
+                                        }
+                                    >
+                                        <option value="">
+                                            Selecciona documento
+                                        </option>
+                                        {isCustomerPayment
+                                            ? openSales.map((sale) => (
+                                                  <option
+                                                      key={sale.id}
+                                                      value={sale.id}
+                                                  >
+                                                      {sale.invoice_number} ·{' '}
+                                                      {formatMoney(
+                                                          sale.balance,
+                                                      )}
+                                                  </option>
+                                              ))
+                                            : openPurchases.map((purchase) => (
+                                                  <option
+                                                      key={purchase.id}
+                                                      value={purchase.id}
+                                                  >
+                                                      {purchase.purchase_number}{' '}
+                                                      ·{' '}
+                                                      {formatMoney(
+                                                          purchase.balance,
+                                                      )}
+                                                  </option>
+                                              ))}
+                                    </Select>
+                                </Field>
+
+                                <Field
+                                    label="Monto a aplicar"
+                                    htmlFor="allocation-amount"
+                                    required
+                                >
+                                    <Input
+                                        id="allocation-amount"
+                                        type="number"
+                                        step="0.01"
+                                        min="0.01"
+                                        value={allocationForm.data.amount}
+                                        onChange={(event) =>
+                                            allocationForm.setData(
+                                                'amount',
+                                                event.target.value,
+                                            )
+                                        }
+                                    />
+                                </Field>
+
+                                <div className="flex items-end">
+                                    <Button
+                                        type="submit"
+                                        disabled={allocationForm.processing}
+                                        className="w-full"
+                                    >
+                                        {allocationForm.processing && (
+                                            <Spinner />
+                                        )}
+                                        Aplicar pago
+                                    </Button>
+                                </div>
+
+                                {Object.keys(allocationForm.errors).length >
+                                    0 && (
+                                    <p className="text-sm text-red-600 md:col-span-3">
+                                        {Object.values(
+                                            allocationForm.errors,
+                                        ).join(' ')}
+                                    </p>
+                                )}
+                            </form>
+                        </Can>
                     )}
                 </Card>
             </ResourceShow>

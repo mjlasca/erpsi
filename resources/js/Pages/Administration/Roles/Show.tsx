@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceShow from '@/Components/Ui/ResourceShow';
 import {
@@ -29,11 +30,17 @@ export default function RolesShow({
                         <LinkButton href={index.url()} variant="secondary">
                             Volver
                         </LinkButton>
-                        <LinkButton href={edit.url(role.id)}>Editar</LinkButton>
-                        <DeleteButton
-                            url={destroy.url(role.id)}
-                            confirmMessage="¿Eliminar este rol?"
-                        />
+                        <Can permission="administration.roles.update">
+                            <LinkButton href={edit.url(role.id)}>
+                                Editar
+                            </LinkButton>
+                        </Can>
+                        <Can permission="administration.roles.delete">
+                            <DeleteButton
+                                url={destroy.url(role.id)}
+                                confirmMessage="¿Eliminar este rol?"
+                            />
+                        </Can>
                     </>
                 }
                 fields={[

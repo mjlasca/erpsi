@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { usePage } from '@inertiajs/react';
 import AppHeader from '@/Layouts/AppHeader';
@@ -22,15 +23,29 @@ export default function ErpLayout({ children }: { children: ReactNode }) {
     const props = page.props as unknown as LayoutProps;
     const user = props.auth?.user;
     const flash = props.flash;
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+    useEffect(() => {
+        setSidebarOpen(false);
+    }, [page.url]);
 
     return (
         <div className="flex min-h-screen bg-gray-50">
-            <AppSidebar />
+            <AppSidebar
+                mobileOpen={sidebarOpen}
+                collapsed={sidebarCollapsed}
+                onClose={() => setSidebarOpen(false)}
+                onToggleCollapsed={() =>
+                    setSidebarCollapsed((collapsed) => !collapsed)
+                }
+            />
 
             <div className="flex min-w-0 flex-1 flex-col">
                 <AppHeader
                     name={user?.name ?? 'Usuario'}
                     avatarUrl={user?.avatar}
+                    onMenuClick={() => setSidebarOpen(true)}
                 />
 
                 <main className="flex-1 overflow-y-auto p-4 sm:p-6">

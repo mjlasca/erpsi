@@ -38,11 +38,11 @@ class SaleResource extends JsonResource
             'created_by' => $this->created_by,
             'confirmed_at' => $this->confirmed_at,
             'cancelled_at' => $this->cancelled_at,
-            'customer' => new CustomerResource($this->whenLoaded('customer')),
-            'warehouse' => new WarehouseResource($this->whenLoaded('warehouse')),
-            'creator' => new UserResource($this->whenLoaded('creator')),
-            'details' => SaleDetailResource::collection($this->whenLoaded('details')),
-            'allocations' => PaymentAllocationResource::collection($this->whenLoaded('allocations')),
+            'customer' => $this->whenLoaded('customer', fn (): array => (new CustomerResource($this->customer))->resolve()),
+            'warehouse' => $this->whenLoaded('warehouse', fn (): array => (new WarehouseResource($this->warehouse))->resolve()),
+            'creator' => $this->whenLoaded('creator', fn (): array => (new UserResource($this->creator))->resolve()),
+            'details' => $this->whenLoaded('details', fn (): array => SaleDetailResource::collection($this->details)->resolve()),
+            'allocations' => $this->whenLoaded('allocations', fn (): array => PaymentAllocationResource::collection($this->allocations)->resolve()),
             'details_count' => $this->whenCounted('details'),
         ];
     }

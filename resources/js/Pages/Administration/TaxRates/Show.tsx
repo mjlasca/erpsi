@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceShow from '@/Components/Ui/ResourceShow';
 import { Badge, DeleteButton, LinkButton } from '@/Components/Ui/Primitives';
@@ -16,13 +17,17 @@ export default function TaxRatesShow({ taxRate }: { taxRate: TaxRate }) {
                         <LinkButton href={index.url()} variant="secondary">
                             Volver
                         </LinkButton>
-                        <LinkButton href={edit.url(taxRate.id)}>
-                            Editar
-                        </LinkButton>
-                        <DeleteButton
-                            url={destroy.url(taxRate.id)}
-                            confirmMessage="¿Eliminar este impuesto?"
-                        />
+                        <Can permission="administration.tax_rates.update">
+                            <LinkButton href={edit.url(taxRate.id)}>
+                                Editar
+                            </LinkButton>
+                        </Can>
+                        <Can permission="administration.tax_rates.delete">
+                            <DeleteButton
+                                url={destroy.url(taxRate.id)}
+                                confirmMessage="¿Eliminar este impuesto?"
+                            />
+                        </Can>
                     </>
                 }
                 fields={[

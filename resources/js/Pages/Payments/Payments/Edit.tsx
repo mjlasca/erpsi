@@ -1,6 +1,7 @@
 import { FormEvent } from 'react';
 import { Link, useForm } from '@inertiajs/react';
 import ErpLayout from '@/Layouts/ErpLayout';
+import RemoteSelect from '@/Components/Ui/RemoteSelect';
 import {
     Button,
     Card,
@@ -14,6 +15,8 @@ import {
 import type { Customer, Payment, Supplier } from '@/types/models';
 import type { SelectOption } from '@/types/erp';
 import { index, update } from '@/routes/payments/payments';
+import { search as customerSearch } from '@/routes/sales/customers';
+import { search as supplierSearch } from '@/routes/purchasing/suppliers';
 
 type PaymentFormData = {
     payment_type: string;
@@ -28,14 +31,10 @@ type PaymentFormData = {
 
 export default function PaymentsEdit({
     payment,
-    customers,
-    suppliers,
     paymentTypes,
     paymentMethods,
 }: {
     payment: Payment;
-    customers: Customer[];
-    suppliers: Supplier[];
     paymentTypes: SelectOption[];
     paymentMethods: SelectOption[];
 }) {
@@ -101,26 +100,36 @@ export default function PaymentsEdit({
                             required
                             error={errorFor('customer_id')}
                         >
-                            <Select
+                            <RemoteSelect<Customer>
                                 id="customer_id"
                                 value={form.data.customer_id}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'customer_id',
-                                        event.target.value,
-                                    )
+                                onChange={(value) =>
+                                    form.setData('customer_id', value)
                                 }
-                            >
-                                <option value="">Selecciona cliente</option>
-                                {customers.map((customer) => (
-                                    <option
-                                        key={customer.id}
-                                        value={customer.id}
-                                    >
-                                        {customer.full_name}
-                                    </option>
-                                ))}
-                            </Select>
+                                searchUrl={customerSearch.url()}
+                                mapOption={(customer) => ({
+                                    value: String(customer.id),
+                                    label: customer.full_name,
+                                    data: customer,
+                                })}
+                                initialOptions={
+                                    payment.customer
+                                        ? [
+                                              {
+                                                  value: String(
+                                                      payment.customer.id,
+                                                  ),
+                                                  label: payment.customer
+                                                      .full_name,
+                                                  data: payment.customer,
+                                              },
+                                          ]
+                                        : []
+                                }
+                                placeholder="Busca cliente..."
+                                ariaLabel="Cliente"
+                                required
+                            />
                         </Field>
                     ) : (
                         <Field
@@ -129,26 +138,35 @@ export default function PaymentsEdit({
                             required
                             error={errorFor('supplier_id')}
                         >
-                            <Select
+                            <RemoteSelect<Supplier>
                                 id="supplier_id"
                                 value={form.data.supplier_id}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'supplier_id',
-                                        event.target.value,
-                                    )
+                                onChange={(value) =>
+                                    form.setData('supplier_id', value)
                                 }
-                            >
-                                <option value="">Selecciona proveedor</option>
-                                {suppliers.map((supplier) => (
-                                    <option
-                                        key={supplier.id}
-                                        value={supplier.id}
-                                    >
-                                        {supplier.name}
-                                    </option>
-                                ))}
-                            </Select>
+                                searchUrl={supplierSearch.url()}
+                                mapOption={(supplier) => ({
+                                    value: String(supplier.id),
+                                    label: supplier.name,
+                                    data: supplier,
+                                })}
+                                initialOptions={
+                                    payment.supplier
+                                        ? [
+                                              {
+                                                  value: String(
+                                                      payment.supplier.id,
+                                                  ),
+                                                  label: payment.supplier.name,
+                                                  data: payment.supplier,
+                                              },
+                                          ]
+                                        : []
+                                }
+                                placeholder="Busca proveedor..."
+                                ariaLabel="Proveedor"
+                                required
+                            />
                         </Field>
                     )}
 

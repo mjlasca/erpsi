@@ -5,8 +5,6 @@ namespace App\Modules\Sales\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Administration\Models\TaxRate;
 use App\Modules\Administration\Resources\TaxRateResource;
-use App\Modules\Catalog\Models\Product;
-use App\Modules\Catalog\Resources\ProductResource;
 use App\Modules\Inventory\Models\Warehouse;
 use App\Modules\Sales\Actions\CancelSale;
 use App\Modules\Sales\Actions\ConfirmSale;
@@ -54,6 +52,8 @@ class SaleController extends Controller
             })
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')->value()))
             ->when($request->integer('customer_id'), fn ($query, int $customerId) => $query->where('customer_id', $customerId))
+            ->when($request->date('from'), fn ($query, $from) => $query->where('sale_date', '>=', $from->toDateString()))
+            ->when($request->date('to'), fn ($query, $to) => $query->where('sale_date', '<=', $to->toDateString()))
             ->latest('sale_date')
             ->latest('id')
             ->paginate(15)
@@ -61,7 +61,7 @@ class SaleController extends Controller
 
         return Inertia::render('Sales/Sales/Index', [
             'sales' => $sales->through(fn ($sale): array => (new SaleResource($sale))->resolve()),
-            'filters' => $request->only('search', 'status', 'customer_id'),
+            'filters' => $request->only('search', 'status', 'customer_id', 'from', 'to'),
             'customers' => Customer::query()->orderBy('last_name')->orderBy('first_name')->get(['id', 'first_name', 'last_name', 'company_name']),
             'statuses' => SaleStatus::options(),
         ]);
@@ -125,7 +125,7 @@ class SaleController extends Controller
     {
         $this->authorize('update', $sale);
 
-        $sale->load(['customer', 'warehouse', 'details.product', 'details.variant', 'details.taxRate']);
+        $sale->load(['customer', 'warehouse', 'details.product.variants', 'details.variant', 'details.taxRate']);
 
         return Inertia::render('Sales/Sales/Edit', [
             'sale' => (new SaleResource($sale))->resolve(),
@@ -240,11 +240,7 @@ class SaleController extends Controller
     protected function formOptions(): array
     {
         return [
-            'customers' => Customer::query()->active()->orderBy('last_name')->orderBy('first_name')->get(),
             'warehouses' => Warehouse::query()->active()->orderBy('name')->get(['id', 'name', 'code']),
-            'products' => ProductResource::collection(
-                Product::query()->with(['unit', 'variants'])->active()->orderBy('name')->get(),
-            )->resolve(),
             'taxRates' => TaxRateResource::collection(
                 TaxRate::query()->active()->orderBy('name')->get(),
             )->resolve(),

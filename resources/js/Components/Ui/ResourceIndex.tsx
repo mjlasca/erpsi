@@ -11,6 +11,7 @@ import {
     Select,
 } from '@/Components/Ui/Primitives';
 import { text } from '@/lib/format';
+import { useCan } from '@/lib/permissions';
 import type { Column, Filters, Paginated } from '@/types/erp';
 
 export default function ResourceIndex<T extends { id: number }>({
@@ -23,6 +24,7 @@ export default function ResourceIndex<T extends { id: number }>({
     searchPlaceholder = 'Buscar...',
     filterControls,
     createHref,
+    createPermission,
     createLabel = 'Nuevo registro',
     actions,
     emptyMessage,
@@ -36,10 +38,16 @@ export default function ResourceIndex<T extends { id: number }>({
     searchPlaceholder?: string;
     filterControls?: ReactNode;
     createHref?: string;
+    createPermission?: string;
     createLabel?: string;
     actions?: (row: T) => ReactNode;
     emptyMessage?: string;
 }) {
+    const can = useCan();
+    const showCreate = Boolean(
+        createHref && (!createPermission || can(createPermission)),
+    );
+
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -62,7 +70,7 @@ export default function ResourceIndex<T extends { id: number }>({
                 title={title}
                 description={description}
                 actions={
-                    createHref ? (
+                    showCreate && createHref ? (
                         <LinkButton href={createHref}>{createLabel}</LinkButton>
                     ) : undefined
                 }

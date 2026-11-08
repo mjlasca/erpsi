@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceIndex, { FilterSelect } from '@/Components/Ui/ResourceIndex';
 import { DeleteButton, RowLink } from '@/Components/Ui/Primitives';
@@ -31,6 +32,7 @@ export default function AttributesIndex({
                 filters={filters}
                 searchPlaceholder="Buscar atributo..."
                 createHref={create.url()}
+                createPermission="catalog.attributes.create"
                 createLabel="Nuevo atributo"
                 filterControls={
                     <FilterSelect
@@ -75,11 +77,17 @@ export default function AttributesIndex({
                 actions={(attribute) => (
                     <>
                         <RowLink href={show.url(attribute.id)}>Ver</RowLink>
-                        <RowLink href={edit.url(attribute.id)}>Editar</RowLink>
-                        <DeleteButton
-                            url={destroy.url(attribute.id)}
-                            confirmMessage="¿Eliminar este atributo?"
-                        />
+                        <Can permission="catalog.attributes.update">
+                            <RowLink href={edit.url(attribute.id)}>
+                                Editar
+                            </RowLink>
+                        </Can>
+                        <Can permission="catalog.attributes.delete">
+                            <DeleteButton
+                                url={destroy.url(attribute.id)}
+                                confirmMessage="¿Eliminar este atributo?"
+                            />
+                        </Can>
                     </>
                 )}
             />

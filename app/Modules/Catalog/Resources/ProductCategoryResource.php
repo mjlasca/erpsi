@@ -23,7 +23,7 @@ class ProductCategoryResource extends JsonResource
             'description' => $this->description,
             'is_active' => $this->is_active,
             'parent' => new self($this->whenLoaded('parent')),
-            'children' => self::collection($this->whenLoaded('children')),
+            'children' => $this->whenLoaded('children', fn (): array => self::collection($this->children)->resolve()),
             'products_count' => $this->whenCounted('products'),
             'children_count' => $this->whenCounted('children'),
         ];

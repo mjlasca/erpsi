@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import type {
     ButtonHTMLAttributes,
     InputHTMLAttributes,
@@ -374,6 +375,129 @@ export function Pagination({ paginator }: { paginator: Paginated<unknown> }) {
     );
 }
 
+export function ConfirmDialog({
+    open,
+    title = 'Confirmar acción',
+    message,
+    confirmLabel = 'Confirmar',
+    tone = 'danger',
+    onConfirm,
+    onCancel,
+}: {
+    open: boolean;
+    title?: string;
+    message: string;
+    confirmLabel?: string;
+    tone?: 'danger' | 'primary';
+    onConfirm: () => void;
+    onCancel: () => void;
+}) {
+    useEffect(() => {
+        if (!open) {
+            return;
+        }
+
+        const closeOnEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                onCancel();
+            }
+        };
+
+        document.addEventListener('keydown', closeOnEscape);
+
+        return () => document.removeEventListener('keydown', closeOnEscape);
+    }, [open, onCancel]);
+
+    if (!open) {
+        return null;
+    }
+
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 p-4"
+            onClick={onCancel}
+        >
+            <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="confirm-dialog-title"
+                className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
+                onClick={(event) => event.stopPropagation()}
+            >
+                <h2
+                    id="confirm-dialog-title"
+                    className="text-lg font-semibold text-gray-900"
+                >
+                    {title}
+                </h2>
+                <p className="mt-2 text-sm text-gray-600">{message}</p>
+
+                <div className="mt-6 flex justify-end gap-2">
+                    <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={onCancel}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        type="button"
+                        variant={tone === 'danger' ? 'danger' : 'primary'}
+                        onClick={onConfirm}
+                    >
+                        {confirmLabel}
+                    </Button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export function ConfirmButton({
+    message,
+    title,
+    confirmLabel,
+    tone = 'danger',
+    variant = 'danger',
+    onConfirm,
+    children,
+    ...props
+}: {
+    message: string;
+    title?: string;
+    confirmLabel?: string;
+    tone?: 'danger' | 'primary';
+    variant?: keyof typeof buttonVariants;
+    onConfirm: () => void;
+} & ButtonHTMLAttributes<HTMLButtonElement>) {
+    const [open, setOpen] = useState(false);
+
+    return (
+        <>
+            <Button
+                type="button"
+                variant={variant}
+                onClick={() => setOpen(true)}
+                {...props}
+            >
+                {children}
+            </Button>
+            <ConfirmDialog
+                open={open}
+                title={title}
+                message={message}
+                confirmLabel={confirmLabel}
+                tone={tone}
+                onConfirm={() => {
+                    setOpen(false);
+                    onConfirm();
+                }}
+                onCancel={() => setOpen(false)}
+            />
+        </>
+    );
+}
+
 export function DeleteButton({
     url,
     label = 'Eliminar',
@@ -384,17 +508,14 @@ export function DeleteButton({
     confirmMessage?: string;
 }) {
     return (
-        <button
-            type="button"
-            onClick={() => {
-                if (window.confirm(confirmMessage)) {
-                    router.delete(url, { preserveScroll: true });
-                }
-            }}
-            className="inline-flex items-center justify-center rounded-lg px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+        <ConfirmButton
+            message={confirmMessage}
+            confirmLabel="Eliminar"
+            onConfirm={() => router.delete(url, { preserveScroll: true })}
+            className="px-3 py-1.5"
         >
             {label}
-        </button>
+        </ConfirmButton>
     );
 }
 

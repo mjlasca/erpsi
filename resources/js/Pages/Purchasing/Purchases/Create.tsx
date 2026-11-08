@@ -5,6 +5,7 @@ import LineItemsEditor, {
     DetailRow,
     emptyDetail,
 } from '@/Components/Ui/LineItemsEditor';
+import RemoteSelect from '@/Components/Ui/RemoteSelect';
 import {
     Button,
     Card,
@@ -15,8 +16,9 @@ import {
     Spinner,
     Textarea,
 } from '@/Components/Ui/Primitives';
-import type { Product, TaxRate, Warehouse } from '@/types/models';
+import type { Supplier, TaxRate, Warehouse } from '@/types/models';
 import { index, store } from '@/routes/purchasing/purchases';
+import { search as supplierSearch } from '@/routes/purchasing/suppliers';
 
 type PurchaseFormData = {
     supplier_id: string;
@@ -28,14 +30,10 @@ type PurchaseFormData = {
 };
 
 export default function PurchasesCreate({
-    suppliers,
     warehouses,
-    products,
     taxRates,
 }: {
-    suppliers: Array<{ id: number; name: string }>;
     warehouses: Warehouse[];
-    products: Product[];
     taxRates: TaxRate[];
 }) {
     const form = useForm<PurchaseFormData>({
@@ -70,20 +68,22 @@ export default function PurchasesCreate({
                         required
                         error={errorFor('supplier_id')}
                     >
-                        <Select
+                        <RemoteSelect<Supplier>
                             id="supplier_id"
                             value={form.data.supplier_id}
-                            onChange={(event) =>
-                                form.setData('supplier_id', event.target.value)
+                            onChange={(value) =>
+                                form.setData('supplier_id', value)
                             }
-                        >
-                            <option value="">Selecciona proveedor</option>
-                            {suppliers.map((supplier) => (
-                                <option key={supplier.id} value={supplier.id}>
-                                    {supplier.name}
-                                </option>
-                            ))}
-                        </Select>
+                            searchUrl={supplierSearch.url()}
+                            mapOption={(supplier) => ({
+                                value: String(supplier.id),
+                                label: supplier.name,
+                                data: supplier,
+                            })}
+                            placeholder="Busca proveedor..."
+                            ariaLabel="Proveedor"
+                            required
+                        />
                     </Field>
 
                     <Field
@@ -163,7 +163,6 @@ export default function PurchasesCreate({
                 <LineItemsEditor
                     details={form.data.details}
                     onChange={(details) => form.setData('details', details)}
-                    products={products}
                     taxRates={taxRates}
                     priceField="cost_price"
                     errors={form.errors as Record<string, string>}

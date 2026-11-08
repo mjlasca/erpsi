@@ -53,3 +53,20 @@ it('protects the administrator role from losing total access', function () {
         ])
         ->assertSessionHasErrors('name');
 });
+
+it('creates a default user for local access', function () {
+    $this->seed();
+
+    $user = User::query()->where('email', 'admin@erpsi.test')->firstOrFail();
+
+    expect($user->name)->toBe('Administrador');
+    expect($user->is_active)->toBeTrue();
+    expect($user->role?->name)->toBe('Administrator');
+
+    $this->post(route('login.store'), [
+        'email' => 'admin@erpsi.test',
+        'password' => 'password',
+    ])->assertRedirect(route('dashboard'));
+
+    $this->assertAuthenticatedAs($user);
+});

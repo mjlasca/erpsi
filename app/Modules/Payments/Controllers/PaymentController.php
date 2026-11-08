@@ -11,9 +11,7 @@ use App\Modules\Payments\Requests\StorePaymentRequest;
 use App\Modules\Payments\Requests\UpdatePaymentRequest;
 use App\Modules\Payments\Resources\PaymentResource;
 use App\Modules\Purchasing\Models\Purchase;
-use App\Modules\Purchasing\Models\Supplier;
 use App\Modules\Purchasing\Resources\PurchaseResource;
-use App\Modules\Sales\Models\Customer;
 use App\Modules\Sales\Models\Sale;
 use App\Modules\Sales\Resources\SaleResource;
 use Illuminate\Http\RedirectResponse;
@@ -59,8 +57,6 @@ class PaymentController extends Controller
         $this->authorize('create', Payment::class);
 
         return Inertia::render('Payments/Payments/Create', [
-            'customers' => Customer::query()->active()->orderBy('last_name')->orderBy('first_name')->get(),
-            'suppliers' => Supplier::query()->active()->orderBy('name')->get(['id', 'name']),
             'paymentTypes' => PaymentType::options(),
             'paymentMethods' => PaymentMethod::options(),
         ]);
@@ -122,8 +118,6 @@ class PaymentController extends Controller
 
         return Inertia::render('Payments/Payments/Edit', [
             'payment' => (new PaymentResource($payment->load(['customer', 'supplier', 'allocations'])))->resolve(),
-            'customers' => Customer::query()->active()->orderBy('last_name')->orderBy('first_name')->get(),
-            'suppliers' => Supplier::query()->active()->orderBy('name')->get(['id', 'name']),
             'paymentTypes' => PaymentType::options(),
             'paymentMethods' => PaymentMethod::options(),
         ]);

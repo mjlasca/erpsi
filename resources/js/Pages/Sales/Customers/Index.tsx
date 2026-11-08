@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceIndex from '@/Components/Ui/ResourceIndex';
 import { Badge, DeleteButton, RowLink } from '@/Components/Ui/Primitives';
@@ -22,6 +23,7 @@ export default function CustomersIndex({
                 filters={filters}
                 searchPlaceholder="Buscar por nombre, empresa o correo..."
                 createHref={create.url()}
+                createPermission="sales.customers.create"
                 createLabel="Nuevo cliente"
                 columns={[
                     {
@@ -66,11 +68,17 @@ export default function CustomersIndex({
                 actions={(customer) => (
                     <>
                         <RowLink href={show.url(customer.id)}>Ver</RowLink>
-                        <RowLink href={edit.url(customer.id)}>Editar</RowLink>
-                        <DeleteButton
-                            url={destroy.url(customer.id)}
-                            confirmMessage="¿Eliminar este cliente?"
-                        />
+                        <Can permission="sales.customers.update">
+                            <RowLink href={edit.url(customer.id)}>
+                                Editar
+                            </RowLink>
+                        </Can>
+                        <Can permission="sales.customers.delete">
+                            <DeleteButton
+                                url={destroy.url(customer.id)}
+                                confirmMessage="¿Eliminar este cliente?"
+                            />
+                        </Can>
                     </>
                 )}
             />

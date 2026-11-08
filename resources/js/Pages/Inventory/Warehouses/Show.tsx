@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceShow from '@/Components/Ui/ResourceShow';
 import { Badge, DeleteButton, LinkButton } from '@/Components/Ui/Primitives';
@@ -19,13 +20,17 @@ export default function WarehousesShow({
                         <LinkButton href={index.url()} variant="secondary">
                             Volver
                         </LinkButton>
-                        <LinkButton href={edit.url(warehouse.id)}>
-                            Editar
-                        </LinkButton>
-                        <DeleteButton
-                            url={destroy.url(warehouse.id)}
-                            confirmMessage="¿Eliminar este almacén?"
-                        />
+                        <Can permission="inventory.warehouses.update">
+                            <LinkButton href={edit.url(warehouse.id)}>
+                                Editar
+                            </LinkButton>
+                        </Can>
+                        <Can permission="inventory.warehouses.delete">
+                            <DeleteButton
+                                url={destroy.url(warehouse.id)}
+                                confirmMessage="¿Eliminar este almacén?"
+                            />
+                        </Can>
                     </>
                 }
                 fields={[

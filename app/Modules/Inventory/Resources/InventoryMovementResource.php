@@ -34,11 +34,11 @@ class InventoryMovementResource extends JsonResource
             'movement_date' => $this->movement_date,
             'notes' => $this->notes,
             'created_by' => $this->created_by,
-            'product' => new ProductResource($this->whenLoaded('product')),
-            'variant' => new ProductVariantResource($this->whenLoaded('variant')),
-            'warehouse' => new WarehouseResource($this->whenLoaded('warehouse')),
-            'lot' => new InventoryLotResource($this->whenLoaded('lot')),
-            'creator' => new UserResource($this->whenLoaded('creator')),
+            'product' => $this->whenLoaded('product', fn (): array => (new ProductResource($this->product))->resolve()),
+            'variant' => $this->whenLoaded('variant', fn (): array => (new ProductVariantResource($this->variant))->resolve()),
+            'warehouse' => $this->whenLoaded('warehouse', fn (): array => (new WarehouseResource($this->warehouse))->resolve()),
+            'lot' => $this->whenLoaded('lot', fn (): array => (new InventoryLotResource($this->lot))->resolve()),
+            'creator' => $this->whenLoaded('creator', fn (): array => (new UserResource($this->creator))->resolve()),
         ];
     }
 }

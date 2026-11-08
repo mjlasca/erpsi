@@ -22,7 +22,7 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'role_id' => $this->role_id,
             'is_active' => $this->is_active,
-            'role' => new RoleResource($this->whenLoaded('role')),
+            'role' => $this->whenLoaded('role', fn (): array => (new RoleResource($this->role))->resolve()),
             'created_at' => $this->created_at,
         ];
     }

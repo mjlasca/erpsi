@@ -1,11 +1,12 @@
 import { router } from '@inertiajs/react';
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceShow from '@/Components/Ui/ResourceShow';
 import {
     Badge,
-    Button,
     Card,
     CardHeader,
+    ConfirmButton,
     DeleteButton,
     LinkButton,
 } from '@/Components/Ui/Primitives';
@@ -31,12 +32,6 @@ const statusTone = (status: string) => {
 };
 
 export default function PurchasesShow({ purchase }: { purchase: Purchase }) {
-    const postAction = (url: string, message: string) => {
-        if (window.confirm(message)) {
-            router.post(url, {}, { preserveScroll: true });
-        }
-    };
-
     return (
         <ErpLayout>
             <ResourceShow
@@ -49,40 +44,55 @@ export default function PurchasesShow({ purchase }: { purchase: Purchase }) {
                         </LinkButton>
                         {purchase.status === 'DRAFT' && (
                             <>
-                                <LinkButton href={edit.url(purchase.id)}>
-                                    Editar
-                                </LinkButton>
-                                <Button
-                                    type="button"
-                                    onClick={() =>
-                                        postAction(
-                                            receive.url(purchase.id),
-                                            '¿Recibir esta compra y actualizar el inventario?',
-                                        )
-                                    }
-                                >
-                                    Recibir
-                                </Button>
+                                <Can permission="purchasing.purchases.update">
+                                    <LinkButton href={edit.url(purchase.id)}>
+                                        Editar
+                                    </LinkButton>
+                                </Can>
+                                <Can permission="purchasing.purchases.receive">
+                                    <ConfirmButton
+                                        message="¿Recibir esta compra y actualizar el inventario?"
+                                        confirmLabel="Recibir"
+                                        title="Recibir compra"
+                                        tone="primary"
+                                        variant="primary"
+                                        onConfirm={() =>
+                                            router.post(
+                                                receive.url(purchase.id),
+                                                {},
+                                                { preserveScroll: true },
+                                            )
+                                        }
+                                    >
+                                        Recibir
+                                    </ConfirmButton>
+                                </Can>
                             </>
                         )}
                         {purchase.status !== 'CANCELLED' && (
-                            <Button
-                                type="button"
-                                variant="danger"
-                                onClick={() =>
-                                    postAction(
-                                        cancel.url(purchase.id),
-                                        '¿Cancelar esta compra?',
-                                    )
-                                }
-                            >
-                                Cancelar
-                            </Button>
+                            <Can permission="purchasing.purchases.cancel">
+                                <ConfirmButton
+                                    message="¿Cancelar esta compra?"
+                                    confirmLabel="Cancelar compra"
+                                    title="Cancelar compra"
+                                    onConfirm={() =>
+                                        router.post(
+                                            cancel.url(purchase.id),
+                                            {},
+                                            { preserveScroll: true },
+                                        )
+                                    }
+                                >
+                                    Cancelar
+                                </ConfirmButton>
+                            </Can>
                         )}
-                        <DeleteButton
-                            url={destroy.url(purchase.id)}
-                            confirmMessage="¿Eliminar esta compra?"
-                        />
+                        <Can permission="purchasing.purchases.delete">
+                            <DeleteButton
+                                url={destroy.url(purchase.id)}
+                                confirmMessage="¿Eliminar esta compra?"
+                            />
+                        </Can>
                     </>
                 }
                 fields={[

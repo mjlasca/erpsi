@@ -24,7 +24,7 @@ class ProductAttributeResource extends JsonResource
             'name' => $this->name,
             'value' => $this->value,
             'sort_order' => $this->sort_order,
-            'unit' => new UnitResource($this->whenLoaded('unit')),
+            'unit' => $this->whenLoaded('unit', fn (): array => (new UnitResource($this->unit))->resolve()),
         ];
     }
 }

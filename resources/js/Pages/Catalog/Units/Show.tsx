@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceShow from '@/Components/Ui/ResourceShow';
 import { Badge, DeleteButton, LinkButton } from '@/Components/Ui/Primitives';
@@ -15,11 +16,17 @@ export default function UnitsShow({ unit }: { unit: Unit }) {
                         <LinkButton href={index.url()} variant="secondary">
                             Volver
                         </LinkButton>
-                        <LinkButton href={edit.url(unit.id)}>Editar</LinkButton>
-                        <DeleteButton
-                            url={destroy.url(unit.id)}
-                            confirmMessage="¿Eliminar esta unidad?"
-                        />
+                        <Can permission="catalog.units.update">
+                            <LinkButton href={edit.url(unit.id)}>
+                                Editar
+                            </LinkButton>
+                        </Can>
+                        <Can permission="catalog.units.delete">
+                            <DeleteButton
+                                url={destroy.url(unit.id)}
+                                confirmMessage="¿Eliminar esta unidad?"
+                            />
+                        </Can>
                     </>
                 }
                 fields={[

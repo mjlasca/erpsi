@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceIndex from '@/Components/Ui/ResourceIndex';
 import { Badge, DeleteButton, RowLink } from '@/Components/Ui/Primitives';
@@ -22,6 +23,7 @@ export default function RolesIndex({
                 filters={filters}
                 searchPlaceholder="Buscar rol..."
                 createHref={create.url()}
+                createPermission="administration.roles.create"
                 createLabel="Nuevo rol"
                 columns={[
                     {
@@ -59,11 +61,15 @@ export default function RolesIndex({
                 actions={(role) => (
                     <>
                         <RowLink href={show.url(role.id)}>Ver</RowLink>
-                        <RowLink href={edit.url(role.id)}>Editar</RowLink>
-                        <DeleteButton
-                            url={destroy.url(role.id)}
-                            confirmMessage="¿Eliminar este rol?"
-                        />
+                        <Can permission="administration.roles.update">
+                            <RowLink href={edit.url(role.id)}>Editar</RowLink>
+                        </Can>
+                        <Can permission="administration.roles.delete">
+                            <DeleteButton
+                                url={destroy.url(role.id)}
+                                confirmMessage="¿Eliminar este rol?"
+                            />
+                        </Can>
                     </>
                 )}
             />

@@ -1,6 +1,12 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceIndex, { FilterSelect } from '@/Components/Ui/ResourceIndex';
-import { Badge, DeleteButton, RowLink } from '@/Components/Ui/Primitives';
+import {
+    Badge,
+    DeleteButton,
+    Input,
+    RowLink,
+} from '@/Components/Ui/Primitives';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { Customer, Sale } from '@/types/models';
 import type { Filters, Paginated, SelectOption } from '@/types/erp';
@@ -40,6 +46,7 @@ export default function SalesIndex({
                 filters={filters}
                 searchPlaceholder="Buscar folio o cliente..."
                 createHref={create.url()}
+                createPermission="sales.sales.create"
                 createLabel="Nueva venta"
                 filterControls={
                     <>
@@ -57,6 +64,20 @@ export default function SalesIndex({
                                 value: customer.id,
                                 label: customer.full_name,
                             }))}
+                        />
+                        <Input
+                            type="date"
+                            name="from"
+                            aria-label="Desde"
+                            defaultValue={filters.from?.toString() ?? ''}
+                            className="h-10 w-40"
+                        />
+                        <Input
+                            type="date"
+                            name="to"
+                            aria-label="Hasta"
+                            defaultValue={filters.to?.toString() ?? ''}
+                            className="h-10 w-40"
                         />
                     </>
                 }
@@ -104,12 +125,18 @@ export default function SalesIndex({
                     <>
                         <RowLink href={show.url(sale.id)}>Ver</RowLink>
                         {sale.status === 'DRAFT' && (
-                            <RowLink href={edit.url(sale.id)}>Editar</RowLink>
+                            <Can permission="sales.sales.update">
+                                <RowLink href={edit.url(sale.id)}>
+                                    Editar
+                                </RowLink>
+                            </Can>
                         )}
-                        <DeleteButton
-                            url={destroy.url(sale.id)}
-                            confirmMessage="¿Eliminar esta venta?"
-                        />
+                        <Can permission="sales.sales.delete">
+                            <DeleteButton
+                                url={destroy.url(sale.id)}
+                                confirmMessage="¿Eliminar esta venta?"
+                            />
+                        </Can>
                     </>
                 )}
             />

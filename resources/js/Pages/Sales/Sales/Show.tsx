@@ -1,11 +1,12 @@
 import { router } from '@inertiajs/react';
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceShow from '@/Components/Ui/ResourceShow';
 import {
     Badge,
-    Button,
     Card,
     CardHeader,
+    ConfirmButton,
     DeleteButton,
     LinkButton,
 } from '@/Components/Ui/Primitives';
@@ -27,12 +28,6 @@ const statusTone = (status: string) => {
 };
 
 export default function SalesShow({ sale }: { sale: Sale }) {
-    const postAction = (url: string, message: string) => {
-        if (window.confirm(message)) {
-            router.post(url, {}, { preserveScroll: true });
-        }
-    };
-
     return (
         <ErpLayout>
             <ResourceShow
@@ -45,40 +40,55 @@ export default function SalesShow({ sale }: { sale: Sale }) {
                         </LinkButton>
                         {sale.status === 'DRAFT' && (
                             <>
-                                <LinkButton href={edit.url(sale.id)}>
-                                    Editar
-                                </LinkButton>
-                                <Button
-                                    type="button"
-                                    onClick={() =>
-                                        postAction(
-                                            confirm.url(sale.id),
-                                            '¿Confirmar esta venta? Se descontará inventario usando asignación FIFO automática.',
-                                        )
-                                    }
-                                >
-                                    Confirmar
-                                </Button>
+                                <Can permission="sales.sales.update">
+                                    <LinkButton href={edit.url(sale.id)}>
+                                        Editar
+                                    </LinkButton>
+                                </Can>
+                                <Can permission="sales.sales.confirm">
+                                    <ConfirmButton
+                                        message="¿Confirmar esta venta? Se descontará inventario usando asignación FIFO automática."
+                                        confirmLabel="Confirmar"
+                                        title="Confirmar venta"
+                                        tone="primary"
+                                        variant="primary"
+                                        onConfirm={() =>
+                                            router.post(
+                                                confirm.url(sale.id),
+                                                {},
+                                                { preserveScroll: true },
+                                            )
+                                        }
+                                    >
+                                        Confirmar
+                                    </ConfirmButton>
+                                </Can>
                             </>
                         )}
                         {sale.status !== 'CANCELLED' && (
-                            <Button
-                                type="button"
-                                variant="danger"
-                                onClick={() =>
-                                    postAction(
-                                        cancel.url(sale.id),
-                                        '¿Cancelar esta venta?',
-                                    )
-                                }
-                            >
-                                Cancelar
-                            </Button>
+                            <Can permission="sales.sales.cancel">
+                                <ConfirmButton
+                                    message="¿Cancelar esta venta?"
+                                    confirmLabel="Cancelar venta"
+                                    title="Cancelar venta"
+                                    onConfirm={() =>
+                                        router.post(
+                                            cancel.url(sale.id),
+                                            {},
+                                            { preserveScroll: true },
+                                        )
+                                    }
+                                >
+                                    Cancelar
+                                </ConfirmButton>
+                            </Can>
                         )}
-                        <DeleteButton
-                            url={destroy.url(sale.id)}
-                            confirmMessage="¿Eliminar esta venta?"
-                        />
+                        <Can permission="sales.sales.delete">
+                            <DeleteButton
+                                url={destroy.url(sale.id)}
+                                confirmMessage="¿Eliminar esta venta?"
+                            />
+                        </Can>
                     </>
                 }
                 fields={[

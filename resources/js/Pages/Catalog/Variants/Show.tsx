@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceShow from '@/Components/Ui/ResourceShow';
 import { Badge, DeleteButton, LinkButton } from '@/Components/Ui/Primitives';
@@ -16,13 +17,17 @@ export default function VariantsShow({ variant }: { variant: ProductVariant }) {
                         <LinkButton href={index.url()} variant="secondary">
                             Volver
                         </LinkButton>
-                        <LinkButton href={edit.url(variant.id)}>
-                            Editar
-                        </LinkButton>
-                        <DeleteButton
-                            url={destroy.url(variant.id)}
-                            confirmMessage="¿Eliminar esta variante?"
-                        />
+                        <Can permission="catalog.variants.update">
+                            <LinkButton href={edit.url(variant.id)}>
+                                Editar
+                            </LinkButton>
+                        </Can>
+                        <Can permission="catalog.variants.delete">
+                            <DeleteButton
+                                url={destroy.url(variant.id)}
+                                confirmMessage="¿Eliminar esta variante?"
+                            />
+                        </Can>
                     </>
                 }
                 fields={[

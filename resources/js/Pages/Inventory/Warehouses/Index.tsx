@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceIndex from '@/Components/Ui/ResourceIndex';
 import { Badge, DeleteButton, RowLink } from '@/Components/Ui/Primitives';
@@ -28,6 +29,7 @@ export default function WarehousesIndex({
                 filters={filters}
                 searchPlaceholder="Buscar almacén..."
                 createHref={create.url()}
+                createPermission="inventory.warehouses.create"
                 createLabel="Nuevo almacén"
                 columns={[
                     {
@@ -66,11 +68,17 @@ export default function WarehousesIndex({
                 actions={(warehouse) => (
                     <>
                         <RowLink href={show.url(warehouse.id)}>Ver</RowLink>
-                        <RowLink href={edit.url(warehouse.id)}>Editar</RowLink>
-                        <DeleteButton
-                            url={destroy.url(warehouse.id)}
-                            confirmMessage="¿Eliminar este almacén?"
-                        />
+                        <Can permission="inventory.warehouses.update">
+                            <RowLink href={edit.url(warehouse.id)}>
+                                Editar
+                            </RowLink>
+                        </Can>
+                        <Can permission="inventory.warehouses.delete">
+                            <DeleteButton
+                                url={destroy.url(warehouse.id)}
+                                confirmMessage="¿Eliminar este almacén?"
+                            />
+                        </Can>
                     </>
                 )}
             />

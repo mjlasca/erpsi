@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceShow from '@/Components/Ui/ResourceShow';
 import {
@@ -11,8 +12,8 @@ import {
 import { formatMoney, formatNumber } from '@/lib/format';
 import type { Product } from '@/types/models';
 import { destroy, edit, index } from '@/routes/catalog/products';
-import { create as createVariant } from '@/routes/catalog/variants';
-import { create as createAttribute } from '@/routes/catalog/attributes';
+import { create as createVariant } from '@/routes/catalog/products/variants';
+import { create as createAttribute } from '@/routes/catalog/products/attributes';
 
 export default function ProductsShow({ product }: { product: Product }) {
     return (
@@ -25,13 +26,17 @@ export default function ProductsShow({ product }: { product: Product }) {
                         <LinkButton href={index.url()} variant="secondary">
                             Volver
                         </LinkButton>
-                        <LinkButton href={edit.url(product.id)}>
-                            Editar
-                        </LinkButton>
-                        <DeleteButton
-                            url={destroy.url(product.id)}
-                            confirmMessage="¿Eliminar este producto?"
-                        />
+                        <Can permission="catalog.products.update">
+                            <LinkButton href={edit.url(product.id)}>
+                                Editar
+                            </LinkButton>
+                        </Can>
+                        <Can permission="catalog.products.delete">
+                            <DeleteButton
+                                url={destroy.url(product.id)}
+                                confirmMessage="¿Eliminar este producto?"
+                            />
+                        </Can>
                     </>
                 }
                 fields={[
@@ -96,14 +101,14 @@ export default function ProductsShow({ product }: { product: Product }) {
                     <CardHeader
                         title="Variantes"
                         action={
-                            <Link
-                                href={createVariant.url({
-                                    query: { product_id: product.id },
-                                })}
-                                className="text-sm font-medium text-blue-600 hover:text-blue-700"
-                            >
-                                Agregar variante
-                            </Link>
+                            <Can permission="catalog.variants.create">
+                                <Link
+                                    href={createVariant.url(product)}
+                                    className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                                >
+                                    Agregar variante
+                                </Link>
+                            </Can>
                         }
                     />
                     {!product.variants?.length ? (
@@ -138,14 +143,14 @@ export default function ProductsShow({ product }: { product: Product }) {
                     <CardHeader
                         title="Atributos"
                         action={
-                            <Link
-                                href={createAttribute.url({
-                                    query: { product_id: product.id },
-                                })}
-                                className="text-sm font-medium text-blue-600 hover:text-blue-700"
-                            >
-                                Agregar atributo
-                            </Link>
+                            <Can permission="catalog.attributes.create">
+                                <Link
+                                    href={createAttribute.url(product)}
+                                    className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                                >
+                                    Agregar atributo
+                                </Link>
+                            </Can>
                         }
                     />
                     {!product.attributes?.length ? (

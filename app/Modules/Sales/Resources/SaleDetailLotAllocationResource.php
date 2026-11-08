@@ -23,7 +23,7 @@ class SaleDetailLotAllocationResource extends JsonResource
             'inventory_lot_id' => $this->inventory_lot_id,
             'quantity' => $this->quantity,
             'notes' => $this->notes,
-            'lot' => new InventoryLotResource($this->whenLoaded('lot')),
+            'lot' => $this->whenLoaded('lot', fn (): array => (new InventoryLotResource($this->lot))->resolve()),
         ];
     }
 }

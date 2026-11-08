@@ -37,10 +37,10 @@ class InventoryLotResource extends JsonResource
             'received_at' => $this->received_at,
             'notes' => $this->notes,
             'metadata' => $this->metadata,
-            'product' => new ProductResource($this->whenLoaded('product')),
-            'variant' => new ProductVariantResource($this->whenLoaded('variant')),
-            'warehouse' => new WarehouseResource($this->whenLoaded('warehouse')),
-            'purchase_detail' => new PurchaseDetailResource($this->whenLoaded('purchaseDetail')),
+            'product' => $this->whenLoaded('product', fn (): array => (new ProductResource($this->product))->resolve()),
+            'variant' => $this->whenLoaded('variant', fn (): array => (new ProductVariantResource($this->variant))->resolve()),
+            'warehouse' => $this->whenLoaded('warehouse', fn (): array => (new WarehouseResource($this->warehouse))->resolve()),
+            'purchase_detail' => $this->whenLoaded('purchaseDetail', fn (): array => (new PurchaseDetailResource($this->purchaseDetail))->resolve()),
         ];
     }
 }

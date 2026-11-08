@@ -38,11 +38,11 @@ class PurchaseResource extends JsonResource
             'created_by' => $this->created_by,
             'received_at' => $this->received_at,
             'cancelled_at' => $this->cancelled_at,
-            'supplier' => new SupplierResource($this->whenLoaded('supplier')),
-            'warehouse' => new WarehouseResource($this->whenLoaded('warehouse')),
-            'creator' => new UserResource($this->whenLoaded('creator')),
-            'details' => PurchaseDetailResource::collection($this->whenLoaded('details')),
-            'allocations' => PaymentAllocationResource::collection($this->whenLoaded('allocations')),
+            'supplier' => $this->whenLoaded('supplier', fn (): array => (new SupplierResource($this->supplier))->resolve()),
+            'warehouse' => $this->whenLoaded('warehouse', fn (): array => (new WarehouseResource($this->warehouse))->resolve()),
+            'creator' => $this->whenLoaded('creator', fn (): array => (new UserResource($this->creator))->resolve()),
+            'details' => $this->whenLoaded('details', fn (): array => PurchaseDetailResource::collection($this->details)->resolve()),
+            'allocations' => $this->whenLoaded('allocations', fn (): array => PaymentAllocationResource::collection($this->allocations)->resolve()),
             'details_count' => $this->whenCounted('details'),
         ];
     }

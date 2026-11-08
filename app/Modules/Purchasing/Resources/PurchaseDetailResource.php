@@ -32,9 +32,9 @@ class PurchaseDetailResource extends JsonResource
             'tax_amount' => $this->tax_amount,
             'subtotal' => $this->subtotal,
             'total' => $this->total,
-            'product' => new ProductResource($this->whenLoaded('product')),
-            'variant' => new ProductVariantResource($this->whenLoaded('variant')),
-            'tax_rate_model' => new TaxRateResource($this->whenLoaded('taxRate')),
+            'product' => $this->whenLoaded('product', fn (): array => (new ProductResource($this->product))->resolve()),
+            'variant' => $this->whenLoaded('variant', fn (): array => (new ProductVariantResource($this->variant))->resolve()),
+            'tax_rate_model' => $this->whenLoaded('taxRate', fn (): array => (new TaxRateResource($this->taxRate))->resolve()),
         ];
     }
 }

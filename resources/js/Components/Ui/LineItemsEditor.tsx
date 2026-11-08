@@ -7,7 +7,33 @@ import {
     Select,
 } from '@/Components/Ui/Primitives';
 import { formatMoney, formatNumber } from '@/lib/format';
+import RemoteSelect from '@/Components/Ui/RemoteSelect';
+import { search as productSearch } from '@/routes/catalog/products';
 import type { Product, TaxRate } from '@/types/models';
+
+export type DetailProduct = {
+    id: number;
+    sku: string;
+    name: string;
+    unit_id: number;
+    product_type: string;
+    product_type_label: string;
+    cost_price: string;
+    sale_price: string;
+    min_stock: string;
+    is_inventory: boolean;
+    track_lots: boolean;
+    is_active: boolean;
+    variants?: Array<{
+        id: number;
+        product_id: number;
+        name: string;
+        sku: string;
+        cost_price?: string | null;
+        sale_price?: string | null;
+        is_active: boolean;
+    }>;
+};
 
 export type DetailRow = {
     id?: number;
@@ -17,6 +43,7 @@ export type DetailRow = {
     unit_price: string;
     discount: string;
     tax_rate_id: string;
+    product?: DetailProduct;
 };
 
 export function emptyDetail(taxRates: TaxRate[]): DetailRow {
@@ -51,7 +78,6 @@ export default function LineItemsEditor({
     title = 'Líneas',
     details,
     onChange,
-    products,
     taxRates,
     priceField,
     errors = {},
@@ -59,7 +85,6 @@ export default function LineItemsEditor({
     title?: string;
     details: DetailRow[];
     onChange: (details: DetailRow[]) => void;
-    products: Product[];
     taxRates: TaxRate[];
     priceField: 'cost_price' | 'sale_price';
     errors?: Record<string, string>;
@@ -72,13 +97,40 @@ export default function LineItemsEditor({
         );
     };
 
-    const changeProduct = (index: number, productId: string) => {
-        const product = products.find((item) => String(item.id) === productId);
-
+    const changeProduct = (
+        index: number,
+        productId: string,
+        product: Product | null,
+    ) => {
         updateRow(index, {
             product_id: productId,
             product_variant_id: '',
             unit_price: product?.[priceField] ?? '0',
+            product: product
+                ? {
+                      id: product.id,
+                      sku: product.sku,
+                      name: product.name,
+                      unit_id: product.unit_id,
+                      product_type: product.product_type,
+                      product_type_label: product.product_type_label,
+                      cost_price: product.cost_price,
+                      sale_price: product.sale_price,
+                      min_stock: product.min_stock,
+                      is_inventory: product.is_inventory,
+                      track_lots: product.track_lots,
+                      is_active: product.is_active,
+                      variants: product.variants?.map((variant) => ({
+                          id: variant.id,
+                          product_id: variant.product_id,
+                          name: variant.name,
+                          sku: variant.sku,
+                          cost_price: variant.cost_price,
+                          sale_price: variant.sale_price,
+                          is_active: variant.is_active,
+                      })),
+                  }
+                : undefined,
         });
     };
 
@@ -158,10 +210,7 @@ export default function LineItemsEditor({
                         )}
 
                         {details.map((row, index) => {
-                            const product = products.find(
-                                (item) => String(item.id) === row.product_id,
-                            );
-                            const variants = product?.variants ?? [];
+                            const variants = row.product?.variants ?? [];
                             const line = detailTotals(row, taxRates);
                             const rowError = (field: string) =>
                                 errors[`details.${index}.${field}`] ?? '';
@@ -169,27 +218,38 @@ export default function LineItemsEditor({
                             return (
                                 <tr key={row.id ?? index} className="align-top">
                                     <td className="min-w-48 px-3 py-2">
-                                        <Select
+                                        <RemoteSelect<Product>
                                             value={row.product_id}
-                                            onChange={(event) =>
+                                            onChange={(value, option) =>
                                                 changeProduct(
                                                     index,
-                                                    event.target.value,
+                                                    value,
+                                                    option?.data ?? null,
                                                 )
                                             }
-                                        >
-                                            <option value="">
-                                                Selecciona producto
-                                            </option>
-                                            {products.map((item) => (
-                                                <option
-                                                    key={item.id}
-                                                    value={item.id}
-                                                >
-                                                    {item.name}
-                                                </option>
-                                            ))}
-                                        </Select>
+                                            searchUrl={productSearch.url()}
+                                            mapOption={(product) => ({
+                                                value: String(product.id),
+                                                label: `${product.name} · ${product.sku}`,
+                                                data: product,
+                                            })}
+                                            initialOptions={
+                                                row.product
+                                                    ? [
+                                                          {
+                                                              value: String(
+                                                                  row.product
+                                                                      .id,
+                                                              ),
+                                                              label: `${row.product.name} · ${row.product.sku}`,
+                                                              data: row.product,
+                                                          },
+                                                      ]
+                                                    : []
+                                            }
+                                            placeholder="Busca producto..."
+                                            ariaLabel="Producto"
+                                        />
                                         {rowError('product_id') && (
                                             <p className="mt-1 text-xs text-red-600">
                                                 {rowError('product_id')}
@@ -198,6 +258,7 @@ export default function LineItemsEditor({
                                     </td>
                                     <td className="min-w-40 px-3 py-2">
                                         <Select
+                                            aria-label="Variante"
                                             value={row.product_variant_id}
                                             disabled={variants.length === 0}
                                             onChange={(event) =>
@@ -222,6 +283,7 @@ export default function LineItemsEditor({
                                     </td>
                                     <td className="w-28 px-3 py-2">
                                         <Input
+                                            aria-label="Cantidad"
                                             type="number"
                                             step="0.001"
                                             min="0.001"
@@ -236,6 +298,7 @@ export default function LineItemsEditor({
                                     </td>
                                     <td className="w-28 px-3 py-2">
                                         <Input
+                                            aria-label="Precio unitario"
                                             type="number"
                                             step="0.01"
                                             min="0"
@@ -250,6 +313,7 @@ export default function LineItemsEditor({
                                     </td>
                                     <td className="w-28 px-3 py-2">
                                         <Input
+                                            aria-label="Descuento"
                                             type="number"
                                             step="0.01"
                                             min="0"
@@ -264,6 +328,7 @@ export default function LineItemsEditor({
                                     </td>
                                     <td className="w-40 px-3 py-2">
                                         <Select
+                                            aria-label="Impuesto"
                                             value={row.tax_rate_id}
                                             onChange={(event) =>
                                                 updateRow(index, {

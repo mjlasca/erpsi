@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceIndex, { FilterSelect } from '@/Components/Ui/ResourceIndex';
 import { Badge, DeleteButton, RowLink } from '@/Components/Ui/Primitives';
@@ -45,6 +46,7 @@ export default function LotsIndex({
                 filters={filters}
                 searchPlaceholder="Buscar código, lote o serie..."
                 createHref={create.url()}
+                createPermission="inventory.lots.create"
                 createLabel="Nuevo lote"
                 filterControls={
                     <>
@@ -122,11 +124,15 @@ export default function LotsIndex({
                 actions={(lot) => (
                     <>
                         <RowLink href={show.url(lot.id)}>Ver</RowLink>
-                        <RowLink href={edit.url(lot.id)}>Editar</RowLink>
-                        <DeleteButton
-                            url={destroy.url(lot.id)}
-                            confirmMessage="¿Eliminar este lote?"
-                        />
+                        <Can permission="inventory.lots.update">
+                            <RowLink href={edit.url(lot.id)}>Editar</RowLink>
+                        </Can>
+                        <Can permission="inventory.lots.delete">
+                            <DeleteButton
+                                url={destroy.url(lot.id)}
+                                confirmMessage="¿Eliminar este lote?"
+                            />
+                        </Can>
                     </>
                 )}
             />

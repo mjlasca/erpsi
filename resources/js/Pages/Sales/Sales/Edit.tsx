@@ -2,6 +2,7 @@ import { FormEvent } from 'react';
 import { Link, useForm } from '@inertiajs/react';
 import ErpLayout from '@/Layouts/ErpLayout';
 import LineItemsEditor, { DetailRow } from '@/Components/Ui/LineItemsEditor';
+import RemoteSelect from '@/Components/Ui/RemoteSelect';
 import {
     Button,
     Card,
@@ -12,14 +13,9 @@ import {
     Spinner,
     Textarea,
 } from '@/Components/Ui/Primitives';
-import type {
-    Customer,
-    Product,
-    Sale,
-    TaxRate,
-    Warehouse,
-} from '@/types/models';
+import type { Customer, Sale, TaxRate, Warehouse } from '@/types/models';
 import { index, update } from '@/routes/sales/sales';
+import { search as customerSearch } from '@/routes/sales/customers';
 
 type SaleFormData = {
     customer_id: string;
@@ -32,15 +28,11 @@ type SaleFormData = {
 
 export default function SalesEdit({
     sale,
-    customers,
     warehouses,
-    products,
     taxRates,
 }: {
     sale: Sale;
-    customers: Customer[];
     warehouses: Warehouse[];
-    products: Product[];
     taxRates: TaxRate[];
 }) {
     const details: DetailRow[] = (sale.details ?? []).map((detail) => ({
@@ -53,6 +45,7 @@ export default function SalesEdit({
         unit_price: detail.unit_price,
         discount: detail.discount,
         tax_rate_id: detail.tax_rate_id ? String(detail.tax_rate_id) : '',
+        product: detail.product,
     }));
 
     const form = useForm<SaleFormData>({
@@ -87,20 +80,37 @@ export default function SalesEdit({
                         required
                         error={errorFor('customer_id')}
                     >
-                        <Select
+                        <RemoteSelect<Customer>
                             id="customer_id"
                             value={form.data.customer_id}
-                            onChange={(event) =>
-                                form.setData('customer_id', event.target.value)
+                            onChange={(value) =>
+                                form.setData('customer_id', value)
                             }
-                        >
-                            <option value="">Selecciona cliente</option>
-                            {customers.map((customer) => (
-                                <option key={customer.id} value={customer.id}>
-                                    {customer.full_name}
-                                </option>
-                            ))}
-                        </Select>
+                            searchUrl={customerSearch.url()}
+                            mapOption={(customer) => ({
+                                value: String(customer.id),
+                                label: customer.company_name
+                                    ? `${customer.full_name} · ${customer.company_name}`
+                                    : customer.full_name,
+                                data: customer,
+                            })}
+                            initialOptions={
+                                sale.customer
+                                    ? [
+                                          {
+                                              value: String(sale.customer.id),
+                                              label: sale.customer.company_name
+                                                  ? `${sale.customer.full_name} · ${sale.customer.company_name}`
+                                                  : sale.customer.full_name,
+                                              data: sale.customer,
+                                          },
+                                      ]
+                                    : []
+                            }
+                            placeholder="Busca cliente..."
+                            ariaLabel="Cliente"
+                            required
+                        />
                     </Field>
 
                     <Field
@@ -175,7 +185,6 @@ export default function SalesEdit({
                 <LineItemsEditor
                     details={form.data.details}
                     onChange={(rows) => form.setData('details', rows)}
-                    products={products}
                     taxRates={taxRates}
                     priceField="sale_price"
                     errors={form.errors as Record<string, string>}

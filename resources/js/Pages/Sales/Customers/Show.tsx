@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceShow from '@/Components/Ui/ResourceShow';
 import { Badge, DeleteButton, LinkButton } from '@/Components/Ui/Primitives';
@@ -15,13 +16,17 @@ export default function CustomersShow({ customer }: { customer: Customer }) {
                         <LinkButton href={index.url()} variant="secondary">
                             Volver
                         </LinkButton>
-                        <LinkButton href={edit.url(customer.id)}>
-                            Editar
-                        </LinkButton>
-                        <DeleteButton
-                            url={destroy.url(customer.id)}
-                            confirmMessage="¿Eliminar este cliente?"
-                        />
+                        <Can permission="sales.customers.update">
+                            <LinkButton href={edit.url(customer.id)}>
+                                Editar
+                            </LinkButton>
+                        </Can>
+                        <Can permission="sales.customers.delete">
+                            <DeleteButton
+                                url={destroy.url(customer.id)}
+                                confirmMessage="¿Eliminar este cliente?"
+                            />
+                        </Can>
                     </>
                 }
                 fields={[

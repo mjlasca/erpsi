@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceIndex from '@/Components/Ui/ResourceIndex';
 import { Badge, DeleteButton, RowLink } from '@/Components/Ui/Primitives';
@@ -23,6 +24,7 @@ export default function TaxRatesIndex({
                 filters={filters}
                 searchPlaceholder="Buscar impuesto o jurisdicción..."
                 createHref={create.url()}
+                createPermission="administration.tax_rates.create"
                 createLabel="Nuevo impuesto"
                 columns={[
                     {
@@ -63,11 +65,17 @@ export default function TaxRatesIndex({
                 actions={(taxRate) => (
                     <>
                         <RowLink href={show.url(taxRate.id)}>Ver</RowLink>
-                        <RowLink href={edit.url(taxRate.id)}>Editar</RowLink>
-                        <DeleteButton
-                            url={destroy.url(taxRate.id)}
-                            confirmMessage="¿Eliminar este impuesto?"
-                        />
+                        <Can permission="administration.tax_rates.update">
+                            <RowLink href={edit.url(taxRate.id)}>
+                                Editar
+                            </RowLink>
+                        </Can>
+                        <Can permission="administration.tax_rates.delete">
+                            <DeleteButton
+                                url={destroy.url(taxRate.id)}
+                                confirmMessage="¿Eliminar este impuesto?"
+                            />
+                        </Can>
                     </>
                 )}
             />

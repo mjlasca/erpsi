@@ -27,7 +27,7 @@ class RoleController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return Inertia::render('Admin/Roles/Index', [
+        return Inertia::render('Administration/Roles/Index', [
             'roles' => $roles->through(fn ($role): array => (new RoleResource($role))->resolve()),
             'filters' => $request->only('search'),
         ]);
@@ -37,7 +37,7 @@ class RoleController extends Controller
     {
         $this->authorize('create', Role::class);
 
-        return Inertia::render('Admin/Roles/Create', [
+        return Inertia::render('Administration/Roles/Create', [
             'permissionGroups' => Permissions::groups(),
         ]);
     }
@@ -62,7 +62,7 @@ class RoleController extends Controller
 
         $role->loadCount('users');
 
-        return Inertia::render('Admin/Roles/Show', [
+        return Inertia::render('Administration/Roles/Show', [
             'role' => (new RoleResource($role))->resolve(),
             'permissionGroups' => Permissions::groups(),
         ]);
@@ -72,7 +72,7 @@ class RoleController extends Controller
     {
         $this->authorize('update', $role);
 
-        return Inertia::render('Admin/Roles/Edit', [
+        return Inertia::render('Administration/Roles/Edit', [
             'role' => (new RoleResource($role))->resolve(),
             'permissionGroups' => Permissions::groups(),
         ]);

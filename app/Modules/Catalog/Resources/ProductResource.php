@@ -33,10 +33,10 @@ class ProductResource extends JsonResource
             'is_inventory' => $this->is_inventory,
             'track_lots' => $this->track_lots,
             'is_active' => $this->is_active,
-            'category' => new ProductCategoryResource($this->whenLoaded('category')),
-            'unit' => new UnitResource($this->whenLoaded('unit')),
-            'variants' => ProductVariantResource::collection($this->whenLoaded('variants')),
-            'attributes' => ProductAttributeResource::collection($this->whenLoaded('attributes')),
+            'category' => $this->whenLoaded('category', fn (): array => (new ProductCategoryResource($this->category))->resolve()),
+            'unit' => $this->whenLoaded('unit', fn (): array => (new UnitResource($this->unit))->resolve()),
+            'variants' => $this->whenLoaded('variants', fn (): array => ProductVariantResource::collection($this->variants)->resolve()),
+            'attributes' => $this->whenLoaded('attributes', fn (): array => ProductAttributeResource::collection($this->attributes)->resolve()),
             'variants_count' => $this->whenCounted('variants'),
         ];
     }

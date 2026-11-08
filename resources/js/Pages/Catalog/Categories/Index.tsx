@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceIndex from '@/Components/Ui/ResourceIndex';
 import { Badge, DeleteButton, RowLink } from '@/Components/Ui/Primitives';
@@ -28,6 +29,7 @@ export default function CategoriesIndex({
                 filters={filters}
                 searchPlaceholder="Buscar categoría..."
                 createHref={create.url()}
+                createPermission="catalog.categories.create"
                 createLabel="Nueva categoría"
                 columns={[
                     {
@@ -67,11 +69,17 @@ export default function CategoriesIndex({
                 actions={(category) => (
                     <>
                         <RowLink href={show.url(category.id)}>Ver</RowLink>
-                        <RowLink href={edit.url(category.id)}>Editar</RowLink>
-                        <DeleteButton
-                            url={destroy.url(category.id)}
-                            confirmMessage="¿Eliminar esta categoría?"
-                        />
+                        <Can permission="catalog.categories.update">
+                            <RowLink href={edit.url(category.id)}>
+                                Editar
+                            </RowLink>
+                        </Can>
+                        <Can permission="catalog.categories.delete">
+                            <DeleteButton
+                                url={destroy.url(category.id)}
+                                confirmMessage="¿Eliminar esta categoría?"
+                            />
+                        </Can>
                     </>
                 )}
             />

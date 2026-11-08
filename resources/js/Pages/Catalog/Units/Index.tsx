@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceIndex from '@/Components/Ui/ResourceIndex';
 import { Badge, DeleteButton, RowLink } from '@/Components/Ui/Primitives';
@@ -22,6 +23,7 @@ export default function UnitsIndex({
                 filters={filters}
                 searchPlaceholder="Buscar unidad..."
                 createHref={create.url()}
+                createPermission="catalog.units.create"
                 createLabel="Nueva unidad"
                 columns={[
                     {
@@ -60,11 +62,15 @@ export default function UnitsIndex({
                 actions={(unit) => (
                     <>
                         <RowLink href={show.url(unit.id)}>Ver</RowLink>
-                        <RowLink href={edit.url(unit.id)}>Editar</RowLink>
-                        <DeleteButton
-                            url={destroy.url(unit.id)}
-                            confirmMessage="¿Eliminar esta unidad?"
-                        />
+                        <Can permission="catalog.units.update">
+                            <RowLink href={edit.url(unit.id)}>Editar</RowLink>
+                        </Can>
+                        <Can permission="catalog.units.delete">
+                            <DeleteButton
+                                url={destroy.url(unit.id)}
+                                confirmMessage="¿Eliminar esta unidad?"
+                            />
+                        </Can>
                     </>
                 )}
             />

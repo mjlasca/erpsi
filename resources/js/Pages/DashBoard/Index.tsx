@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { AlertTriangle, ArrowRight, Package } from 'lucide-react';
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import {
     Badge,
@@ -8,6 +9,7 @@ import {
     PageHeader,
 } from '@/Components/Ui/Primitives';
 import { formatDate, formatMoney, formatNumber } from '@/lib/format';
+import { useCan } from '@/lib/permissions';
 import type { InventoryStock, Purchase, Sale } from '@/types/models';
 import { index as purchasesIndex } from '@/routes/purchasing/purchases';
 import { index as salesIndex } from '@/routes/sales/sales';
@@ -52,39 +54,46 @@ export default function Dashboard({
     recentPurchases?: Purchase[];
     lowStockItems?: InventoryStock[];
 }) {
+    const can = useCan();
     const cards = [
         {
             label: 'Productos activos',
             value: formatNumber(stats.active_products, 0),
             href: productsIndex.url(),
+            permission: 'catalog.products.view',
         },
         {
             label: 'Existencias bajas',
             value: formatNumber(stats.low_stock_items, 0),
             href: stockIndex.url(),
             warning: stats.low_stock_items > 0,
+            permission: 'inventory.stock.view',
         },
         {
             label: 'Por cobrar',
             value: formatMoney(stats.receivable_balance),
             href: salesIndex.url(),
+            permission: 'sales.sales.view',
         },
         {
             label: 'Por pagar',
             value: formatMoney(stats.payable_balance),
             href: purchasesIndex.url(),
+            permission: 'purchasing.purchases.view',
         },
         {
             label: 'Ventas del mes',
             value: formatMoney(stats.sales_this_month),
             href: salesIndex.url(),
+            permission: 'sales.sales.view',
         },
         {
             label: 'Compras del mes',
             value: formatMoney(stats.purchases_this_month),
             href: purchasesIndex.url(),
+            permission: 'purchasing.purchases.view',
         },
-    ];
+    ].filter((card) => can(card.permission));
 
     return (
         <ErpLayout>
@@ -165,55 +174,61 @@ export default function Dashboard({
                     )}
                 </Card>
 
-                <Card>
-                    <CardHeader
-                        title="Compras recientes"
-                        action={
-                            <Link
-                                href={purchasesIndex.url()}
-                                className="text-sm font-medium text-blue-600 hover:text-blue-700"
-                            >
-                                Ver todas
-                            </Link>
-                        }
-                    />
-                    {recentPurchases.length === 0 ? (
-                        <p className="px-5 py-8 text-center text-sm text-gray-500">
-                            Sin compras registradas.
-                        </p>
-                    ) : (
-                        <ul className="divide-y divide-gray-100">
-                            {recentPurchases.map((purchase) => (
-                                <li
-                                    key={purchase.id}
-                                    className="flex items-center justify-between gap-3 px-5 py-3"
+                <Can permission="purchasing.purchases.view">
+                    <Card>
+                        <CardHeader
+                            title="Compras recientes"
+                            action={
+                                <Link
+                                    href={purchasesIndex.url()}
+                                    className="text-sm font-medium text-blue-600 hover:text-blue-700"
                                 >
-                                    <div className="min-w-0">
-                                        <p className="truncate text-sm font-medium text-gray-900">
-                                            {purchase.purchase_number}
-                                        </p>
-                                        <p className="truncate text-xs text-gray-500">
-                                            {purchase.supplier?.name ??
-                                                'Proveedor'}{' '}
-                                            ·{' '}
-                                            {formatDate(purchase.purchase_date)}
-                                        </p>
-                                    </div>
-                                    <div className="flex shrink-0 items-center gap-3">
-                                        <Badge
-                                            tone={statusTone(purchase.status)}
-                                        >
-                                            {purchase.status_label}
-                                        </Badge>
-                                        <span className="text-sm font-semibold text-gray-900">
-                                            {formatMoney(purchase.total)}
-                                        </span>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </Card>
+                                    Ver todas
+                                </Link>
+                            }
+                        />
+                        {recentPurchases.length === 0 ? (
+                            <p className="px-5 py-8 text-center text-sm text-gray-500">
+                                Sin compras registradas.
+                            </p>
+                        ) : (
+                            <ul className="divide-y divide-gray-100">
+                                {recentPurchases.map((purchase) => (
+                                    <li
+                                        key={purchase.id}
+                                        className="flex items-center justify-between gap-3 px-5 py-3"
+                                    >
+                                        <div className="min-w-0">
+                                            <p className="truncate text-sm font-medium text-gray-900">
+                                                {purchase.purchase_number}
+                                            </p>
+                                            <p className="truncate text-xs text-gray-500">
+                                                {purchase.supplier?.name ??
+                                                    'Proveedor'}{' '}
+                                                ·{' '}
+                                                {formatDate(
+                                                    purchase.purchase_date,
+                                                )}
+                                            </p>
+                                        </div>
+                                        <div className="flex shrink-0 items-center gap-3">
+                                            <Badge
+                                                tone={statusTone(
+                                                    purchase.status,
+                                                )}
+                                            >
+                                                {purchase.status_label}
+                                            </Badge>
+                                            <span className="text-sm font-semibold text-gray-900">
+                                                {formatMoney(purchase.total)}
+                                            </span>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </Card>
+                </Can>
 
                 <Card className="xl:col-span-2">
                     <CardHeader

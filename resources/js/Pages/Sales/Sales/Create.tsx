@@ -5,6 +5,7 @@ import LineItemsEditor, {
     DetailRow,
     emptyDetail,
 } from '@/Components/Ui/LineItemsEditor';
+import RemoteSelect from '@/Components/Ui/RemoteSelect';
 import {
     Button,
     Card,
@@ -15,8 +16,9 @@ import {
     Spinner,
     Textarea,
 } from '@/Components/Ui/Primitives';
-import type { Customer, Product, TaxRate, Warehouse } from '@/types/models';
+import type { Customer, TaxRate, Warehouse } from '@/types/models';
 import { index, store } from '@/routes/sales/sales';
+import { search as customerSearch } from '@/routes/sales/customers';
 
 type SaleFormData = {
     customer_id: string;
@@ -28,14 +30,10 @@ type SaleFormData = {
 };
 
 export default function SalesCreate({
-    customers,
     warehouses,
-    products,
     taxRates,
 }: {
-    customers: Customer[];
     warehouses: Warehouse[];
-    products: Product[];
     taxRates: TaxRate[];
 }) {
     const form = useForm<SaleFormData>({
@@ -70,23 +68,24 @@ export default function SalesCreate({
                         required
                         error={errorFor('customer_id')}
                     >
-                        <Select
+                        <RemoteSelect<Customer>
                             id="customer_id"
                             value={form.data.customer_id}
-                            onChange={(event) =>
-                                form.setData('customer_id', event.target.value)
+                            onChange={(value) =>
+                                form.setData('customer_id', value)
                             }
-                        >
-                            <option value="">Selecciona cliente</option>
-                            {customers.map((customer) => (
-                                <option key={customer.id} value={customer.id}>
-                                    {customer.full_name}
-                                    {customer.company_name
-                                        ? ` · ${customer.company_name}`
-                                        : ''}
-                                </option>
-                            ))}
-                        </Select>
+                            searchUrl={customerSearch.url()}
+                            mapOption={(customer) => ({
+                                value: String(customer.id),
+                                label: customer.company_name
+                                    ? `${customer.full_name} · ${customer.company_name}`
+                                    : customer.full_name,
+                                data: customer,
+                            })}
+                            placeholder="Busca cliente..."
+                            ariaLabel="Cliente"
+                            required
+                        />
                     </Field>
 
                     <Field
@@ -161,7 +160,6 @@ export default function SalesCreate({
                 <LineItemsEditor
                     details={form.data.details}
                     onChange={(details) => form.setData('details', details)}
-                    products={products}
                     taxRates={taxRates}
                     priceField="sale_price"
                     errors={form.errors as Record<string, string>}

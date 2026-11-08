@@ -2,6 +2,7 @@ import { FormEvent } from 'react';
 import { Link, useForm } from '@inertiajs/react';
 import ErpLayout from '@/Layouts/ErpLayout';
 import LineItemsEditor, { DetailRow } from '@/Components/Ui/LineItemsEditor';
+import RemoteSelect from '@/Components/Ui/RemoteSelect';
 import {
     Button,
     Card,
@@ -12,8 +13,9 @@ import {
     Spinner,
     Textarea,
 } from '@/Components/Ui/Primitives';
-import type { Product, Purchase, TaxRate, Warehouse } from '@/types/models';
+import type { Purchase, Supplier, TaxRate, Warehouse } from '@/types/models';
 import { index, update } from '@/routes/purchasing/purchases';
+import { search as supplierSearch } from '@/routes/purchasing/suppliers';
 
 type PurchaseFormData = {
     supplier_id: string;
@@ -26,15 +28,11 @@ type PurchaseFormData = {
 
 export default function PurchasesEdit({
     purchase,
-    suppliers,
     warehouses,
-    products,
     taxRates,
 }: {
     purchase: Purchase;
-    suppliers: Array<{ id: number; name: string }>;
     warehouses: Warehouse[];
-    products: Product[];
     taxRates: TaxRate[];
 }) {
     const details: DetailRow[] = (purchase.details ?? []).map((detail) => ({
@@ -47,6 +45,7 @@ export default function PurchasesEdit({
         unit_price: detail.unit_price,
         discount: detail.discount,
         tax_rate_id: detail.tax_rate_id ? String(detail.tax_rate_id) : '',
+        product: detail.product,
     }));
 
     const form = useForm<PurchaseFormData>({
@@ -81,20 +80,35 @@ export default function PurchasesEdit({
                         required
                         error={errorFor('supplier_id')}
                     >
-                        <Select
+                        <RemoteSelect<Supplier>
                             id="supplier_id"
                             value={form.data.supplier_id}
-                            onChange={(event) =>
-                                form.setData('supplier_id', event.target.value)
+                            onChange={(value) =>
+                                form.setData('supplier_id', value)
                             }
-                        >
-                            <option value="">Selecciona proveedor</option>
-                            {suppliers.map((supplier) => (
-                                <option key={supplier.id} value={supplier.id}>
-                                    {supplier.name}
-                                </option>
-                            ))}
-                        </Select>
+                            searchUrl={supplierSearch.url()}
+                            mapOption={(supplier) => ({
+                                value: String(supplier.id),
+                                label: supplier.name,
+                                data: supplier,
+                            })}
+                            initialOptions={
+                                purchase.supplier
+                                    ? [
+                                          {
+                                              value: String(
+                                                  purchase.supplier.id,
+                                              ),
+                                              label: purchase.supplier.name,
+                                              data: purchase.supplier,
+                                          },
+                                      ]
+                                    : []
+                            }
+                            placeholder="Busca proveedor..."
+                            ariaLabel="Proveedor"
+                            required
+                        />
                     </Field>
 
                     <Field
@@ -174,7 +188,6 @@ export default function PurchasesEdit({
                 <LineItemsEditor
                     details={form.data.details}
                     onChange={(rows) => form.setData('details', rows)}
-                    products={products}
                     taxRates={taxRates}
                     priceField="cost_price"
                     errors={form.errors as Record<string, string>}

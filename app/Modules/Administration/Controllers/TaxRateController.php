@@ -30,7 +30,7 @@ class TaxRateController extends Controller
             ->paginate(15)
             ->withQueryString();
 
-        return Inertia::render('Admin/TaxRates/Index', [
+        return Inertia::render('Administration/TaxRates/Index', [
             'taxRates' => $taxRates->through(fn ($taxRate): array => (new TaxRateResource($taxRate))->resolve()),
             'filters' => $request->only('search'),
         ]);
@@ -40,7 +40,7 @@ class TaxRateController extends Controller
     {
         $this->authorize('create', TaxRate::class);
 
-        return Inertia::render('Admin/TaxRates/Create');
+        return Inertia::render('Administration/TaxRates/Create');
     }
 
     public function store(StoreTaxRateRequest $request): RedirectResponse
@@ -60,7 +60,7 @@ class TaxRateController extends Controller
 
         $taxRate->loadCount(['purchaseDetails', 'saleDetails']);
 
-        return Inertia::render('Admin/TaxRates/Show', [
+        return Inertia::render('Administration/TaxRates/Show', [
             'taxRate' => (new TaxRateResource($taxRate))->resolve(),
         ]);
     }
@@ -69,7 +69,7 @@ class TaxRateController extends Controller
     {
         $this->authorize('update', $taxRate);
 
-        return Inertia::render('Admin/TaxRates/Edit', [
+        return Inertia::render('Administration/TaxRates/Edit', [
             'taxRate' => (new TaxRateResource($taxRate))->resolve(),
         ]);
     }

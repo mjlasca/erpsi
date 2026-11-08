@@ -1,6 +1,12 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceIndex, { FilterSelect } from '@/Components/Ui/ResourceIndex';
-import { Badge, DeleteButton, RowLink } from '@/Components/Ui/Primitives';
+import {
+    Badge,
+    DeleteButton,
+    Input,
+    RowLink,
+} from '@/Components/Ui/Primitives';
 import { formatDate, formatMoney } from '@/lib/format';
 import type { Purchase } from '@/types/models';
 import type { Filters, Paginated, SelectOption } from '@/types/erp';
@@ -44,6 +50,7 @@ export default function PurchasesIndex({
                 filters={filters}
                 searchPlaceholder="Buscar folio o factura..."
                 createHref={create.url()}
+                createPermission="purchasing.purchases.create"
                 createLabel="Nueva compra"
                 filterControls={
                     <>
@@ -61,6 +68,20 @@ export default function PurchasesIndex({
                                 value: supplier.id,
                                 label: supplier.name,
                             }))}
+                        />
+                        <Input
+                            type="date"
+                            name="from"
+                            aria-label="Desde"
+                            defaultValue={filters.from?.toString() ?? ''}
+                            className="h-10 w-40"
+                        />
+                        <Input
+                            type="date"
+                            name="to"
+                            aria-label="Hasta"
+                            defaultValue={filters.to?.toString() ?? ''}
+                            className="h-10 w-40"
                         />
                     </>
                 }
@@ -118,10 +139,12 @@ export default function PurchasesIndex({
                                 Editar
                             </RowLink>
                         )}
-                        <DeleteButton
-                            url={destroy.url(purchase.id)}
-                            confirmMessage="¿Eliminar esta compra?"
-                        />
+                        <Can permission="purchasing.purchases.delete">
+                            <DeleteButton
+                                url={destroy.url(purchase.id)}
+                                confirmMessage="¿Eliminar esta compra?"
+                            />
+                        </Can>
                     </>
                 )}
             />

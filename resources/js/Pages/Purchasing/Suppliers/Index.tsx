@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceIndex from '@/Components/Ui/ResourceIndex';
 import { Badge, DeleteButton, RowLink } from '@/Components/Ui/Primitives';
@@ -28,6 +29,7 @@ export default function SuppliersIndex({
                 filters={filters}
                 searchPlaceholder="Buscar por nombre, RFC o correo..."
                 createHref={create.url()}
+                createPermission="purchasing.suppliers.create"
                 createLabel="Nuevo proveedor"
                 columns={[
                     {
@@ -77,11 +79,17 @@ export default function SuppliersIndex({
                 actions={(supplier) => (
                     <>
                         <RowLink href={show.url(supplier.id)}>Ver</RowLink>
-                        <RowLink href={edit.url(supplier.id)}>Editar</RowLink>
-                        <DeleteButton
-                            url={destroy.url(supplier.id)}
-                            confirmMessage="¿Eliminar este proveedor?"
-                        />
+                        <Can permission="purchasing.suppliers.update">
+                            <RowLink href={edit.url(supplier.id)}>
+                                Editar
+                            </RowLink>
+                        </Can>
+                        <Can permission="purchasing.suppliers.delete">
+                            <DeleteButton
+                                url={destroy.url(supplier.id)}
+                                confirmMessage="¿Eliminar este proveedor?"
+                            />
+                        </Can>
                     </>
                 )}
             />

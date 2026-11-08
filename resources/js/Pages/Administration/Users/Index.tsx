@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceIndex, { FilterSelect } from '@/Components/Ui/ResourceIndex';
 import { Badge, DeleteButton, RowLink } from '@/Components/Ui/Primitives';
@@ -25,6 +26,7 @@ export default function UsersIndex({
                 filters={filters}
                 searchPlaceholder="Buscar nombre o correo..."
                 createHref={create.url()}
+                createPermission="administration.users.create"
                 createLabel="Nuevo usuario"
                 filterControls={
                     <>
@@ -86,11 +88,15 @@ export default function UsersIndex({
                 actions={(user) => (
                     <>
                         <RowLink href={show.url(user.id)}>Ver</RowLink>
-                        <RowLink href={edit.url(user.id)}>Editar</RowLink>
-                        <DeleteButton
-                            url={destroy.url(user.id)}
-                            confirmMessage="¿Eliminar este usuario?"
-                        />
+                        <Can permission="administration.users.update">
+                            <RowLink href={edit.url(user.id)}>Editar</RowLink>
+                        </Can>
+                        <Can permission="administration.users.delete">
+                            <DeleteButton
+                                url={destroy.url(user.id)}
+                                confirmMessage="¿Eliminar este usuario?"
+                            />
+                        </Can>
                     </>
                 )}
             />

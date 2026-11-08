@@ -16,9 +16,11 @@ export default function LoginForm() {
     return (
         <form onSubmit={submit} className="space-y-4">
             <div>
-                <label>Correo electrónico</label>
+                <label htmlFor="login-email">Correo electrónico</label>
                 <input
+                    id="login-email"
                     type="email"
+                    autoComplete="email"
                     value={data.email}
                     onChange={(e) => setData('email', e.target.value)}
                     className="w-full rounded border p-2"
@@ -27,9 +29,11 @@ export default function LoginForm() {
             </div>
 
             <div>
-                <label>Contraseña</label>
+                <label htmlFor="login-password">Contraseña</label>
                 <input
+                    id="login-password"
                     type="password"
+                    autoComplete="current-password"
                     value={data.password}
                     onChange={(e) => setData('password', e.target.value)}
                     className="w-full rounded border p-2"

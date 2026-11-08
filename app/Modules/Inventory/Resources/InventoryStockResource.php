@@ -28,9 +28,9 @@ class InventoryStockResource extends JsonResource
             'quantity_minimum' => $this->quantity_minimum,
             'quantity_available' => $this->quantity_available,
             'is_low_stock' => bccomp((string) $this->quantity_on_hand, (string) $this->quantity_minimum, 3) <= 0,
-            'product' => new ProductResource($this->whenLoaded('product')),
-            'variant' => new ProductVariantResource($this->whenLoaded('variant')),
-            'warehouse' => new WarehouseResource($this->whenLoaded('warehouse')),
+            'product' => $this->whenLoaded('product', fn (): array => (new ProductResource($this->product))->resolve()),
+            'variant' => $this->whenLoaded('variant', fn (): array => (new ProductVariantResource($this->variant))->resolve()),
+            'warehouse' => $this->whenLoaded('warehouse', fn (): array => (new WarehouseResource($this->warehouse))->resolve()),
         ];
     }
 }

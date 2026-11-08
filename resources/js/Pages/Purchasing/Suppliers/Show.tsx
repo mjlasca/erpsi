@@ -1,3 +1,4 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceShow from '@/Components/Ui/ResourceShow';
 import { Badge, DeleteButton, LinkButton } from '@/Components/Ui/Primitives';
@@ -15,13 +16,17 @@ export default function SuppliersShow({ supplier }: { supplier: Supplier }) {
                         <LinkButton href={index.url()} variant="secondary">
                             Volver
                         </LinkButton>
-                        <LinkButton href={edit.url(supplier.id)}>
-                            Editar
-                        </LinkButton>
-                        <DeleteButton
-                            url={destroy.url(supplier.id)}
-                            confirmMessage="¿Eliminar este proveedor?"
-                        />
+                        <Can permission="purchasing.suppliers.update">
+                            <LinkButton href={edit.url(supplier.id)}>
+                                Editar
+                            </LinkButton>
+                        </Can>
+                        <Can permission="purchasing.suppliers.delete">
+                            <DeleteButton
+                                url={destroy.url(supplier.id)}
+                                confirmMessage="¿Eliminar este proveedor?"
+                            />
+                        </Can>
                     </>
                 }
                 fields={[

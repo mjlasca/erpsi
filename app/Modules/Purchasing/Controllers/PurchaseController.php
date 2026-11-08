@@ -5,8 +5,6 @@ namespace App\Modules\Purchasing\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Administration\Models\TaxRate;
 use App\Modules\Administration\Resources\TaxRateResource;
-use App\Modules\Catalog\Models\Product;
-use App\Modules\Catalog\Resources\ProductResource;
 use App\Modules\Inventory\Models\Warehouse;
 use App\Modules\Purchasing\Actions\CancelPurchase;
 use App\Modules\Purchasing\Actions\RecalculatePurchaseTotals;
@@ -49,6 +47,8 @@ class PurchaseController extends Controller
             })
             ->when($request->filled('status'), fn ($query) => $query->where('status', $request->string('status')->value()))
             ->when($request->integer('supplier_id'), fn ($query, int $supplierId) => $query->where('supplier_id', $supplierId))
+            ->when($request->date('from'), fn ($query, $from) => $query->where('purchase_date', '>=', $from->toDateString()))
+            ->when($request->date('to'), fn ($query, $to) => $query->where('purchase_date', '<=', $to->toDateString()))
             ->latest('purchase_date')
             ->latest('id')
             ->paginate(15)
@@ -56,7 +56,7 @@ class PurchaseController extends Controller
 
         return Inertia::render('Purchasing/Purchases/Index', [
             'purchases' => $purchases->through(fn ($purchase): array => (new PurchaseResource($purchase))->resolve()),
-            'filters' => $request->only('search', 'status', 'supplier_id'),
+            'filters' => $request->only('search', 'status', 'supplier_id', 'from', 'to'),
             'suppliers' => Supplier::query()->orderBy('name')->get(['id', 'name']),
             'statuses' => PurchaseStatus::options(),
         ]);
@@ -119,7 +119,7 @@ class PurchaseController extends Controller
     {
         $this->authorize('update', $purchase);
 
-        $purchase->load(['supplier', 'warehouse', 'details.product', 'details.variant', 'details.taxRate']);
+        $purchase->load(['supplier', 'warehouse', 'details.product.variants', 'details.variant', 'details.taxRate']);
 
         return Inertia::render('Purchasing/Purchases/Edit', [
             'purchase' => (new PurchaseResource($purchase))->resolve(),
@@ -230,11 +230,7 @@ class PurchaseController extends Controller
     protected function formOptions(): array
     {
         return [
-            'suppliers' => Supplier::query()->active()->orderBy('name')->get(['id', 'name']),
             'warehouses' => Warehouse::query()->active()->orderBy('name')->get(['id', 'name', 'code']),
-            'products' => ProductResource::collection(
-                Product::query()->with(['unit', 'variants'])->active()->orderBy('name')->get(),
-            )->resolve(),
             'taxRates' => TaxRateResource::collection(
                 TaxRate::query()->active()->orderBy('name')->get(),
             )->resolve(),
