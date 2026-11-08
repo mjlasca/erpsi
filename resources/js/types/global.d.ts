@@ -11,6 +11,7 @@ declare module '@inertiajs/core' {
         sharedPageProps: {
             name: string;
             auth: Auth;
+            can?: Record<string, boolean>;
             flash?: {
                 success?: string | null;
                 error?: string | null;

@@ -43,6 +43,12 @@ class AllocatePayment
                         'sale_id' => 'Solo se pueden abonar ventas confirmadas.',
                     ]);
                 }
+
+                if ($document->customer_id !== $payment->customer_id) {
+                    throw ValidationException::withMessages([
+                        'sale_id' => 'La venta no pertenece al cliente del pago.',
+                    ]);
+                }
             }
 
             if ($document instanceof Purchase) {
@@ -55,6 +61,12 @@ class AllocatePayment
                 if (! $document->isReceived()) {
                     throw ValidationException::withMessages([
                         'purchase_id' => 'Solo se pueden abonar compras recibidas.',
+                    ]);
+                }
+
+                if ($document->supplier_id !== $payment->supplier_id) {
+                    throw ValidationException::withMessages([
+                        'purchase_id' => 'La compra no pertenece al proveedor del pago.',
                     ]);
                 }
             }

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Catalog\Models;
 
+use App\Modules\Catalog\Policies\ProductVariantPolicy;
 use App\Modules\Inventory\Models\InventoryLot;
 use App\Modules\Inventory\Models\InventoryMovement;
 use App\Modules\Inventory\Models\InventoryStock;
@@ -11,6 +12,7 @@ use Database\Factories\ProductVariantFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,6 +31,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 #[Fillable(['product_id', 'sku', 'name', 'barcode', 'cost_price', 'sale_price', 'is_active'])]
 #[UseFactory(ProductVariantFactory::class)]
+#[UsePolicy(ProductVariantPolicy::class)]
 class ProductVariant extends Model
 {
     /** @use HasFactory<ProductVariantFactory> */

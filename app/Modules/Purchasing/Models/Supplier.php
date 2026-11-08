@@ -3,10 +3,12 @@
 namespace App\Modules\Purchasing\Models;
 
 use App\Modules\Payments\Models\Payment;
+use App\Modules\Purchasing\Policies\SupplierPolicy;
 use Database\Factories\SupplierFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -36,6 +38,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'is_active',
 ])]
 #[UseFactory(SupplierFactory::class)]
+#[UsePolicy(SupplierPolicy::class)]
 class Supplier extends Model
 {
     /** @use HasFactory<SupplierFactory> */

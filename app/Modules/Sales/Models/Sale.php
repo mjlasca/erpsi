@@ -6,10 +6,12 @@ use App\Models\User;
 use App\Modules\Inventory\Models\Warehouse;
 use App\Modules\Payments\Models\PaymentAllocation;
 use App\Modules\Sales\Enums\SaleStatus;
+use App\Modules\Sales\Policies\SalePolicy;
 use Database\Factories\SaleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -54,6 +56,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'cancelled_at',
 ])]
 #[UseFactory(SaleFactory::class)]
+#[UsePolicy(SalePolicy::class)]
 class Sale extends Model
 {
     /** @use HasFactory<SaleFactory> */

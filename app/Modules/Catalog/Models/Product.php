@@ -3,6 +3,7 @@
 namespace App\Modules\Catalog\Models;
 
 use App\Modules\Catalog\Enums\ProductType;
+use App\Modules\Catalog\Policies\ProductPolicy;
 use App\Modules\Inventory\Models\InventoryLot;
 use App\Modules\Inventory\Models\InventoryMovement;
 use App\Modules\Inventory\Models\InventoryStock;
@@ -12,6 +13,7 @@ use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -52,6 +54,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'is_active',
 ])]
 #[UseFactory(ProductFactory::class)]
+#[UsePolicy(ProductPolicy::class)]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */

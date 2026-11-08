@@ -7,7 +7,8 @@ use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductAttribute;
 use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Catalog\Models\Unit;
-use App\Modules\Catalog\Requests\ProductAttributeRequest;
+use App\Modules\Catalog\Requests\StoreProductAttributeRequest;
+use App\Modules\Catalog\Requests\UpdateProductAttributeRequest;
 use App\Modules\Catalog\Resources\ProductAttributeResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,7 +47,7 @@ class ProductAttributeController extends Controller
         ]);
     }
 
-    public function store(ProductAttributeRequest $request): RedirectResponse
+    public function store(StoreProductAttributeRequest $request): RedirectResponse
     {
         $this->authorize('create', ProductAttribute::class);
 
@@ -80,7 +81,7 @@ class ProductAttributeController extends Controller
         ]);
     }
 
-    public function update(ProductAttributeRequest $request, ProductAttribute $attribute): RedirectResponse
+    public function update(UpdateProductAttributeRequest $request, ProductAttribute $attribute): RedirectResponse
     {
         $this->authorize('update', $attribute);
 
@@ -100,6 +101,85 @@ class ProductAttributeController extends Controller
         return redirect()
             ->route('catalog.attributes.index')
             ->with('success', 'Atributo eliminado correctamente.');
+    }
+
+    public function indexForProduct(Request $request, Product $product): Response
+    {
+        $request->merge(['product_id' => $product->id]);
+
+        return $this->index($request);
+    }
+
+    public function createForProduct(Request $request, Product $product): Response
+    {
+        $request->merge(['product_id' => $product->id]);
+
+        return $this->create($request);
+    }
+
+    public function storeForProduct(StoreProductAttributeRequest $request, Product $product): RedirectResponse
+    {
+        $this->authorize('create', ProductAttribute::class);
+
+        $attribute = $product->attributes()->create($request->validated());
+
+        return redirect()
+            ->route('catalog.products.attributes.show', [
+                'product' => $product,
+                'attribute' => $attribute,
+            ])
+            ->with('success', 'Atributo creado correctamente.');
+    }
+
+    public function showForProduct(Product $product, ProductAttribute $attribute): Response
+    {
+        $this->ensureBelongsToProduct($product, $attribute);
+
+        return $this->show($attribute);
+    }
+
+    public function editForProduct(Product $product, ProductAttribute $attribute): Response
+    {
+        $this->ensureBelongsToProduct($product, $attribute);
+
+        return $this->edit($attribute);
+    }
+
+    public function updateForProduct(
+        UpdateProductAttributeRequest $request,
+        Product $product,
+        ProductAttribute $attribute,
+    ): RedirectResponse {
+        $this->ensureBelongsToProduct($product, $attribute);
+
+        $this->authorize('update', $attribute);
+
+        $attribute->update($request->validated());
+
+        return redirect()
+            ->route('catalog.products.attributes.show', [
+                'product' => $product,
+                'attribute' => $attribute,
+            ])
+            ->with('success', 'Atributo actualizado correctamente.');
+    }
+
+    public function destroyForProduct(Product $product, ProductAttribute $attribute): RedirectResponse
+    {
+        $this->ensureBelongsToProduct($product, $attribute);
+
+        $this->authorize('delete', $attribute);
+
+        $attribute->delete();
+
+        return redirect()
+            ->route('catalog.products.attributes.index', $product)
+            ->with('success', 'Atributo eliminado correctamente.');
+    }
+
+    protected function ensureBelongsToProduct(Product $product, ProductAttribute $attribute): void
+    {
+        abort_unless($attribute->product_id === $product->id, 404);
     }
 
     /**

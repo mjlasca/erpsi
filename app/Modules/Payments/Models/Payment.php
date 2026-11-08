@@ -5,12 +5,14 @@ namespace App\Modules\Payments\Models;
 use App\Models\User;
 use App\Modules\Payments\Enums\PaymentMethod;
 use App\Modules\Payments\Enums\PaymentType;
+use App\Modules\Payments\Policies\PaymentPolicy;
 use App\Modules\Purchasing\Models\Supplier;
 use App\Modules\Sales\Models\Customer;
 use Database\Factories\PaymentFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -41,6 +43,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'created_by',
 ])]
 #[UseFactory(PaymentFactory::class)]
+#[UsePolicy(PaymentPolicy::class)]
 class Payment extends Model
 {
     /** @use HasFactory<PaymentFactory> */

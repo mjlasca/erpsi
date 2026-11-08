@@ -18,7 +18,10 @@ return new class extends Migration
             $table->decimal('quantity_minimum', 14, 3)->default(0);
             $table->timestamps();
 
-            $table->unique(['warehouse_id', 'product_id', 'product_variant_id']);
+            $table->unique(
+                ['warehouse_id', 'product_id', 'product_variant_id'],
+                'inventory_stock_warehouse_product_variant_unique',
+            );
             $table->index(['product_id', 'warehouse_id']);
         });
     }

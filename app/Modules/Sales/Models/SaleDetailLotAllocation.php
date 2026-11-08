@@ -3,9 +3,11 @@
 namespace App\Modules\Sales\Models;
 
 use App\Modules\Inventory\Models\InventoryLot;
+use App\Modules\Sales\Policies\SaleDetailLotAllocationPolicy;
 use Database\Factories\SaleDetailLotAllocationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 #[Fillable(['sale_detail_id', 'inventory_lot_id', 'quantity', 'notes'])]
 #[UseFactory(SaleDetailLotAllocationFactory::class)]
+#[UsePolicy(SaleDetailLotAllocationPolicy::class)]
 class SaleDetailLotAllocation extends Model
 {
     /** @use HasFactory<SaleDetailLotAllocationFactory> */

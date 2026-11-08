@@ -83,6 +83,21 @@ it('transfers stock between warehouses', function () {
     expect(InventoryMovement::query()->where('movement_type', 'TRANSFER')->count())->toBe(2);
 });
 
+it('rejects a movement with a lot from another warehouse', function () {
+    $product = Product::factory()->lotTracked()->create();
+    $source = Warehouse::factory()->create();
+    $other = Warehouse::factory()->create();
+    $lot = InventoryLot::factory()->forProduct($product)->forWarehouse($source)->create();
+
+    expect(fn () => app(RecordInventoryMovement::class)->execute(
+        product: $product,
+        warehouse: $other,
+        movementType: MovementType::Adjustment,
+        quantity: '1.000',
+        lot: $lot,
+    ))->toThrow(ValidationException::class);
+});
+
 it('moves a lot to the destination warehouse when transferring', function () {
     $product = Product::factory()->lotTracked()->create();
     $from = Warehouse::factory()->create();

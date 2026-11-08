@@ -7,15 +7,38 @@ use App\Modules\Catalog\Enums\ProductType;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductCategory;
 use App\Modules\Catalog\Models\Unit;
-use App\Modules\Catalog\Requests\ProductRequest;
+use App\Modules\Catalog\Requests\StoreProductRequest;
+use App\Modules\Catalog\Requests\UpdateProductRequest;
 use App\Modules\Catalog\Resources\ProductResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ProductController extends Controller
 {
+    public function search(Request $request): AnonymousResourceCollection
+    {
+        $this->authorize('viewAny', Product::class);
+
+        $products = Product::query()
+            ->with(['unit', 'variants'])
+            ->active()
+            ->when($request->string('search')->trim()->value(), function ($query, string $search): void {
+                $query->where(function ($query) use ($search): void {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('sku', 'like', "%{$search}%")
+                        ->orWhere('barcode', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('name')
+            ->limit(20)
+            ->get();
+
+        return ProductResource::collection($products);
+    }
+
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', Product::class);
@@ -50,7 +73,7 @@ class ProductController extends Controller
         return Inertia::render('Catalog/Products/Create', $this->formOptions());
     }
 
-    public function store(ProductRequest $request): RedirectResponse
+    public function store(StoreProductRequest $request): RedirectResponse
     {
         $this->authorize('create', Product::class);
 
@@ -84,7 +107,7 @@ class ProductController extends Controller
         ]);
     }
 
-    public function update(ProductRequest $request, Product $product): RedirectResponse
+    public function update(UpdateProductRequest $request, Product $product): RedirectResponse
     {
         $this->authorize('update', $product);
 

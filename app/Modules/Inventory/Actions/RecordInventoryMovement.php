@@ -51,6 +51,12 @@ class RecordInventoryMovement
                 ]);
             }
 
+            if ($lot->warehouse_id !== $warehouse->id) {
+                throw ValidationException::withMessages([
+                    'inventory_lot_id' => 'El lote no pertenece al almacén seleccionado.',
+                ]);
+            }
+
             if ($lot->status === LotStatus::Cancelled) {
                 throw ValidationException::withMessages([
                     'inventory_lot_id' => 'El lote está anulado y no puede moverse.',

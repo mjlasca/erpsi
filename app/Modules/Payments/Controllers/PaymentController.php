@@ -7,7 +7,8 @@ use App\Modules\Payments\Actions\RecordPayment;
 use App\Modules\Payments\Enums\PaymentMethod;
 use App\Modules\Payments\Enums\PaymentType;
 use App\Modules\Payments\Models\Payment;
-use App\Modules\Payments\Requests\PaymentRequest;
+use App\Modules\Payments\Requests\StorePaymentRequest;
+use App\Modules\Payments\Requests\UpdatePaymentRequest;
 use App\Modules\Payments\Resources\PaymentResource;
 use App\Modules\Purchasing\Models\Purchase;
 use App\Modules\Purchasing\Models\Supplier;
@@ -65,7 +66,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function store(PaymentRequest $request): RedirectResponse
+    public function store(StorePaymentRequest $request): RedirectResponse
     {
         $this->authorize('create', Payment::class);
 
@@ -128,7 +129,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function update(PaymentRequest $request, Payment $payment): RedirectResponse
+    public function update(UpdatePaymentRequest $request, Payment $payment): RedirectResponse
     {
         $this->authorize('update', $payment);
 

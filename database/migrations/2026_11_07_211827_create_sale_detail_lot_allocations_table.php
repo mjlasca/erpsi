@@ -16,7 +16,10 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->timestamps();
 
-            $table->unique(['sale_detail_id', 'inventory_lot_id']);
+            $table->unique(
+                ['sale_detail_id', 'inventory_lot_id'],
+                'sale_lot_alloc_detail_lot_unique',
+            );
         });
     }
 

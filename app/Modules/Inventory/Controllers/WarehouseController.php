@@ -4,7 +4,8 @@ namespace App\Modules\Inventory\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Inventory\Models\Warehouse;
-use App\Modules\Inventory\Requests\WarehouseRequest;
+use App\Modules\Inventory\Requests\StoreWarehouseRequest;
+use App\Modules\Inventory\Requests\UpdateWarehouseRequest;
 use App\Modules\Inventory\Resources\WarehouseResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,7 +43,7 @@ class WarehouseController extends Controller
         return Inertia::render('Inventory/Warehouses/Create');
     }
 
-    public function store(WarehouseRequest $request): RedirectResponse
+    public function store(StoreWarehouseRequest $request): RedirectResponse
     {
         $this->authorize('create', Warehouse::class);
 
@@ -73,7 +74,7 @@ class WarehouseController extends Controller
         ]);
     }
 
-    public function update(WarehouseRequest $request, Warehouse $warehouse): RedirectResponse
+    public function update(UpdateWarehouseRequest $request, Warehouse $warehouse): RedirectResponse
     {
         $this->authorize('update', $warehouse);
 

@@ -3,10 +3,12 @@
 namespace App\Modules\Administration\Models;
 
 use App\Models\User;
+use App\Modules\Administration\Policies\RolePolicy;
 use Database\Factories\RoleFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,6 +23,7 @@ use Illuminate\Support\Str;
  */
 #[Fillable(['name', 'permissions', 'is_active'])]
 #[UseFactory(RoleFactory::class)]
+#[UsePolicy(RolePolicy::class)]
 class Role extends Model
 {
     /** @use HasFactory<RoleFactory> */

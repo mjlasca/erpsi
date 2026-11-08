@@ -3,10 +3,12 @@
 namespace App\Modules\Sales\Models;
 
 use App\Modules\Payments\Models\Payment;
+use App\Modules\Sales\Policies\CustomerPolicy;
 use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -40,6 +42,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'is_active',
 ])]
 #[UseFactory(CustomerFactory::class)]
+#[UsePolicy(CustomerPolicy::class)]
 class Customer extends Model
 {
     /** @use HasFactory<CustomerFactory> */

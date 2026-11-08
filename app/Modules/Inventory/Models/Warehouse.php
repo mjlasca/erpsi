@@ -2,12 +2,14 @@
 
 namespace App\Modules\Inventory\Models;
 
+use App\Modules\Inventory\Policies\WarehousePolicy;
 use App\Modules\Purchasing\Models\Purchase;
 use App\Modules\Sales\Models\Sale;
 use Database\Factories\WarehouseFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 #[Fillable(['code', 'name', 'address', 'description', 'is_active'])]
 #[UseFactory(WarehouseFactory::class)]
+#[UsePolicy(WarehousePolicy::class)]
 class Warehouse extends Model
 {
     /** @use HasFactory<WarehouseFactory> */

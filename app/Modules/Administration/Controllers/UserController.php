@@ -5,7 +5,8 @@ namespace App\Modules\Administration\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Modules\Administration\Models\Role;
-use App\Modules\Administration\Requests\UserRequest;
+use App\Modules\Administration\Requests\StoreUserRequest;
+use App\Modules\Administration\Requests\UpdateUserRequest;
 use App\Modules\Administration\Resources\UserResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -50,7 +51,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function store(UserRequest $request): RedirectResponse
+    public function store(StoreUserRequest $request): RedirectResponse
     {
         $this->authorize('create', User::class);
 
@@ -89,7 +90,7 @@ class UserController extends Controller
         ]);
     }
 
-    public function update(UserRequest $request, User $user): RedirectResponse
+    public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
         $this->authorize('update', $user);
 

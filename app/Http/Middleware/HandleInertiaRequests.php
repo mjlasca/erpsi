@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Modules\Administration\Support\Permissions;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -38,9 +39,18 @@ class HandleInertiaRequests extends Middleware
         $user = $request->user();
         $user?->loadMissing('role');
 
+        $can = [];
+
+        if ($user !== null) {
+            foreach (Permissions::all() as $permission) {
+                $can[$permission] = $user->hasPermission($permission);
+            }
+        }
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'can' => $can,
             'auth' => [
                 'user' => $user === null ? null : [
                     'id' => $user->id,

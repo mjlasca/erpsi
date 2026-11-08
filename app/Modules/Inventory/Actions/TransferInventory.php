@@ -45,6 +45,12 @@ class TransferInventory
             ]);
         }
 
+        if ($lot !== null && $lot->warehouse_id !== $fromWarehouse->id) {
+            throw ValidationException::withMessages([
+                'inventory_lot_id' => 'El lote no pertenece al almacén de origen.',
+            ]);
+        }
+
         if ($lot !== null && Decimal::compare($quantity, (string) $lot->quantity_available, 3) !== 0) {
             throw ValidationException::withMessages([
                 'quantity' => 'Para transferir un lote debes mover su cantidad disponible completa.',
@@ -73,6 +79,10 @@ class TransferInventory
                 user: $user,
             );
 
+            if ($lot !== null) {
+                $lot->update(['warehouse_id' => $toWarehouse->id]);
+            }
+
             $this->recordMovement->execute(
                 product: $product,
                 warehouse: $toWarehouse,
@@ -85,10 +95,6 @@ class TransferInventory
                 notes: $notes ?? 'Transferencia entre almacenes',
                 user: $user,
             );
-
-            if ($lot !== null) {
-                $lot->update(['warehouse_id' => $toWarehouse->id]);
-            }
 
             return $outbound;
         });

@@ -17,10 +17,16 @@ use App\Modules\Inventory\Controllers\TransferInventoryController;
 use App\Modules\Inventory\Controllers\WarehouseController;
 use App\Modules\Payments\Controllers\PaymentAllocationController;
 use App\Modules\Payments\Controllers\PaymentController;
+use App\Modules\Purchasing\Controllers\CancelPurchaseController;
 use App\Modules\Purchasing\Controllers\PurchaseController;
+use App\Modules\Purchasing\Controllers\PurchaseDetailController;
+use App\Modules\Purchasing\Controllers\ReceivePurchaseController;
 use App\Modules\Purchasing\Controllers\SupplierController;
+use App\Modules\Sales\Controllers\CancelSaleController;
+use App\Modules\Sales\Controllers\ConfirmSaleController;
 use App\Modules\Sales\Controllers\CustomerController;
 use App\Modules\Sales\Controllers\SaleController;
+use App\Modules\Sales\Controllers\SaleDetailController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
@@ -37,7 +43,40 @@ Route::post('logout', [LoginController::class, 'destroy'])
 Route::middleware(['auth', 'active'])->group(function (): void {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
 
+    Route::get('catalog/products/search', [ProductController::class, 'search'])
+        ->name('catalog.products.search');
     Route::resource('catalog/products', ProductController::class)->names('catalog.products');
+    Route::prefix('catalog/products/{product}')->scopeBindings()->group(function (): void {
+        Route::get('variants', [ProductVariantController::class, 'indexForProduct'])
+            ->name('catalog.products.variants.index');
+        Route::get('variants/create', [ProductVariantController::class, 'createForProduct'])
+            ->name('catalog.products.variants.create');
+        Route::post('variants', [ProductVariantController::class, 'storeForProduct'])
+            ->name('catalog.products.variants.store');
+        Route::get('variants/{variant}', [ProductVariantController::class, 'showForProduct'])
+            ->name('catalog.products.variants.show');
+        Route::get('variants/{variant}/edit', [ProductVariantController::class, 'editForProduct'])
+            ->name('catalog.products.variants.edit');
+        Route::match(['put', 'patch'], 'variants/{variant}', [ProductVariantController::class, 'updateForProduct'])
+            ->name('catalog.products.variants.update');
+        Route::delete('variants/{variant}', [ProductVariantController::class, 'destroyForProduct'])
+            ->name('catalog.products.variants.destroy');
+
+        Route::get('attributes', [ProductAttributeController::class, 'indexForProduct'])
+            ->name('catalog.products.attributes.index');
+        Route::get('attributes/create', [ProductAttributeController::class, 'createForProduct'])
+            ->name('catalog.products.attributes.create');
+        Route::post('attributes', [ProductAttributeController::class, 'storeForProduct'])
+            ->name('catalog.products.attributes.store');
+        Route::get('attributes/{attribute}', [ProductAttributeController::class, 'showForProduct'])
+            ->name('catalog.products.attributes.show');
+        Route::get('attributes/{attribute}/edit', [ProductAttributeController::class, 'editForProduct'])
+            ->name('catalog.products.attributes.edit');
+        Route::match(['put', 'patch'], 'attributes/{attribute}', [ProductAttributeController::class, 'updateForProduct'])
+            ->name('catalog.products.attributes.update');
+        Route::delete('attributes/{attribute}', [ProductAttributeController::class, 'destroyForProduct'])
+            ->name('catalog.products.attributes.destroy');
+    });
     Route::resource('catalog/categories', ProductCategoryController::class)
         ->parameters(['categories' => 'category'])
         ->names('catalog.categories');
@@ -52,24 +91,54 @@ Route::middleware(['auth', 'active'])->group(function (): void {
     Route::resource('inventory/movements', InventoryMovementController::class)
         ->only(['index', 'create', 'store', 'show'])
         ->names('inventory.movements');
+    Route::get('inventory/lots/search', [InventoryLotController::class, 'search'])
+        ->name('inventory.lots.search');
     Route::resource('inventory/lots', InventoryLotController::class)->names('inventory.lots');
     Route::get('inventory/transfers/create', [TransferInventoryController::class, 'create'])
         ->name('inventory.transfers.create');
     Route::post('inventory/transfers', [TransferInventoryController::class, 'store'])
         ->name('inventory.transfers.store');
 
+    Route::get('purchasing/suppliers/search', [SupplierController::class, 'search'])
+        ->name('purchasing.suppliers.search');
     Route::resource('purchasing/suppliers', SupplierController::class)->names('purchasing.suppliers');
     Route::resource('purchasing/purchases', PurchaseController::class)->names('purchasing.purchases');
-    Route::post('purchasing/purchases/{purchase}/receive', [PurchaseController::class, 'receive'])
+    Route::scopeBindings()->group(function (): void {
+        Route::get('purchasing/purchases/{purchase}/details', [PurchaseDetailController::class, 'index'])
+            ->name('purchasing.purchases.details.index');
+        Route::post('purchasing/purchases/{purchase}/details', [PurchaseDetailController::class, 'store'])
+            ->name('purchasing.purchases.details.store');
+        Route::get('purchasing/purchases/{purchase}/details/{detail}', [PurchaseDetailController::class, 'show'])
+            ->name('purchasing.purchases.details.show');
+        Route::match(['put', 'patch'], 'purchasing/purchases/{purchase}/details/{detail}', [PurchaseDetailController::class, 'update'])
+            ->name('purchasing.purchases.details.update');
+        Route::delete('purchasing/purchases/{purchase}/details/{detail}', [PurchaseDetailController::class, 'destroy'])
+            ->name('purchasing.purchases.details.destroy');
+    });
+    Route::post('purchasing/purchases/{purchase}/receive', ReceivePurchaseController::class)
         ->name('purchasing.purchases.receive');
-    Route::post('purchasing/purchases/{purchase}/cancel', [PurchaseController::class, 'cancel'])
+    Route::post('purchasing/purchases/{purchase}/cancel', CancelPurchaseController::class)
         ->name('purchasing.purchases.cancel');
 
+    Route::get('sales/customers/search', [CustomerController::class, 'search'])
+        ->name('sales.customers.search');
     Route::resource('sales/customers', CustomerController::class)->names('sales.customers');
     Route::resource('sales', SaleController::class)->names('sales.sales');
-    Route::post('sales/{sale}/confirm', [SaleController::class, 'confirm'])
+    Route::scopeBindings()->group(function (): void {
+        Route::get('sales/{sale}/details', [SaleDetailController::class, 'index'])
+            ->name('sales.sales.details.index');
+        Route::post('sales/{sale}/details', [SaleDetailController::class, 'store'])
+            ->name('sales.sales.details.store');
+        Route::get('sales/{sale}/details/{detail}', [SaleDetailController::class, 'show'])
+            ->name('sales.sales.details.show');
+        Route::match(['put', 'patch'], 'sales/{sale}/details/{detail}', [SaleDetailController::class, 'update'])
+            ->name('sales.sales.details.update');
+        Route::delete('sales/{sale}/details/{detail}', [SaleDetailController::class, 'destroy'])
+            ->name('sales.sales.details.destroy');
+    });
+    Route::post('sales/{sale}/confirm', ConfirmSaleController::class)
         ->name('sales.sales.confirm');
-    Route::post('sales/{sale}/cancel', [SaleController::class, 'cancel'])
+    Route::post('sales/{sale}/cancel', CancelSaleController::class)
         ->name('sales.sales.cancel');
 
     Route::resource('payments', PaymentController::class)->names('payments.payments');

@@ -5,7 +5,8 @@ namespace App\Modules\Catalog\Controllers;
 use App\Http\Controllers\Controller;
 use App\Modules\Catalog\Enums\UnitType;
 use App\Modules\Catalog\Models\Unit;
-use App\Modules\Catalog\Requests\UnitRequest;
+use App\Modules\Catalog\Requests\StoreUnitRequest;
+use App\Modules\Catalog\Requests\UpdateUnitRequest;
 use App\Modules\Catalog\Resources\UnitResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -45,7 +46,7 @@ class UnitController extends Controller
         ]);
     }
 
-    public function store(UnitRequest $request): RedirectResponse
+    public function store(StoreUnitRequest $request): RedirectResponse
     {
         $this->authorize('create', Unit::class);
 
@@ -77,7 +78,7 @@ class UnitController extends Controller
         ]);
     }
 
-    public function update(UnitRequest $request, Unit $unit): RedirectResponse
+    public function update(UpdateUnitRequest $request, Unit $unit): RedirectResponse
     {
         $this->authorize('update', $unit);
 

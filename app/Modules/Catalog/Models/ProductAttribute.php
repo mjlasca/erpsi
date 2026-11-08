@@ -2,9 +2,11 @@
 
 namespace App\Modules\Catalog\Models;
 
+use App\Modules\Catalog\Policies\ProductAttributePolicy;
 use Database\Factories\ProductAttributeFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 #[Fillable(['product_id', 'product_variant_id', 'unit_id', 'name', 'value', 'sort_order'])]
 #[UseFactory(ProductAttributeFactory::class)]
+#[UsePolicy(ProductAttributePolicy::class)]
 class ProductAttribute extends Model
 {
     /** @use HasFactory<ProductAttributeFactory> */

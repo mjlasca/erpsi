@@ -6,9 +6,11 @@ use App\Models\User;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Inventory\Enums\MovementType;
+use App\Modules\Inventory\Policies\InventoryMovementPolicy;
 use Database\Factories\InventoryMovementFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -45,6 +47,7 @@ use LogicException;
     'created_by',
 ])]
 #[UseFactory(InventoryMovementFactory::class)]
+#[UsePolicy(InventoryMovementPolicy::class)]
 class InventoryMovement extends Model
 {
     /** @use HasFactory<InventoryMovementFactory> */

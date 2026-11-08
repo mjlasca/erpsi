@@ -5,12 +5,14 @@ namespace App\Modules\Inventory\Models;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Inventory\Enums\LotStatus;
+use App\Modules\Inventory\Policies\InventoryLotPolicy;
 use App\Modules\Purchasing\Models\PurchaseDetail;
 use App\Modules\Sales\Models\SaleDetailLotAllocation;
 use Database\Factories\InventoryLotFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -53,6 +55,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'metadata',
 ])]
 #[UseFactory(InventoryLotFactory::class)]
+#[UsePolicy(InventoryLotPolicy::class)]
 class InventoryLot extends Model
 {
     /** @use HasFactory<InventoryLotFactory> */

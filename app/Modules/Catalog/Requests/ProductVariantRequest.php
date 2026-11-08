@@ -2,6 +2,7 @@
 
 namespace App\Modules\Catalog\Requests;
 
+use App\Modules\Catalog\Models\Product;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -10,6 +11,15 @@ class ProductVariantRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $product = $this->route('product');
+
+        if ($product instanceof Product) {
+            $this->merge(['product_id' => $product->id]);
+        }
     }
 
     /**

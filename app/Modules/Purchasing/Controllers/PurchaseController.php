@@ -15,7 +15,8 @@ use App\Modules\Purchasing\Enums\PurchaseStatus;
 use App\Modules\Purchasing\Models\Purchase;
 use App\Modules\Purchasing\Models\PurchaseDetail;
 use App\Modules\Purchasing\Models\Supplier;
-use App\Modules\Purchasing\Requests\PurchaseRequest;
+use App\Modules\Purchasing\Requests\StorePurchaseRequest;
+use App\Modules\Purchasing\Requests\UpdatePurchaseRequest;
 use App\Modules\Purchasing\Resources\PurchaseResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -68,7 +69,7 @@ class PurchaseController extends Controller
         return Inertia::render('Purchasing/Purchases/Create', $this->formOptions());
     }
 
-    public function store(PurchaseRequest $request): RedirectResponse
+    public function store(StorePurchaseRequest $request): RedirectResponse
     {
         $this->authorize('create', Purchase::class);
 
@@ -126,7 +127,7 @@ class PurchaseController extends Controller
         ]);
     }
 
-    public function update(PurchaseRequest $request, Purchase $purchase): RedirectResponse
+    public function update(UpdatePurchaseRequest $request, Purchase $purchase): RedirectResponse
     {
         $this->authorize('update', $purchase);
 

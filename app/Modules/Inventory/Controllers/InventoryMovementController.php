@@ -11,7 +11,7 @@ use App\Modules\Inventory\Enums\MovementType;
 use App\Modules\Inventory\Models\InventoryLot;
 use App\Modules\Inventory\Models\InventoryMovement;
 use App\Modules\Inventory\Models\Warehouse;
-use App\Modules\Inventory\Requests\InventoryMovementRequest;
+use App\Modules\Inventory\Requests\StoreInventoryMovementRequest;
 use App\Modules\Inventory\Resources\InventoryLotResource;
 use App\Modules\Inventory\Resources\InventoryMovementResource;
 use App\Modules\Inventory\Resources\WarehouseResource;
@@ -72,7 +72,7 @@ class InventoryMovementController extends Controller
         ]);
     }
 
-    public function store(InventoryMovementRequest $request, RecordInventoryMovement $recordMovement): RedirectResponse
+    public function store(StoreInventoryMovementRequest $request, RecordInventoryMovement $recordMovement): RedirectResponse
     {
         $this->authorize('create', InventoryMovement::class);
 

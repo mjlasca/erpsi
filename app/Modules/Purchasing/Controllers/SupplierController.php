@@ -4,15 +4,38 @@ namespace App\Modules\Purchasing\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Purchasing\Models\Supplier;
-use App\Modules\Purchasing\Requests\SupplierRequest;
+use App\Modules\Purchasing\Requests\StoreSupplierRequest;
+use App\Modules\Purchasing\Requests\UpdateSupplierRequest;
 use App\Modules\Purchasing\Resources\SupplierResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class SupplierController extends Controller
 {
+    public function search(Request $request): AnonymousResourceCollection
+    {
+        $this->authorize('viewAny', Supplier::class);
+
+        $suppliers = Supplier::query()
+            ->active()
+            ->when($request->string('search')->trim()->value(), function ($query, string $search): void {
+                $query->where(function ($query) use ($search): void {
+                    $query->where('name', 'like', "%{$search}%")
+                        ->orWhere('company_name', 'like', "%{$search}%")
+                        ->orWhere('tax_id', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('name')
+            ->limit(20)
+            ->get();
+
+        return SupplierResource::collection($suppliers);
+    }
+
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', Supplier::class);
@@ -43,7 +66,7 @@ class SupplierController extends Controller
         return Inertia::render('Purchasing/Suppliers/Create');
     }
 
-    public function store(SupplierRequest $request): RedirectResponse
+    public function store(StoreSupplierRequest $request): RedirectResponse
     {
         $this->authorize('create', Supplier::class);
 
@@ -74,7 +97,7 @@ class SupplierController extends Controller
         ]);
     }
 
-    public function update(SupplierRequest $request, Supplier $supplier): RedirectResponse
+    public function update(UpdateSupplierRequest $request, Supplier $supplier): RedirectResponse
     {
         $this->authorize('update', $supplier);
 

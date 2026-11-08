@@ -4,7 +4,8 @@ namespace App\Modules\Administration\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Administration\Models\Role;
-use App\Modules\Administration\Requests\RoleRequest;
+use App\Modules\Administration\Requests\StoreRoleRequest;
+use App\Modules\Administration\Requests\UpdateRoleRequest;
 use App\Modules\Administration\Resources\RoleResource;
 use App\Modules\Administration\Support\Permissions;
 use Illuminate\Http\RedirectResponse;
@@ -41,7 +42,7 @@ class RoleController extends Controller
         ]);
     }
 
-    public function store(RoleRequest $request): RedirectResponse
+    public function store(StoreRoleRequest $request): RedirectResponse
     {
         $this->authorize('create', Role::class);
 
@@ -77,7 +78,7 @@ class RoleController extends Controller
         ]);
     }
 
-    public function update(RoleRequest $request, Role $role): RedirectResponse
+    public function update(UpdateRoleRequest $request, Role $role): RedirectResponse
     {
         $this->authorize('update', $role);
 

@@ -16,7 +16,8 @@ use App\Modules\Sales\Models\Customer;
 use App\Modules\Sales\Models\Sale;
 use App\Modules\Sales\Models\SaleDetail;
 use App\Modules\Sales\Requests\ConfirmSaleRequest;
-use App\Modules\Sales\Requests\SaleRequest;
+use App\Modules\Sales\Requests\StoreSaleRequest;
+use App\Modules\Sales\Requests\UpdateSaleRequest;
 use App\Modules\Sales\Resources\SaleResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -73,7 +74,7 @@ class SaleController extends Controller
         return Inertia::render('Sales/Sales/Create', $this->formOptions());
     }
 
-    public function store(SaleRequest $request): RedirectResponse
+    public function store(StoreSaleRequest $request): RedirectResponse
     {
         $this->authorize('create', Sale::class);
 
@@ -132,7 +133,7 @@ class SaleController extends Controller
         ]);
     }
 
-    public function update(SaleRequest $request, Sale $sale): RedirectResponse
+    public function update(UpdateSaleRequest $request, Sale $sale): RedirectResponse
     {
         $this->authorize('update', $sale);
 

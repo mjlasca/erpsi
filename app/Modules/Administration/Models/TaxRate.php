@@ -2,12 +2,14 @@
 
 namespace App\Modules\Administration\Models;
 
+use App\Modules\Administration\Policies\TaxRatePolicy;
 use App\Modules\Purchasing\Models\PurchaseDetail;
 use App\Modules\Sales\Models\SaleDetail;
 use Database\Factories\TaxRateFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -23,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 #[Fillable(['name', 'rate', 'tax_type', 'jurisdiction', 'is_active'])]
 #[UseFactory(TaxRateFactory::class)]
+#[UsePolicy(TaxRatePolicy::class)]
 class TaxRate extends Model
 {
     /** @use HasFactory<TaxRateFactory> */

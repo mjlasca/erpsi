@@ -5,9 +5,11 @@ namespace App\Modules\Sales\Models;
 use App\Modules\Administration\Models\TaxRate;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductVariant;
+use App\Modules\Sales\Policies\SaleDetailPolicy;
 use Database\Factories\SaleDetailFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -41,6 +43,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'total',
 ])]
 #[UseFactory(SaleDetailFactory::class)]
+#[UsePolicy(SaleDetailPolicy::class)]
 class SaleDetail extends Model
 {
     /** @use HasFactory<SaleDetailFactory> */

@@ -6,9 +6,11 @@ use App\Modules\Administration\Models\TaxRate;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Inventory\Models\InventoryLot;
+use App\Modules\Purchasing\Policies\PurchaseDetailPolicy;
 use Database\Factories\PurchaseDetailFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Attributes\UsePolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -42,6 +44,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'total',
 ])]
 #[UseFactory(PurchaseDetailFactory::class)]
+#[UsePolicy(PurchaseDetailPolicy::class)]
 class PurchaseDetail extends Model
 {
     /** @use HasFactory<PurchaseDetailFactory> */

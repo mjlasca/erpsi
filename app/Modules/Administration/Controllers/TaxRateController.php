@@ -4,7 +4,8 @@ namespace App\Modules\Administration\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Administration\Models\TaxRate;
-use App\Modules\Administration\Requests\TaxRateRequest;
+use App\Modules\Administration\Requests\StoreTaxRateRequest;
+use App\Modules\Administration\Requests\UpdateTaxRateRequest;
 use App\Modules\Administration\Resources\TaxRateResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -42,7 +43,7 @@ class TaxRateController extends Controller
         return Inertia::render('Admin/TaxRates/Create');
     }
 
-    public function store(TaxRateRequest $request): RedirectResponse
+    public function store(StoreTaxRateRequest $request): RedirectResponse
     {
         $this->authorize('create', TaxRate::class);
 
@@ -73,7 +74,7 @@ class TaxRateController extends Controller
         ]);
     }
 
-    public function update(TaxRateRequest $request, TaxRate $taxRate): RedirectResponse
+    public function update(UpdateTaxRateRequest $request, TaxRate $taxRate): RedirectResponse
     {
         $this->authorize('update', $taxRate);
 

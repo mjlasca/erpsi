@@ -11,10 +11,12 @@ use App\Modules\Inventory\Enums\LotStatus;
 use App\Modules\Inventory\Enums\MovementType;
 use App\Modules\Inventory\Models\InventoryLot;
 use App\Modules\Inventory\Models\Warehouse;
-use App\Modules\Inventory\Requests\InventoryLotRequest;
+use App\Modules\Inventory\Requests\StoreInventoryLotRequest;
+use App\Modules\Inventory\Requests\UpdateInventoryLotRequest;
 use App\Modules\Inventory\Resources\InventoryLotResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -22,6 +24,29 @@ use Inertia\Response;
 
 class InventoryLotController extends Controller
 {
+    public function search(Request $request): AnonymousResourceCollection
+    {
+        $this->authorize('viewAny', InventoryLot::class);
+
+        $lots = InventoryLot::query()
+            ->with(['product', 'variant', 'warehouse'])
+            ->available()
+            ->when($request->string('search')->trim()->value(), function ($query, string $search): void {
+                $query->where(function ($query) use ($search): void {
+                    $query->where('code', 'like', "%{$search}%")
+                        ->orWhere('lot_number', 'like', "%{$search}%")
+                        ->orWhere('serial_number', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->integer('product_id'), fn ($query, int $productId) => $query->where('product_id', $productId))
+            ->when($request->integer('warehouse_id'), fn ($query, int $warehouseId) => $query->where('warehouse_id', $warehouseId))
+            ->orderBy('code')
+            ->limit(20)
+            ->get();
+
+        return InventoryLotResource::collection($lots);
+    }
+
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', InventoryLot::class);
@@ -65,7 +90,7 @@ class InventoryLotController extends Controller
         ]);
     }
 
-    public function store(InventoryLotRequest $request, RecordInventoryMovement $recordMovement): RedirectResponse
+    public function store(StoreInventoryLotRequest $request, RecordInventoryMovement $recordMovement): RedirectResponse
     {
         $this->authorize('create', InventoryLot::class);
 
@@ -142,7 +167,7 @@ class InventoryLotController extends Controller
         ]);
     }
 
-    public function update(InventoryLotRequest $request, InventoryLot $lot): RedirectResponse
+    public function update(UpdateInventoryLotRequest $request, InventoryLot $lot): RedirectResponse
     {
         $this->authorize('update', $lot);
 

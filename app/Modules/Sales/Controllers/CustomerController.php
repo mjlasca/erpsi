@@ -4,15 +4,40 @@ namespace App\Modules\Sales\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Sales\Models\Customer;
-use App\Modules\Sales\Requests\CustomerRequest;
+use App\Modules\Sales\Requests\StoreCustomerRequest;
+use App\Modules\Sales\Requests\UpdateCustomerRequest;
 use App\Modules\Sales\Resources\CustomerResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class CustomerController extends Controller
 {
+    public function search(Request $request): AnonymousResourceCollection
+    {
+        $this->authorize('viewAny', Customer::class);
+
+        $customers = Customer::query()
+            ->active()
+            ->when($request->string('search')->trim()->value(), function ($query, string $search): void {
+                $query->where(function ($query) use ($search): void {
+                    $query->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('company_name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('tax_id', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->limit(20)
+            ->get();
+
+        return CustomerResource::collection($customers);
+    }
+
     public function index(Request $request): Response
     {
         $this->authorize('viewAny', Customer::class);
@@ -45,7 +70,7 @@ class CustomerController extends Controller
         return Inertia::render('Sales/Customers/Create');
     }
 
-    public function store(CustomerRequest $request): RedirectResponse
+    public function store(StoreCustomerRequest $request): RedirectResponse
     {
         $this->authorize('create', Customer::class);
 
@@ -76,7 +101,7 @@ class CustomerController extends Controller
         ]);
     }
 
-    public function update(CustomerRequest $request, Customer $customer): RedirectResponse
+    public function update(UpdateCustomerRequest $request, Customer $customer): RedirectResponse
     {
         $this->authorize('update', $customer);
 

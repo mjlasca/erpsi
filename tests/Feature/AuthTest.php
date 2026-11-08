@@ -4,6 +4,11 @@ use App\Models\User;
 use Illuminate\Support\Facades\RateLimiter;
 use Inertia\Testing\AssertableInertia as Assert;
 
+it('returns validation messages in Spanish', function () {
+    $this->post(route('login.store'), [])
+        ->assertSessionHasErrors(['email' => 'El campo correo es obligatorio.']);
+});
+
 it('renders the login page', function () {
     $this->get(route('login.index'))
         ->assertOk()

@@ -4,7 +4,8 @@ namespace App\Modules\Catalog\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Modules\Catalog\Models\ProductCategory;
-use App\Modules\Catalog\Requests\ProductCategoryRequest;
+use App\Modules\Catalog\Requests\StoreProductCategoryRequest;
+use App\Modules\Catalog\Requests\UpdateProductCategoryRequest;
 use App\Modules\Catalog\Resources\ProductCategoryResource;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,7 +39,7 @@ class ProductCategoryController extends Controller
         return Inertia::render('Catalog/Categories/Create', $this->formOptions());
     }
 
-    public function store(ProductCategoryRequest $request): RedirectResponse
+    public function store(StoreProductCategoryRequest $request): RedirectResponse
     {
         $this->authorize('create', ProductCategory::class);
 
@@ -72,7 +73,7 @@ class ProductCategoryController extends Controller
         ]);
     }
 
-    public function update(ProductCategoryRequest $request, ProductCategory $category): RedirectResponse
+    public function update(UpdateProductCategoryRequest $request, ProductCategory $category): RedirectResponse
     {
         $this->authorize('update', $category);
 
