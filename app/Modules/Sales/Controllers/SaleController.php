@@ -6,14 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Modules\Administration\Models\TaxRate;
 use App\Modules\Administration\Resources\TaxRateResource;
 use App\Modules\Inventory\Models\Warehouse;
+use App\Modules\Payments\Enums\PaymentMethod;
 use App\Modules\Sales\Actions\CancelSale;
-use App\Modules\Sales\Actions\ConfirmSale;
 use App\Modules\Sales\Actions\RecalculateSaleTotals;
 use App\Modules\Sales\Enums\SaleStatus;
 use App\Modules\Sales\Models\Customer;
 use App\Modules\Sales\Models\Sale;
 use App\Modules\Sales\Models\SaleDetail;
-use App\Modules\Sales\Requests\ConfirmSaleRequest;
 use App\Modules\Sales\Requests\StoreSaleRequest;
 use App\Modules\Sales\Requests\UpdateSaleRequest;
 use App\Modules\Sales\Resources\SaleResource;
@@ -29,7 +28,6 @@ class SaleController extends Controller
 {
     public function __construct(
         protected RecalculateSaleTotals $recalculateTotals,
-        protected ConfirmSale $confirmSale,
         protected CancelSale $cancelSale,
     ) {}
 
@@ -118,6 +116,7 @@ class SaleController extends Controller
 
         return Inertia::render('Sales/Sales/Show', [
             'sale' => (new SaleResource($sale))->resolve(),
+            'paymentMethods' => PaymentMethod::options(),
         ]);
     }
 
@@ -161,21 +160,6 @@ class SaleController extends Controller
         return redirect()
             ->route('sales.sales.index')
             ->with('success', 'Venta eliminada correctamente.');
-    }
-
-    public function confirm(ConfirmSaleRequest $request, Sale $sale): RedirectResponse
-    {
-        $this->authorize('confirm', $sale);
-
-        $this->confirmSale->execute(
-            $sale,
-            $request->validated()['lot_allocations'] ?? [],
-            $request->user(),
-        );
-
-        return redirect()
-            ->route('sales.sales.show', $sale)
-            ->with('success', 'Venta confirmada e inventario actualizado.');
     }
 
     public function cancel(Request $request, Sale $sale): RedirectResponse

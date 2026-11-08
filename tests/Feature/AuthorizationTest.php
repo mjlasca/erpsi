@@ -26,10 +26,15 @@ it('denies users without the required permission', function () {
 
 it('denies access to custom document actions without permission', function () {
     $user = User::factory()->create();
-    $sale = Sale::factory()->create();
+    $sale = Sale::factory()->create(['total' => '100.00', 'balance' => '100.00']);
 
     $this->actingAs($user)
-        ->post(route('sales.sales.confirm', $sale))
+        ->post(route('sales.sales.pay', $sale), [
+            'payments' => [[
+                'payment_method' => 'CASH',
+                'amount' => '100.00',
+            ]],
+        ])
         ->assertForbidden();
 });
 

@@ -28,9 +28,9 @@ class PurchasePolicy extends BasePolicy
             && $this->can($user, 'delete');
     }
 
-    public function receive(User $user, Purchase $purchase): bool
+    public function pay(User $user, Purchase $purchase): bool
     {
-        return $purchase->isDraft() && $user->hasPermission('purchasing.purchases.receive');
+        return $purchase->isDraft() && $user->hasPermission('purchasing.purchases.pay');
     }
 
     public function cancel(User $user, Purchase $purchase): bool

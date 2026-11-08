@@ -3,25 +3,25 @@
 namespace App\Modules\Sales\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Modules\Sales\Actions\ConfirmSale;
+use App\Modules\Sales\Actions\PaySale;
 use App\Modules\Sales\Models\Sale;
-use App\Modules\Sales\Requests\ConfirmSaleRequest;
+use App\Modules\Sales\Requests\PaySaleRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\ValidationException;
 
-class ConfirmSaleController extends Controller
+class PaySaleController extends Controller
 {
     public function __invoke(
-        ConfirmSaleRequest $request,
+        PaySaleRequest $request,
         Sale $sale,
-        ConfirmSale $confirmSale,
+        PaySale $paySale,
     ): RedirectResponse {
-        $this->authorize('confirm', $sale);
+        $this->authorize('pay', $sale);
 
         try {
-            $confirmSale->execute(
+            $paySale->execute(
                 $sale,
-                $request->validated()['lot_allocations'] ?? [],
+                $request->validated()['payments'],
                 $request->user(),
             );
         } catch (ValidationException $exception) {
@@ -33,6 +33,6 @@ class ConfirmSaleController extends Controller
 
         return redirect()
             ->route('sales.sales.show', $sale)
-            ->with('success', 'Venta confirmada e inventario actualizado.');
+            ->with('success', 'Venta pagada e inventario actualizado.');
     }
 }

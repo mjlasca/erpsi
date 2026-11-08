@@ -55,7 +55,7 @@ final class Permissions
             'purchasing.purchases.create' => 'Crear compras',
             'purchasing.purchases.update' => 'Editar compras',
             'purchasing.purchases.delete' => 'Eliminar compras',
-            'purchasing.purchases.receive' => 'Recibir compras',
+            'purchasing.purchases.pay' => 'Pagar compras',
             'purchasing.purchases.cancel' => 'Cancelar compras',
         ],
         'Ventas' => [
@@ -67,7 +67,7 @@ final class Permissions
             'sales.sales.create' => 'Crear ventas',
             'sales.sales.update' => 'Editar ventas',
             'sales.sales.delete' => 'Eliminar ventas',
-            'sales.sales.confirm' => 'Confirmar ventas',
+            'sales.sales.pay' => 'Pagar ventas',
             'sales.sales.cancel' => 'Cancelar ventas',
         ],
         'Pagos' => [
@@ -76,6 +76,12 @@ final class Permissions
             'payments.payments.update' => 'Editar pagos',
             'payments.payments.delete' => 'Eliminar pagos',
             'payments.allocations.manage' => 'Aplicar y quitar pagos',
+        ],
+        'Caja' => [
+            'cash.reconciliations.view' => 'Ver arqueos',
+            'cash.reconciliations.create' => 'Crear arqueos',
+            'cash.reconciliations.update' => 'Editar arqueos',
+            'cash.reconciliations.delete' => 'Eliminar arqueos',
         ],
         'Administración' => [
             'administration.users.view' => 'Ver usuarios',

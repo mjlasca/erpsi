@@ -21,6 +21,7 @@ import {
 const statusTone = (status: string) => {
     switch (status) {
         case 'RECEIVED':
+        case 'PAID':
             return 'green' as const;
         case 'CANCELLED':
             return 'red' as const;

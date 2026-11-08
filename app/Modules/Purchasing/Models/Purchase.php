@@ -115,7 +115,7 @@ class Purchase extends Model
 
     public function isReceived(): bool
     {
-        return $this->status === PurchaseStatus::Received;
+        return in_array($this->status, [PurchaseStatus::Received, PurchaseStatus::Paid], true);
     }
 
     public function isCancelled(): bool

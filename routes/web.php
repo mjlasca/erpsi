@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Modules\Administration\Controllers\RoleController;
 use App\Modules\Administration\Controllers\TaxRateController;
 use App\Modules\Administration\Controllers\UserController;
+use App\Modules\Cash\Controllers\CashReconciliationController;
 use App\Modules\Catalog\Controllers\ProductAttributeController;
 use App\Modules\Catalog\Controllers\ProductCategoryController;
 use App\Modules\Catalog\Controllers\ProductController;
@@ -18,13 +19,13 @@ use App\Modules\Inventory\Controllers\WarehouseController;
 use App\Modules\Payments\Controllers\PaymentAllocationController;
 use App\Modules\Payments\Controllers\PaymentController;
 use App\Modules\Purchasing\Controllers\CancelPurchaseController;
+use App\Modules\Purchasing\Controllers\PayPurchaseController;
 use App\Modules\Purchasing\Controllers\PurchaseController;
 use App\Modules\Purchasing\Controllers\PurchaseDetailController;
-use App\Modules\Purchasing\Controllers\ReceivePurchaseController;
 use App\Modules\Purchasing\Controllers\SupplierController;
 use App\Modules\Sales\Controllers\CancelSaleController;
-use App\Modules\Sales\Controllers\ConfirmSaleController;
 use App\Modules\Sales\Controllers\CustomerController;
+use App\Modules\Sales\Controllers\PaySaleController;
 use App\Modules\Sales\Controllers\SaleController;
 use App\Modules\Sales\Controllers\SaleDetailController;
 use Illuminate\Support\Facades\Route;
@@ -115,8 +116,8 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         Route::delete('purchasing/purchases/{purchase}/details/{detail}', [PurchaseDetailController::class, 'destroy'])
             ->name('purchasing.purchases.details.destroy');
     });
-    Route::post('purchasing/purchases/{purchase}/receive', ReceivePurchaseController::class)
-        ->name('purchasing.purchases.receive');
+    Route::post('purchasing/purchases/{purchase}/pay', PayPurchaseController::class)
+        ->name('purchasing.purchases.pay');
     Route::post('purchasing/purchases/{purchase}/cancel', CancelPurchaseController::class)
         ->name('purchasing.purchases.cancel');
 
@@ -136,8 +137,8 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         Route::delete('sales/{sale}/details/{detail}', [SaleDetailController::class, 'destroy'])
             ->name('sales.sales.details.destroy');
     });
-    Route::post('sales/{sale}/confirm', ConfirmSaleController::class)
-        ->name('sales.sales.confirm');
+    Route::post('sales/{sale}/pay', PaySaleController::class)
+        ->name('sales.sales.pay');
     Route::post('sales/{sale}/cancel', CancelSaleController::class)
         ->name('sales.sales.cancel');
 
@@ -146,6 +147,15 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         ->name('payments.allocations.store');
     Route::delete('payments/{payment}/allocations/{allocation}', [PaymentAllocationController::class, 'destroy'])
         ->name('payments.allocations.destroy');
+
+    Route::get('cash/reconciliations', [CashReconciliationController::class, 'index'])
+        ->name('cash.reconciliations.index');
+    Route::get('cash/reconciliations/{date}', [CashReconciliationController::class, 'show'])
+        ->where('date', '\d{4}-\d{2}-\d{2}')
+        ->name('cash.reconciliations.show');
+    Route::put('cash/reconciliations/{date}', [CashReconciliationController::class, 'update'])
+        ->where('date', '\d{4}-\d{2}-\d{2}')
+        ->name('cash.reconciliations.update');
 
     Route::resource('administration/roles', RoleController::class)->names('admin.roles');
     Route::resource('administration/users', UserController::class)->names('admin.users');

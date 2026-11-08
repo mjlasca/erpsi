@@ -28,9 +28,9 @@ class SalePolicy extends BasePolicy
             && $this->can($user, 'delete');
     }
 
-    public function confirm(User $user, Sale $sale): bool
+    public function pay(User $user, Sale $sale): bool
     {
-        return $sale->isDraft() && $user->hasPermission('sales.sales.confirm');
+        return $sale->isDraft() && $user->hasPermission('sales.sales.pay');
     }
 
     public function cancel(User $user, Sale $sale): bool

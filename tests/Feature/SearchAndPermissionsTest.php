@@ -60,7 +60,7 @@ it('shares the can permission object with Inertia pages', function () {
         ->get(route('dashboard'))
         ->assertInertia(fn (Assert $page) => $page
             ->where('can', fn ($can) => $can['catalog.products.create'] === true
-                && $can['purchasing.purchases.receive'] === true));
+                && $can['purchasing.purchases.pay'] === true));
 });
 
 it('shares false permissions for users without permission', function () {

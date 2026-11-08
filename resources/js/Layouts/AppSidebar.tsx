@@ -12,6 +12,7 @@ import {
     ChevronRight,
     Boxes,
     CreditCard,
+    Wallet,
     type LucideIcon,
 } from 'lucide-react';
 import { dashboard } from '@/routes';
@@ -32,6 +33,7 @@ import { index as suppliersIndex } from '@/routes/purchasing/suppliers';
 import { index as salesIndex } from '@/routes/sales/sales';
 import { index as customersIndex } from '@/routes/sales/customers';
 import { index as paymentsIndex } from '@/routes/payments/payments';
+import { index as cashIndex } from '@/routes/cash/reconciliations';
 import { index as rolesIndex } from '@/routes/admin/roles';
 import { index as usersIndex } from '@/routes/admin/users';
 import { index as taxRatesIndex } from '@/routes/admin/tax-rates';
@@ -149,6 +151,12 @@ const menuItems: MenuItem[] = [
         href: paymentsIndex.url(),
         icon: CreditCard,
         permission: 'payments.payments.view',
+    },
+    {
+        label: 'Arqueo',
+        href: cashIndex.url(),
+        icon: Wallet,
+        permission: 'cash.reconciliations.view',
     },
     {
         label: 'Administración',

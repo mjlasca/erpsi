@@ -6,6 +6,7 @@ enum PurchaseStatus: string
 {
     case Draft = 'DRAFT';
     case Received = 'RECEIVED';
+    case Paid = 'PAID';
     case Cancelled = 'CANCELLED';
 
     public function label(): string
@@ -13,6 +14,7 @@ enum PurchaseStatus: string
         return match ($this) {
             self::Draft => 'Borrador',
             self::Received => 'Recibida',
+            self::Paid => 'Pagada',
             self::Cancelled => 'Cancelada',
         };
     }

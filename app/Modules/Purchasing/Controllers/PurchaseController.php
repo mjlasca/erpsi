@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Modules\Administration\Models\TaxRate;
 use App\Modules\Administration\Resources\TaxRateResource;
 use App\Modules\Inventory\Models\Warehouse;
+use App\Modules\Payments\Enums\PaymentMethod;
 use App\Modules\Purchasing\Actions\CancelPurchase;
 use App\Modules\Purchasing\Actions\RecalculatePurchaseTotals;
-use App\Modules\Purchasing\Actions\ReceivePurchase;
 use App\Modules\Purchasing\Enums\PurchaseStatus;
 use App\Modules\Purchasing\Models\Purchase;
 use App\Modules\Purchasing\Models\PurchaseDetail;
@@ -28,7 +28,6 @@ class PurchaseController extends Controller
 {
     public function __construct(
         protected RecalculatePurchaseTotals $recalculateTotals,
-        protected ReceivePurchase $receivePurchase,
         protected CancelPurchase $cancelPurchase,
     ) {}
 
@@ -112,6 +111,7 @@ class PurchaseController extends Controller
 
         return Inertia::render('Purchasing/Purchases/Show', [
             'purchase' => (new PurchaseResource($purchase))->resolve(),
+            'paymentMethods' => PaymentMethod::options(),
         ]);
     }
 
@@ -155,17 +155,6 @@ class PurchaseController extends Controller
         return redirect()
             ->route('purchasing.purchases.index')
             ->with('success', 'Compra eliminada correctamente.');
-    }
-
-    public function receive(Request $request, Purchase $purchase): RedirectResponse
-    {
-        $this->authorize('receive', $purchase);
-
-        $this->receivePurchase->execute($purchase, $request->user());
-
-        return redirect()
-            ->route('purchasing.purchases.show', $purchase)
-            ->with('success', 'Compra recibida e inventario actualizado.');
     }
 
     public function cancel(Request $request, Purchase $purchase): RedirectResponse

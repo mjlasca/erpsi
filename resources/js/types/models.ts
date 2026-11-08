@@ -207,6 +207,7 @@ export type PaymentAllocation = {
     sale_id?: number | null;
     purchase_id?: number | null;
     amount: string;
+    payment?: Payment;
     sale?: Sale;
     purchase?: Purchase;
 };
@@ -329,4 +330,19 @@ export type AdminUser = {
 export type SelectOption = {
     value: string;
     label: string;
+};
+
+export type CashSummary = {
+    date: string;
+    opening_balance: string;
+    cash_in: string;
+    cash_out: string;
+    inflow: string;
+    outflow: string;
+    net_flow: string;
+    expected_cash: string;
+    counted_cash?: string | null;
+    difference?: string | null;
+    reconciled: boolean;
+    notes?: string | null;
 };

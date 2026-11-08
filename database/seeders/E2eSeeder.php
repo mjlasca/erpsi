@@ -7,6 +7,9 @@ use App\Modules\Administration\Models\Role;
 use App\Modules\Catalog\Enums\ProductType;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\Unit;
+use App\Modules\Payments\Enums\PaymentMethod;
+use App\Modules\Payments\Enums\PaymentType;
+use App\Modules\Payments\Models\Payment;
 use App\Modules\Purchasing\Models\Supplier;
 use App\Modules\Sales\Models\Customer;
 use Illuminate\Database\Seeder;
@@ -71,6 +74,18 @@ class E2eSeeder extends Seeder
         );
 
         $unit = Unit::query()->where('abbreviation', 'EA')->firstOrFail();
+
+        Payment::query()->updateOrCreate(
+            ['reference' => 'ARQUEO-E2E'],
+            [
+                'payment_type' => PaymentType::CustomerPayment,
+                'customer_id' => Customer::query()->where('email', 'cliente@erpsi.test')->firstOrFail()->id,
+                'supplier_id' => null,
+                'payment_date' => now()->toDateString(),
+                'amount' => '100.00',
+                'payment_method' => PaymentMethod::Cash,
+            ],
+        );
 
         Product::query()->updateOrCreate(
             ['sku' => 'E2E-PROD-001'],

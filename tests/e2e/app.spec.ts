@@ -143,9 +143,25 @@ test('reduce el sidebar a solo iconos y permite expandirlo', async ({
     await expect(page.getByText('ERPsi', { exact: true })).toBeVisible();
 });
 
-test('crea una compra, la recibe y luego confirma una venta', async ({
-    page,
-}) => {
+test('muestra el arqueo diario de caja', async ({ page }) => {
+    await login(page);
+    await page.goto('/cash/reconciliations');
+
+    await expect(
+        page.getByRole('heading', { name: 'Arqueo de caja' }),
+    ).toBeVisible();
+    await expect(
+        page.getByRole('link', { name: 'Revisar' }).first(),
+    ).toBeVisible();
+
+    await page.getByRole('link', { name: 'Revisar' }).first().click();
+    await expect(
+        page.getByRole('heading', { name: /Arqueo de caja/ }),
+    ).toBeVisible();
+    await expect(page.getByText('ARQUEO-E2E')).toBeVisible();
+});
+
+test('crea una compra, la paga y luego paga una venta', async ({ page }) => {
     await login(page);
 
     await page.goto('/purchasing/purchases/create');
@@ -161,13 +177,13 @@ test('crea una compra, la recibe y luego confirma una venta', async ({
     await expect(page).toHaveURL(/\/purchasing\/purchases\/\d+$/);
     await expect(page.getByText('Borrador', { exact: true })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Recibir', exact: true }).click();
-    const receiveDialog = page.getByRole('dialog');
+    await page.getByRole('button', { name: 'Pagar', exact: true }).click();
+    const purchaseDialog = page.getByRole('dialog');
     await expect(
-        receiveDialog.getByRole('heading', { name: 'Recibir compra' }),
+        purchaseDialog.getByRole('heading', { name: 'Pagar compra' }),
     ).toBeVisible();
-    await receiveDialog.getByRole('button', { name: 'Recibir' }).click();
-    await expect(page.getByText('Recibida', { exact: true })).toBeVisible();
+    await purchaseDialog.getByRole('button', { name: 'Pagar' }).click();
+    await expect(page.getByText('Pagada', { exact: true })).toBeVisible();
 
     await page.goto('/inventory/stock');
     const stockAfterPurchase = page.getByRole('row', { name: /Producto E2E/ });
@@ -186,13 +202,13 @@ test('crea una compra, la recibe y luego confirma una venta', async ({
     await expect(page).toHaveURL(/\/sales\/\d+$/);
     await expect(page.getByText('Borrador', { exact: true })).toBeVisible();
 
-    await page.getByRole('button', { name: 'Confirmar', exact: true }).click();
-    const confirmDialog = page.getByRole('dialog');
+    await page.getByRole('button', { name: 'Pagar', exact: true }).click();
+    const saleDialog = page.getByRole('dialog');
     await expect(
-        confirmDialog.getByRole('heading', { name: 'Confirmar venta' }),
+        saleDialog.getByRole('heading', { name: 'Pagar venta' }),
     ).toBeVisible();
-    await confirmDialog.getByRole('button', { name: 'Confirmar' }).click();
-    await expect(page.getByText('Confirmada', { exact: true })).toBeVisible();
+    await saleDialog.getByRole('button', { name: 'Pagar' }).click();
+    await expect(page.getByText('Pagada', { exact: true })).toBeVisible();
 
     await page.goto('/inventory/stock');
     const stockAfterSale = page.getByRole('row', { name: /Producto E2E/ });

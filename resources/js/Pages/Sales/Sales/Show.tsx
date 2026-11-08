@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import Can from '@/Components/Ui/Can';
+import DocumentPaymentDialog from '@/Components/Ui/DocumentPaymentDialog';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceShow from '@/Components/Ui/ResourceShow';
 import {
     Badge,
+    Button,
     Card,
     CardHeader,
     ConfirmButton,
@@ -12,7 +15,8 @@ import {
 } from '@/Components/Ui/Primitives';
 import { formatDate, formatMoney, formatNumber } from '@/lib/format';
 import type { Sale } from '@/types/models';
-import { cancel, confirm, destroy, edit, index } from '@/routes/sales/sales';
+import type { SelectOption } from '@/types/erp';
+import { cancel, destroy, edit, index, pay } from '@/routes/sales/sales';
 
 const statusTone = (status: string) => {
     switch (status) {
@@ -27,7 +31,15 @@ const statusTone = (status: string) => {
     }
 };
 
-export default function SalesShow({ sale }: { sale: Sale }) {
+export default function SalesShow({
+    sale,
+    paymentMethods,
+}: {
+    sale: Sale;
+    paymentMethods: SelectOption[];
+}) {
+    const [payOpen, setPayOpen] = useState(false);
+
     return (
         <ErpLayout>
             <ResourceShow
@@ -45,23 +57,13 @@ export default function SalesShow({ sale }: { sale: Sale }) {
                                         Editar
                                     </LinkButton>
                                 </Can>
-                                <Can permission="sales.sales.confirm">
-                                    <ConfirmButton
-                                        message="¿Confirmar esta venta? Se validará la disponibilidad y se descontará inventario usando asignación FIFO automática."
-                                        confirmLabel="Confirmar"
-                                        title="Confirmar venta"
-                                        tone="primary"
-                                        variant="primary"
-                                        onConfirm={() =>
-                                            router.post(
-                                                confirm.url(sale.id),
-                                                {},
-                                                { preserveScroll: true },
-                                            )
-                                        }
+                                <Can permission="sales.sales.pay">
+                                    <Button
+                                        type="button"
+                                        onClick={() => setPayOpen(true)}
                                     >
-                                        Confirmar
-                                    </ConfirmButton>
+                                        Pagar
+                                    </Button>
                                 </Can>
                             </>
                         )}
@@ -246,9 +248,22 @@ export default function SalesShow({ sale }: { sale: Sale }) {
                                     key={allocation.id}
                                     className="flex items-center justify-between px-5 py-3 text-sm"
                                 >
-                                    <span className="text-gray-700">
-                                        Pago #{allocation.payment_id}
-                                    </span>
+                                    <div>
+                                        <p className="font-medium text-gray-900">
+                                            {allocation.payment
+                                                ?.payment_method_label ??
+                                                'Pago'}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                            {allocation.payment?.reference ??
+                                                'Sin referencia'}{' '}
+                                            ·{' '}
+                                            {formatDate(
+                                                allocation.payment
+                                                    ?.payment_date,
+                                            )}
+                                        </p>
+                                    </div>
                                     <span className="font-medium text-gray-900">
                                         {formatMoney(allocation.amount)}
                                     </span>
@@ -258,6 +273,16 @@ export default function SalesShow({ sale }: { sale: Sale }) {
                     )}
                 </Card>
             </ResourceShow>
+
+            {payOpen && (
+                <DocumentPaymentDialog
+                    title="Pagar venta"
+                    total={sale.total}
+                    action={pay.url(sale.id)}
+                    paymentMethods={paymentMethods}
+                    onClose={() => setPayOpen(false)}
+                />
+            )}
         </ErpLayout>
     );
 }

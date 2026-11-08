@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { router } from '@inertiajs/react';
 import Can from '@/Components/Ui/Can';
+import DocumentPaymentDialog from '@/Components/Ui/DocumentPaymentDialog';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceShow from '@/Components/Ui/ResourceShow';
 import {
     Badge,
+    Button,
     Card,
     CardHeader,
     ConfirmButton,
@@ -12,17 +15,19 @@ import {
 } from '@/Components/Ui/Primitives';
 import { formatDate, formatMoney, formatNumber } from '@/lib/format';
 import type { Purchase } from '@/types/models';
+import type { SelectOption } from '@/types/erp';
 import {
     cancel,
     destroy,
     edit,
     index,
-    receive,
+    pay,
 } from '@/routes/purchasing/purchases';
 
 const statusTone = (status: string) => {
     switch (status) {
         case 'RECEIVED':
+        case 'PAID':
             return 'green' as const;
         case 'CANCELLED':
             return 'red' as const;
@@ -31,7 +36,15 @@ const statusTone = (status: string) => {
     }
 };
 
-export default function PurchasesShow({ purchase }: { purchase: Purchase }) {
+export default function PurchasesShow({
+    purchase,
+    paymentMethods,
+}: {
+    purchase: Purchase;
+    paymentMethods: SelectOption[];
+}) {
+    const [payOpen, setPayOpen] = useState(false);
+
     return (
         <ErpLayout>
             <ResourceShow
@@ -49,23 +62,13 @@ export default function PurchasesShow({ purchase }: { purchase: Purchase }) {
                                         Editar
                                     </LinkButton>
                                 </Can>
-                                <Can permission="purchasing.purchases.receive">
-                                    <ConfirmButton
-                                        message="¿Recibir esta compra y actualizar el inventario?"
-                                        confirmLabel="Recibir"
-                                        title="Recibir compra"
-                                        tone="primary"
-                                        variant="primary"
-                                        onConfirm={() =>
-                                            router.post(
-                                                receive.url(purchase.id),
-                                                {},
-                                                { preserveScroll: true },
-                                            )
-                                        }
+                                <Can permission="purchasing.purchases.pay">
+                                    <Button
+                                        type="button"
+                                        onClick={() => setPayOpen(true)}
                                     >
-                                        Recibir
-                                    </ConfirmButton>
+                                        Pagar
+                                    </Button>
                                 </Can>
                             </>
                         )}
@@ -232,9 +235,22 @@ export default function PurchasesShow({ purchase }: { purchase: Purchase }) {
                                     key={allocation.id}
                                     className="flex items-center justify-between px-5 py-3 text-sm"
                                 >
-                                    <span className="text-gray-700">
-                                        Pago #{allocation.payment_id}
-                                    </span>
+                                    <div>
+                                        <p className="font-medium text-gray-900">
+                                            {allocation.payment
+                                                ?.payment_method_label ??
+                                                'Pago'}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                            {allocation.payment?.reference ??
+                                                'Sin referencia'}{' '}
+                                            ·{' '}
+                                            {formatDate(
+                                                allocation.payment
+                                                    ?.payment_date,
+                                            )}
+                                        </p>
+                                    </div>
                                     <span className="font-medium text-gray-900">
                                         {formatMoney(allocation.amount)}
                                     </span>
@@ -244,6 +260,16 @@ export default function PurchasesShow({ purchase }: { purchase: Purchase }) {
                     )}
                 </Card>
             </ResourceShow>
+
+            {payOpen && (
+                <DocumentPaymentDialog
+                    title="Pagar compra"
+                    total={purchase.total}
+                    action={pay.url(purchase.id)}
+                    paymentMethods={paymentMethods}
+                    onClose={() => setPayOpen(false)}
+                />
+            )}
         </ErpLayout>
     );
 }
