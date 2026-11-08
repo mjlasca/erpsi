@@ -134,6 +134,25 @@ export default function LineItemsEditor({
         });
     };
 
+    const changeVariant = (index: number, variantId: string) => {
+        const row = details[index];
+        const variant = row.product?.variants?.find(
+            (item) => String(item.id) === variantId,
+        );
+        const variantPrice = variant?.[priceField];
+        const fallbackPrice = row.product?.[priceField] ?? '0';
+
+        updateRow(index, {
+            product_variant_id: variantId,
+            unit_price:
+                variantPrice !== null &&
+                variantPrice !== undefined &&
+                variantPrice !== ''
+                    ? String(variantPrice)
+                    : fallbackPrice,
+        });
+    };
+
     const totals = details.reduce(
         (carry, row) => {
             const line = detailTotals(row, taxRates);
@@ -262,10 +281,10 @@ export default function LineItemsEditor({
                                             value={row.product_variant_id}
                                             disabled={variants.length === 0}
                                             onChange={(event) =>
-                                                updateRow(index, {
-                                                    product_variant_id:
-                                                        event.target.value,
-                                                })
+                                                changeVariant(
+                                                    index,
+                                                    event.target.value,
+                                                )
                                             }
                                         >
                                             <option value="">

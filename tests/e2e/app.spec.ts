@@ -161,6 +161,28 @@ test('muestra el arqueo diario de caja', async ({ page }) => {
     await expect(page.getByText('ARQUEO-E2E')).toBeVisible();
 });
 
+test('usa el precio de la variante y la muestra en el detalle', async ({
+    page,
+}) => {
+    await login(page);
+    await page.goto('/sales/create');
+
+    await chooseRemote(page, 'Cliente', 'Cliente E2E', /Cliente E2E/);
+    await page
+        .getByLabel('Almacén de salida')
+        .selectOption({ label: 'MAIN · Almacén principal' });
+    await chooseRemote(page, 'Producto', 'Producto E2E', /Producto E2E/);
+    await page
+        .getByLabel('Variante', { exact: true })
+        .selectOption({ label: 'Variante E2E' });
+
+    await expect(page.getByLabel('Precio unitario')).toHaveValue(/25/);
+    await page.getByRole('button', { name: 'Crear venta' }).click();
+
+    await expect(page).toHaveURL(/\/sales\/\d+$/);
+    await expect(page.getByText(/Variante: Variante E2E/)).toBeVisible();
+});
+
 test('crea una compra, la paga y luego paga una venta', async ({ page }) => {
     await login(page);
 

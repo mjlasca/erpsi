@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Modules\Administration\Models\Role;
 use App\Modules\Catalog\Enums\ProductType;
 use App\Modules\Catalog\Models\Product;
+use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Catalog\Models\Unit;
 use App\Modules\Payments\Enums\PaymentMethod;
 use App\Modules\Payments\Enums\PaymentType;
@@ -87,7 +88,7 @@ class E2eSeeder extends Seeder
             ],
         );
 
-        Product::query()->updateOrCreate(
+        $product = Product::query()->updateOrCreate(
             ['sku' => 'E2E-PROD-001'],
             [
                 'name' => 'Producto E2E',
@@ -99,6 +100,18 @@ class E2eSeeder extends Seeder
                 'min_stock' => '0.000',
                 'is_inventory' => true,
                 'track_lots' => false,
+                'is_active' => true,
+            ],
+        );
+
+        ProductVariant::query()->updateOrCreate(
+            ['sku' => 'E2E-VAR-001'],
+            [
+                'product_id' => $product->id,
+                'name' => 'Variante E2E',
+                'barcode' => null,
+                'cost_price' => '12.00',
+                'sale_price' => '25.00',
                 'is_active' => true,
             ],
         );

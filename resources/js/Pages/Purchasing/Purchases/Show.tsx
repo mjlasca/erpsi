@@ -196,7 +196,9 @@ export default function PurchasesShow({
                                                 {detail.product?.name ?? '—'}
                                             </p>
                                             <p className="text-xs text-gray-500">
-                                                {detail.variant?.name ?? ''}
+                                                {detail.variant
+                                                    ? `Variante: ${detail.variant.name}${detail.variant.sku ? ` · ${detail.variant.sku}` : ''}`
+                                                    : 'Sin variante'}
                                             </p>
                                         </td>
                                         <td className="px-4 py-3 text-right">
