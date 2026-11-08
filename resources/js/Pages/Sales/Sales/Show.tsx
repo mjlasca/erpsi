@@ -47,7 +47,7 @@ export default function SalesShow({ sale }: { sale: Sale }) {
                                 </Can>
                                 <Can permission="sales.sales.confirm">
                                     <ConfirmButton
-                                        message="¿Confirmar esta venta? Se descontará inventario usando asignación FIFO automática."
+                                        message="¿Confirmar esta venta? Se validará la disponibilidad y se descontará inventario usando asignación FIFO automática."
                                         confirmLabel="Confirmar"
                                         title="Confirmar venta"
                                         tone="primary"
@@ -160,7 +160,7 @@ export default function SalesShow({ sale }: { sale: Sale }) {
                         title="Líneas de la venta"
                         description={
                             sale.status === 'DRAFT'
-                                ? 'Al confirmar se asignarán lotes FIFO automáticamente.'
+                                ? 'El borrador no reserva existencias. Al confirmar se valida la disponibilidad y se asignan lotes FIFO automáticamente.'
                                 : 'Lotes asignados al confirmar la venta.'
                         }
                     />

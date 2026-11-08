@@ -174,3 +174,32 @@ it('confirms a sale through the dedicated controller', function () {
 
     expect($sale->refresh()->isConfirmed())->toBeTrue();
 });
+
+it('shows a clear error when confirming a sale without enough stock', function () {
+    $user = User::factory()->administrator()->create();
+    $warehouse = Warehouse::factory()->create();
+    $product = Product::factory()->create();
+    $sale = Sale::factory()->create(['warehouse_id' => $warehouse->id]);
+
+    InventoryStock::factory()->create([
+        'product_id' => $product->id,
+        'warehouse_id' => $warehouse->id,
+        'quantity_on_hand' => '1.000',
+    ]);
+
+    SaleDetail::factory()->forSale($sale)->create([
+        'product_id' => $product->id,
+        'quantity' => '3.000',
+        'unit_price' => '10.00',
+        'tax_rate' => '0.0000',
+        'discount' => '0.00',
+    ]);
+
+    $this->actingAs($user)
+        ->from(route('sales.sales.show', $sale))
+        ->post(route('sales.sales.confirm', $sale))
+        ->assertRedirect(route('sales.sales.show', $sale))
+        ->assertSessionHas('error', 'No hay existencias suficientes en el almacén.');
+
+    expect($sale->refresh()->isDraft())->toBeTrue();
+});

@@ -7,6 +7,7 @@ use App\Modules\Sales\Actions\ConfirmSale;
 use App\Modules\Sales\Models\Sale;
 use App\Modules\Sales\Requests\ConfirmSaleRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Validation\ValidationException;
 
 class ConfirmSaleController extends Controller
 {
@@ -17,11 +18,18 @@ class ConfirmSaleController extends Controller
     ): RedirectResponse {
         $this->authorize('confirm', $sale);
 
-        $confirmSale->execute(
-            $sale,
-            $request->validated()['lot_allocations'] ?? [],
-            $request->user(),
-        );
+        try {
+            $confirmSale->execute(
+                $sale,
+                $request->validated()['lot_allocations'] ?? [],
+                $request->user(),
+            );
+        } catch (ValidationException $exception) {
+            return back()->with(
+                'error',
+                $exception->validator->errors()->first(),
+            );
+        }
 
         return redirect()
             ->route('sales.sales.show', $sale)

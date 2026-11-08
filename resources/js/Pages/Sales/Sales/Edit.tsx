@@ -182,6 +182,11 @@ export default function SalesEdit({
                     </Field>
                 </Card>
 
+                <p className="rounded-lg border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800">
+                    El borrador no reserva existencias. La disponibilidad se
+                    valida al confirmar la venta.
+                </p>
+
                 <LineItemsEditor
                     details={form.data.details}
                     onChange={(rows) => form.setData('details', rows)}
