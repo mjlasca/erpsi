@@ -417,7 +417,7 @@ export default function AppSidebar({
                     )}
                 >
                     <div className="flex items-center gap-3 pt-5">
-                        <div className="mb-4 flex items-center justify-center max-w-[40px] mx-auto">
+                        <div className="mx-auto mb-4 flex max-w-[40px] items-center justify-center">
                             <img src="/erpsimple.svg" alt="Logo ErpSi1" />
                         </div>
                     </div>
