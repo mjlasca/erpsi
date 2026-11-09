@@ -1,10 +1,12 @@
+import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceIndex, { FilterSelect } from '@/Components/Ui/ResourceIndex';
-import { Badge, RowLink } from '@/Components/Ui/Primitives';
+import { Badge, LinkButton, RowLink } from '@/Components/Ui/Primitives';
 import { formatNumber } from '@/lib/format';
 import type { InventoryStock } from '@/types/models';
 import type { Filters, Paginated } from '@/types/erp';
 import { index, show } from '@/routes/inventory/stock';
+import { create as importProducts } from '@/routes/inventory/stock/import-products';
 
 export default function StockIndex({
     stock,
@@ -24,6 +26,16 @@ export default function StockIndex({
                 baseUrl={index.url()}
                 filters={filters}
                 searchPlaceholder="Buscar producto o SKU..."
+                extraActions={
+                    <Can permission="catalog.products.create">
+                        <LinkButton
+                            href={importProducts.url()}
+                            variant="secondary"
+                        >
+                            Importar productos
+                        </LinkButton>
+                    </Can>
+                }
                 filterControls={
                     <>
                         <FilterSelect

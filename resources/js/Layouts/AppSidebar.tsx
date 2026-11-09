@@ -412,28 +412,14 @@ export default function AppSidebar({
                 {/* Logo */}
                 <div
                     className={cn(
-                        'flex h-16 items-center border-b border-gray-100',
-                        isCollapsed ? 'justify-between px-2' : 'gap-3 px-6',
+                        'flex h-16 items-center justify-between border-b border-gray-100',
+                        isCollapsed ? 'px-2' : 'gap-3 px-6',
                     )}
                 >
-                    <div className="flex items-center gap-3">
-                        <div
-                            className={cn(
-                                'flex items-center justify-center rounded-lg bg-blue-600 text-white',
-                                isCollapsed ? 'h-8 w-8' : 'h-9 w-9',
-                            )}
-                        >
-                            <Boxes size={isCollapsed ? 18 : 21} />
+                    <div className="flex items-center gap-3 pt-5">
+                        <div className="mb-4 flex items-center justify-center max-w-[40px] mx-auto">
+                            <img src="/erpsimple.svg" alt="Logo ErpSi1" />
                         </div>
-
-                        <span
-                            className={cn(
-                                'text-lg font-bold tracking-tight text-gray-900',
-                                isCollapsed && 'lg:hidden',
-                            )}
-                        >
-                            ERPsi
-                        </span>
                     </div>
 
                     <button

@@ -9,6 +9,7 @@ use App\Modules\Cash\Controllers\CashReconciliationController;
 use App\Modules\Catalog\Controllers\ProductAttributeController;
 use App\Modules\Catalog\Controllers\ProductCategoryController;
 use App\Modules\Catalog\Controllers\ProductController;
+use App\Modules\Catalog\Controllers\ProductImportController;
 use App\Modules\Catalog\Controllers\ProductVariantController;
 use App\Modules\Catalog\Controllers\UnitController;
 use App\Modules\Inventory\Controllers\InventoryLotController;
@@ -86,6 +87,12 @@ Route::middleware(['auth', 'active'])->group(function (): void {
     Route::resource('catalog/attributes', ProductAttributeController::class)->names('catalog.attributes');
 
     Route::resource('inventory/warehouses', WarehouseController::class)->names('inventory.warehouses');
+    Route::get('inventory/stock/import-products', [ProductImportController::class, 'create'])
+        ->name('inventory.stock.import-products.create');
+    Route::post('inventory/stock/import-products', [ProductImportController::class, 'store'])
+        ->name('inventory.stock.import-products.store');
+    Route::get('inventory/stock/import-products/template', [ProductImportController::class, 'template'])
+        ->name('inventory.stock.import-products.template');
     Route::resource('inventory/stock', InventoryStockController::class)
         ->only(['index', 'show'])
         ->names('inventory.stock');

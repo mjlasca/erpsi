@@ -183,6 +183,38 @@ test('usa el precio de la variante y la muestra en el detalle', async ({
     await expect(page.getByText(/Variante: Variante E2E/)).toBeVisible();
 });
 
+test('descarga la plantilla e importa productos desde CSV', async ({
+    page,
+}) => {
+    await login(page);
+    await page.goto('/inventory/stock');
+
+    await page.getByRole('link', { name: 'Importar productos' }).click();
+    await expect(
+        page.getByRole('heading', { name: 'Importar productos' }),
+    ).toBeVisible();
+
+    const downloadPromise = page.waitForEvent('download');
+    await page.getByRole('link', { name: 'Descargar plantilla CSV' }).click();
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toBe('plantilla-productos.csv');
+
+    const csv = [
+        'sku,name,description,category_name,unit_abbreviation,product_type,brand,barcode,cost_price,sale_price,min_stock,is_inventory,track_lots,is_active',
+        'CSV-E2E-001,Producto CSV E2E,,,EA,GOODS,,,10.00,20.00,0,1,0,1',
+    ].join('\n');
+
+    await page.getByLabel('Archivo CSV').setInputFiles({
+        name: 'productos.csv',
+        mimeType: 'text/csv',
+        buffer: Buffer.from(csv),
+    });
+    await page.getByRole('button', { name: 'Importar productos' }).click();
+
+    await expect(page).toHaveURL(/\/catalog\/products/);
+    await expect(page.getByText('CSV-E2E-001')).toBeVisible();
+});
+
 test('crea una compra, la paga y luego paga una venta', async ({ page }) => {
     await login(page);
 

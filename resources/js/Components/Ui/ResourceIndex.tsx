@@ -26,6 +26,7 @@ export default function ResourceIndex<T extends { id: number }>({
     createHref,
     createPermission,
     createLabel = 'Nuevo registro',
+    extraActions,
     actions,
     emptyMessage,
 }: {
@@ -40,6 +41,7 @@ export default function ResourceIndex<T extends { id: number }>({
     createHref?: string;
     createPermission?: string;
     createLabel?: string;
+    extraActions?: ReactNode;
     actions?: (row: T) => ReactNode;
     emptyMessage?: string;
 }) {
@@ -70,8 +72,15 @@ export default function ResourceIndex<T extends { id: number }>({
                 title={title}
                 description={description}
                 actions={
-                    showCreate && createHref ? (
-                        <LinkButton href={createHref}>{createLabel}</LinkButton>
+                    showCreate || extraActions ? (
+                        <>
+                            {extraActions}
+                            {showCreate && createHref && (
+                                <LinkButton href={createHref}>
+                                    {createLabel}
+                                </LinkButton>
+                            )}
+                        </>
                     ) : undefined
                 }
             />
