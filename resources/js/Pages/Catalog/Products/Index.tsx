@@ -3,10 +3,19 @@ import ErpLayout from '@/Layouts/ErpLayout';
 import ResourceIndex, { FilterSelect } from '@/Components/Ui/ResourceIndex';
 import { Badge, DeleteButton, RowLink } from '@/Components/Ui/Primitives';
 import { formatMoney } from '@/lib/format';
+import { useTranslation } from '@/lib/i18n';
+import { withQuery } from '@/lib/url';
 import type { Product } from '@/types/models';
 import type { Filters, Paginated } from '@/types/erp';
 import { toSelectOptions } from '@/types/erp';
-import { create, destroy, edit, index, show } from '@/routes/catalog/products';
+import {
+    create,
+    destroy,
+    edit,
+    exportMethod,
+    index,
+    show,
+} from '@/routes/catalog/products';
 
 export default function ProductsIndex({
     products,
@@ -17,6 +26,8 @@ export default function ProductsIndex({
     filters: Filters;
     categories: Array<{ id: number; name: string }>;
 }) {
+    const { t } = useTranslation();
+
     return (
         <ErpLayout>
             <ResourceIndex
@@ -29,6 +40,14 @@ export default function ProductsIndex({
                 createHref={create.url()}
                 createPermission="catalog.products.create"
                 createLabel="Nuevo producto"
+                extraActions={
+                    <a
+                        href={withQuery(exportMethod.url(), filters)}
+                        className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                        {t('common.exportCsv')}
+                    </a>
+                }
                 filterControls={
                     <>
                         <FilterSelect

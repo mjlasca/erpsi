@@ -2,6 +2,7 @@
 
 namespace App\Modules\Purchasing\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use App\Modules\Payments\Models\Payment;
 use App\Modules\Purchasing\Policies\SupplierPolicy;
 use Database\Factories\SupplierFactory;
@@ -42,7 +43,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Supplier extends Model
 {
     /** @use HasFactory<SupplierFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected function casts(): array
     {

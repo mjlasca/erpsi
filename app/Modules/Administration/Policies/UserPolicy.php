@@ -3,6 +3,7 @@
 namespace App\Modules\Administration\Policies;
 
 use App\Models\User;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Database\Eloquent\Model;
 
 class UserPolicy extends BasePolicy
@@ -12,9 +13,19 @@ class UserPolicy extends BasePolicy
         return 'administration.users';
     }
 
+    public function view(User $user, Model $model): bool
+    {
+        return $model instanceof User && $this->sharesTenant($model) && parent::view($user, $model);
+    }
+
+    public function update(User $user, Model $model): bool
+    {
+        return $model instanceof User && $this->sharesTenant($model) && parent::update($user, $model);
+    }
+
     public function delete(User $user, Model $model): bool
     {
-        if (! $model instanceof User || ! $this->can($user, 'delete') || $user->is($model)) {
+        if (! $model instanceof User || ! $this->sharesTenant($model) || ! $this->can($user, 'delete') || $user->is($model)) {
             return false;
         }
 
@@ -26,5 +37,12 @@ class UserPolicy extends BasePolicy
         }
 
         return true;
+    }
+
+    protected function sharesTenant(User $model): bool
+    {
+        $tenantId = app(TenantContext::class)->id();
+
+        return $tenantId === null || $model->belongsToTenant($tenantId);
     }
 }

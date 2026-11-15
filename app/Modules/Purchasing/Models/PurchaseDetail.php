@@ -2,6 +2,7 @@
 
 namespace App\Modules\Purchasing\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use App\Modules\Administration\Models\TaxRate;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductVariant;
@@ -48,7 +49,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class PurchaseDetail extends Model
 {
     /** @use HasFactory<PurchaseDetailFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected function casts(): array
     {
@@ -91,5 +92,11 @@ class PurchaseDetail extends Model
     public function lots(): HasMany
     {
         return $this->hasMany(InventoryLot::class);
+    }
+
+    /** @return HasMany<PurchaseReturnDetail, $this> */
+    public function returnDetails(): HasMany
+    {
+        return $this->hasMany(PurchaseReturnDetail::class);
     }
 }

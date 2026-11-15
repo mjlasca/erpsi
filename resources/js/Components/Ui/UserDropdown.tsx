@@ -1,7 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, router } from '@inertiajs/react';
-import { ChevronDown, UserRound, LogOut } from 'lucide-react';
+import { Link, router, usePage } from '@inertiajs/react';
+import { ChevronDown, UserRound, LogOut, Settings } from 'lucide-react';
 import { dashboard, logout } from '@/routes';
+import { edit as preferencesEdit } from '@/routes/preferences';
+import { index as exportsIndex } from '@/routes/exports';
+import { dashboard as platformDashboard } from '@/routes/platform';
+import { useTranslation } from '@/lib/i18n';
 
 interface UserDropdownProps {
     name: string;
@@ -11,6 +15,15 @@ interface UserDropdownProps {
 export default function UserDropdown({ name, avatarUrl }: UserDropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const page = usePage();
+    const isPlatformAdmin = Boolean(
+        (
+            page.props as unknown as {
+                auth?: { user?: { is_platform_admin?: boolean } | null };
+            }
+        ).auth?.user?.is_platform_admin,
+    );
+    const { t } = useTranslation();
 
     const initials = name
         .split(' ')
@@ -86,8 +99,37 @@ export default function UserDropdown({ name, avatarUrl }: UserDropdownProps) {
                         className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
                     >
                         <UserRound size={17} className="text-gray-400" />
-                        Ir al panel
+                        {t('nav.dashboardShort')}
                     </Link>
+
+                    <Link
+                        href={preferencesEdit.url()}
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                    >
+                        <Settings size={17} className="text-gray-400" />
+                        {t('nav.preferences')}
+                    </Link>
+
+                    <Link
+                        href={exportsIndex.url()}
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                    >
+                        <UserRound size={17} className="text-gray-400" />
+                        {t('nav.exports')}
+                    </Link>
+
+                    {isPlatformAdmin && (
+                        <Link
+                            href={platformDashboard.url()}
+                            onClick={() => setIsOpen(false)}
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                        >
+                            <Settings size={17} className="text-gray-400" />
+                            {t('nav.platform')}
+                        </Link>
+                    )}
 
                     <div className="my-1 border-t border-gray-100" />
 
@@ -97,7 +139,7 @@ export default function UserDropdown({ name, avatarUrl }: UserDropdownProps) {
                         className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-red-600 transition-colors hover:bg-red-50"
                     >
                         <LogOut size={17} />
-                        Cerrar sesión
+                        {t('nav.logout')}
                     </button>
                 </div>
             )}

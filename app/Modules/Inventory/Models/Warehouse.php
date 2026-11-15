@@ -2,6 +2,7 @@
 
 namespace App\Modules\Inventory\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use App\Modules\Inventory\Policies\WarehousePolicy;
 use App\Modules\Purchasing\Models\Purchase;
 use App\Modules\Sales\Models\Sale;
@@ -29,7 +30,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Warehouse extends Model
 {
     /** @use HasFactory<WarehouseFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected function casts(): array
     {

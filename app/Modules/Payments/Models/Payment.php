@@ -2,6 +2,7 @@
 
 namespace App\Modules\Payments\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use App\Models\User;
 use App\Modules\Payments\Enums\PaymentMethod;
 use App\Modules\Payments\Enums\PaymentType;
@@ -40,6 +41,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'payment_method',
     'reference',
     'notes',
+    'cash_session_id',
     'created_by',
 ])]
 #[UseFactory(PaymentFactory::class)]
@@ -47,7 +49,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Payment extends Model
 {
     /** @use HasFactory<PaymentFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected function casts(): array
     {
@@ -91,6 +93,11 @@ class Payment extends Model
     public function isSupplierPayment(): bool
     {
         return $this->payment_type === PaymentType::SupplierPayment;
+    }
+
+    public function isRefund(): bool
+    {
+        return in_array($this->payment_type, [PaymentType::CustomerRefund, PaymentType::SupplierRefund], true);
     }
 
     /**

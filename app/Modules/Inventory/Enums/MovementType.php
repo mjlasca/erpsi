@@ -9,21 +9,25 @@ enum MovementType: string
     case Return = 'RETURN';
     case Adjustment = 'ADJUSTMENT';
     case Transfer = 'TRANSFER';
+    case Quarantine = 'QUARANTINE';
+    case Damage = 'DAMAGE';
 
     public function label(): string
     {
         return match ($this) {
-            self::Purchase => 'Compra',
-            self::Sale => 'Venta',
-            self::Return => 'Devolución',
-            self::Adjustment => 'Ajuste',
-            self::Transfer => 'Transferencia',
+            self::Purchase => __('enums.movement_type.purchase'),
+            self::Sale => __('enums.movement_type.sale'),
+            self::Return => __('enums.movement_type.return'),
+            self::Adjustment => __('enums.movement_type.adjustment'),
+            self::Transfer => __('enums.movement_type.transfer'),
+            self::Quarantine => __('enums.movement_type.quarantine'),
+            self::Damage => __('enums.movement_type.damage'),
         };
     }
 
     public function isManual(): bool
     {
-        return in_array($this, [self::Return, self::Adjustment, self::Transfer], true);
+        return in_array($this, [self::Return, self::Adjustment, self::Transfer, self::Quarantine, self::Damage], true);
     }
 
     /**

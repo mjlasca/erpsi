@@ -1,15 +1,21 @@
-import { Link } from '@inertiajs/react';
+import { FormEvent } from 'react';
+import { Link, router } from '@inertiajs/react';
 import { AlertTriangle, ArrowRight, Package } from 'lucide-react';
 import Can from '@/Components/Ui/Can';
 import ErpLayout from '@/Layouts/ErpLayout';
+import { ComparisonBarChart, DualLineChart } from '@/Components/Ui/Charts';
 import {
     Badge,
+    Button,
     Card,
     CardHeader,
     PageHeader,
+    Select,
 } from '@/Components/Ui/Primitives';
 import { formatDate, formatMoney, formatNumber } from '@/lib/format';
+import { useTranslation } from '@/lib/i18n';
 import { useCan } from '@/lib/permissions';
+import { dashboard } from '@/routes';
 import type { InventoryStock, Purchase, Sale } from '@/types/models';
 import { index as purchasesIndex } from '@/routes/purchasing/purchases';
 import { index as salesIndex } from '@/routes/sales/sales';
@@ -25,6 +31,19 @@ type Stats = {
     payable_balance: string;
     sales_this_month: string;
     purchases_this_month: string;
+};
+
+type DashboardCharts = {
+    salesPurchases: Array<{
+        label: string;
+        sales: string;
+        purchases: string;
+    }>;
+    cashFlow: Array<{
+        label: string;
+        cash_in: string;
+        cash_out: string;
+    }>;
 };
 
 const statusTone = (status: string) => {
@@ -48,59 +67,117 @@ export default function Dashboard({
     recentSales = [],
     recentPurchases = [],
     lowStockItems = [],
+    charts,
+    filters,
+    warehouses = [],
 }: {
     stats: Stats;
     recentSales?: Sale[];
     recentPurchases?: Purchase[];
     lowStockItems?: InventoryStock[];
+    charts: DashboardCharts;
+    filters: { months: number; warehouse_id: number | null };
+    warehouses?: Array<{ id: number; name: string; code: string }>;
 }) {
     const can = useCan();
+    const { t } = useTranslation();
     const cards = [
         {
-            label: 'Productos activos',
+            label: t('dashboard.activeProducts'),
             value: formatNumber(stats.active_products, 0),
             href: productsIndex.url(),
             permission: 'catalog.products.view',
         },
         {
-            label: 'Existencias bajas',
+            label: t('dashboard.lowStock'),
             value: formatNumber(stats.low_stock_items, 0),
             href: stockIndex.url(),
             warning: stats.low_stock_items > 0,
             permission: 'inventory.stock.view',
         },
         {
-            label: 'Por cobrar',
+            label: t('dashboard.receivable'),
             value: formatMoney(stats.receivable_balance),
             href: salesIndex.url(),
             permission: 'sales.sales.view',
         },
         {
-            label: 'Por pagar',
+            label: t('dashboard.payable'),
             value: formatMoney(stats.payable_balance),
             href: purchasesIndex.url(),
             permission: 'purchasing.purchases.view',
         },
         {
-            label: 'Ventas del mes',
+            label: t('dashboard.salesThisMonth'),
             value: formatMoney(stats.sales_this_month),
             href: salesIndex.url(),
             permission: 'sales.sales.view',
         },
         {
-            label: 'Compras del mes',
+            label: t('dashboard.purchasesThisMonth'),
             value: formatMoney(stats.purchases_this_month),
             href: purchasesIndex.url(),
             permission: 'purchasing.purchases.view',
         },
     ].filter((card) => can(card.permission));
 
+    const applyFilters = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const data = Object.fromEntries(
+            new FormData(event.currentTarget).entries(),
+        );
+        router.get(dashboard.url(), data, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        });
+    };
+
     return (
         <ErpLayout>
             <PageHeader
-                title="Panel de control"
-                description="Resumen general de la operación."
+                title={t('dashboard.title')}
+                description={t('dashboard.description')}
             />
+
+            <Card className="mb-6 p-4">
+                <form
+                    onSubmit={applyFilters}
+                    className="flex flex-wrap items-end gap-3"
+                >
+                    <label className="text-sm font-medium text-gray-700">
+                        {t('dashboard.filterMonths')}
+                        <Select
+                            name="months"
+                            defaultValue={String(filters.months)}
+                            className="mt-1 h-10 w-32"
+                        >
+                            <option value="6">6</option>
+                            <option value="12">12</option>
+                        </Select>
+                    </label>
+                    <label className="text-sm font-medium text-gray-700">
+                        {t('dashboard.warehouse')}
+                        <Select
+                            name="warehouse_id"
+                            defaultValue={
+                                filters.warehouse_id?.toString() ?? ''
+                            }
+                            className="mt-1 h-10 w-52"
+                        >
+                            <option value="">{t('common.none')}</option>
+                            {warehouses.map((warehouse) => (
+                                <option key={warehouse.id} value={warehouse.id}>
+                                    {warehouse.code} · {warehouse.name}
+                                </option>
+                            ))}
+                        </Select>
+                    </label>
+                    <Button type="submit" variant="secondary">
+                        {t('common.filter')}
+                    </Button>
+                </form>
+            </Card>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {cards.map((card) => (
@@ -127,9 +204,39 @@ export default function Dashboard({
             </div>
 
             <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+                <Card className="xl:col-span-2">
+                    <CardHeader title={t('dashboard.salesVsPurchases')} />
+                    <div className="p-5">
+                        <ComparisonBarChart
+                            data={charts.salesPurchases.map((point) => ({
+                                label: point.label,
+                                primary: point.sales,
+                                secondary: point.purchases,
+                            }))}
+                            primaryLabel={t('dashboard.sales')}
+                            secondaryLabel={t('dashboard.purchases')}
+                        />
+                    </div>
+                </Card>
+
+                <Card className="xl:col-span-2">
+                    <CardHeader title={t('dashboard.cashFlow')} />
+                    <div className="p-5">
+                        <DualLineChart
+                            data={charts.cashFlow.map((point) => ({
+                                label: point.label,
+                                first: point.cash_in,
+                                second: point.cash_out,
+                            }))}
+                            firstLabel={t('dashboard.cashIn')}
+                            secondLabel={t('dashboard.cashOut')}
+                        />
+                    </div>
+                </Card>
+
                 <Card>
                     <CardHeader
-                        title="Ventas recientes"
+                        title={t('dashboard.recentSales')}
                         action={
                             <Link
                                 href={salesIndex.url()}
@@ -177,7 +284,7 @@ export default function Dashboard({
                 <Can permission="purchasing.purchases.view">
                     <Card>
                         <CardHeader
-                            title="Compras recientes"
+                            title={t('dashboard.recentPurchases')}
                             action={
                                 <Link
                                     href={purchasesIndex.url()}
@@ -232,8 +339,8 @@ export default function Dashboard({
 
                 <Card className="xl:col-span-2">
                     <CardHeader
-                        title="Existencias bajas"
-                        description="Productos en o por debajo del mínimo configurado."
+                        title={t('dashboard.lowStockTitle')}
+                        description={t('dashboard.lowStockDescription')}
                         action={
                             <Link
                                 href={stockIndex.url()}

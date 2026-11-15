@@ -26,6 +26,7 @@ class InventoryStockResource extends JsonResource
             'quantity_on_hand' => $this->quantity_on_hand,
             'quantity_reserved' => $this->quantity_reserved,
             'quantity_minimum' => $this->quantity_minimum,
+            'quantity_quarantined' => $this->quantity_quarantined,
             'quantity_available' => $this->quantity_available,
             'is_low_stock' => bccomp((string) $this->quantity_on_hand, (string) $this->quantity_minimum, 3) <= 0,
             'product' => $this->whenLoaded('product', fn (): array => (new ProductResource($this->product))->resolve()),

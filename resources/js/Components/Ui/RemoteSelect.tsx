@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { useHttp } from '@inertiajs/react';
 import { Loader2, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -37,7 +38,7 @@ export default function RemoteSelect<T>({
     className?: string;
     ariaLabel?: string;
 }) {
-    const { get } = useHttp<{ search: string }, { data: T[] }>({ search: '' });
+    const { get } = useHttp<Record<string, never>, { data: T[] }>({});
     const [query, setQuery] = useState('');
     const [options, setOptions] = useState<RemoteOption<T>[]>(initialOptions);
     const [selected, setSelected] = useState<RemoteOption<T> | null>(
@@ -48,7 +49,16 @@ export default function RemoteSelect<T>({
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [activeIndex, setActiveIndex] = useState(0);
+    const [dropdownPosition, setDropdownPosition] = useState<{
+        left: number;
+        width: number;
+        maxHeight: number;
+        top?: number;
+        bottom?: number;
+    }>({ left: 0, width: 0, maxHeight: 256, top: 0 });
     const containerRef = useRef<HTMLDivElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
     const mapOptionRef = useRef(mapOption);
     const getRef = useRef(get);
     const queryParamsKey = JSON.stringify(queryParams);
@@ -115,11 +125,60 @@ export default function RemoteSelect<T>({
         return () => window.clearTimeout(timeout);
     }, [open, query, searchUrl, queryParamsKey]);
 
+    useLayoutEffect(() => {
+        if (!open) {
+            return;
+        }
+
+        const updatePosition = () => {
+            const input = inputRef.current;
+
+            if (!input) {
+                return;
+            }
+
+            const rect = input.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            const viewportWidth = window.innerWidth;
+            const spaceBelow = viewportHeight - rect.bottom - 8;
+            const spaceAbove = rect.top - 8;
+            const openUp = spaceBelow < 240 && spaceAbove > spaceBelow;
+            const maxHeight = Math.max(
+                80,
+                Math.min(256, openUp ? spaceAbove : spaceBelow),
+            );
+
+            setDropdownPosition({
+                left: Math.max(
+                    8,
+                    Math.min(rect.left, viewportWidth - rect.width - 8),
+                ),
+                width: rect.width,
+                maxHeight,
+                ...(openUp
+                    ? { bottom: viewportHeight - rect.top + 4 }
+                    : { top: rect.bottom + 4 }),
+            });
+        };
+
+        updatePosition();
+        window.addEventListener('resize', updatePosition);
+        window.addEventListener('scroll', updatePosition, true);
+
+        return () => {
+            window.removeEventListener('resize', updatePosition);
+            window.removeEventListener('scroll', updatePosition, true);
+        };
+    }, [open]);
+
     useEffect(() => {
         const closeOnOutsideClick = (event: MouseEvent) => {
+            const target = event.target as Node;
+
             if (
                 containerRef.current &&
-                !containerRef.current.contains(event.target as Node)
+                !containerRef.current.contains(target) &&
+                !dropdownRef.current?.contains(target)
             ) {
                 setOpen(false);
                 setQuery('');
@@ -188,6 +247,7 @@ export default function RemoteSelect<T>({
             <div className="relative">
                 <Search className="pointer-events-none absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
                 <input
+                    ref={inputRef}
                     id={id}
                     type="text"
                     role="combobox"
@@ -218,48 +278,63 @@ export default function RemoteSelect<T>({
                 )}
             </div>
 
-            {open && (
-                <div
-                    id={`${id ?? 'remote'}-options`}
-                    role="listbox"
-                    className="absolute z-30 mt-1 max-h-64 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
-                >
-                    {belowMinimum ? (
-                        <p className="px-3 py-2 text-sm text-gray-500">
-                            Escribe al menos 3 caracteres para buscar.
-                        </p>
-                    ) : loading && visibleOptions.length === 0 ? (
-                        <p className="px-3 py-2 text-sm text-gray-500">
-                            Buscando...
-                        </p>
-                    ) : visibleOptions.length === 0 ? (
-                        <p className="px-3 py-2 text-sm text-gray-500">
-                            {trimmedQuery.length === 0
-                                ? 'Escribe al menos 3 caracteres para buscar.'
-                                : 'Sin resultados.'}
-                        </p>
-                    ) : (
-                        visibleOptions.map((option, index) => (
-                            <button
-                                key={option.value}
-                                type="button"
-                                role="option"
-                                aria-selected={
-                                    String(option.value) === String(value)
-                                }
-                                onMouseDown={(event) => event.preventDefault()}
-                                onClick={() => select(option)}
-                                className={cn(
-                                    'block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-blue-50',
-                                    index === activeIndex && 'bg-blue-50',
-                                )}
-                            >
-                                {option.label}
-                            </button>
-                        ))
-                    )}
-                </div>
-            )}
+            {open &&
+                typeof document !== 'undefined' &&
+                createPortal(
+                    <div
+                        ref={dropdownRef}
+                        id={`${id ?? 'remote'}-options`}
+                        role="listbox"
+                        style={{
+                            left: dropdownPosition.left,
+                            width: dropdownPosition.width,
+                            maxHeight: dropdownPosition.maxHeight,
+                            top: dropdownPosition.top,
+                            bottom: dropdownPosition.bottom,
+                            position: 'fixed',
+                            zIndex: 9999,
+                        }}
+                        className="overflow-y-auto rounded-lg border border-gray-200 bg-white py-1 shadow-lg"
+                    >
+                        {belowMinimum ? (
+                            <p className="px-3 py-2 text-sm text-gray-500">
+                                Escribe al menos 3 caracteres para buscar.
+                            </p>
+                        ) : loading && visibleOptions.length === 0 ? (
+                            <p className="px-3 py-2 text-sm text-gray-500">
+                                Buscando...
+                            </p>
+                        ) : visibleOptions.length === 0 ? (
+                            <p className="px-3 py-2 text-sm text-gray-500">
+                                {trimmedQuery.length === 0
+                                    ? 'Escribe al menos 3 caracteres para buscar.'
+                                    : 'Sin resultados.'}
+                            </p>
+                        ) : (
+                            visibleOptions.map((option, index) => (
+                                <button
+                                    key={option.value}
+                                    type="button"
+                                    role="option"
+                                    aria-selected={
+                                        String(option.value) === String(value)
+                                    }
+                                    onMouseDown={(event) =>
+                                        event.preventDefault()
+                                    }
+                                    onClick={() => select(option)}
+                                    className={cn(
+                                        'block w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-blue-50',
+                                        index === activeIndex && 'bg-blue-50',
+                                    )}
+                                >
+                                    {option.label}
+                                </button>
+                            ))
+                        )}
+                    </div>,
+                    document.body,
+                )}
         </div>
     );
 }

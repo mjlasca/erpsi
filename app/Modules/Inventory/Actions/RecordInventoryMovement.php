@@ -44,6 +44,18 @@ class RecordInventoryMovement
             ]);
         }
 
+        if ($movementType === MovementType::Quarantine && Decimal::compare($quantity, '0', 3) <= 0) {
+            throw ValidationException::withMessages([
+                'quantity' => 'La cantidad a enviar a cuarentena debe ser mayor que cero.',
+            ]);
+        }
+
+        if ($movementType === MovementType::Damage && Decimal::compare($quantity, '0', 3) >= 0) {
+            throw ValidationException::withMessages([
+                'quantity' => 'La baja por daño debe registrarse con cantidad negativa.',
+            ]);
+        }
+
         if ($lot !== null) {
             if ($lot->product_id !== $product->id || $lot->product_variant_id !== $variant?->id) {
                 throw ValidationException::withMessages([
@@ -92,22 +104,60 @@ class RecordInventoryMovement
                     'quantity_on_hand' => '0.000',
                     'quantity_reserved' => '0.000',
                     'quantity_minimum' => $product->min_stock,
+                    'quantity_quarantined' => '0.000',
                 ]);
             }
 
-            $newOnHand = Decimal::round3(Decimal::add((string) $stock->quantity_on_hand, $quantity, 3));
+            $onHand = (string) $stock->quantity_on_hand;
+            $reserved = (string) $stock->quantity_reserved;
+            $quarantined = (string) ($stock->quantity_quarantined ?? '0.000');
+            $available = Decimal::sub(Decimal::sub($onHand, $reserved, 3), $quarantined, 3);
 
-            if (Decimal::compare($newOnHand, '0', 3) < 0) {
-                throw ValidationException::withMessages([
-                    'quantity' => 'No hay existencias suficientes en el almacén.',
+            if ($movementType === MovementType::Quarantine) {
+                if (Decimal::compare($quantity, $available, 3) > 0) {
+                    throw ValidationException::withMessages([
+                        'quantity' => 'No hay existencias disponibles para enviar a cuarentena.',
+                    ]);
+                }
+
+                $stock->update([
+                    'quantity_quarantined' => Decimal::round3(Decimal::add($quarantined, $quantity, 3)),
                 ]);
-            }
+            } elseif ($movementType === MovementType::Damage) {
+                $damage = Decimal::sub('0', $quantity, 3);
+                $newOnHand = Decimal::round3(Decimal::sub($onHand, $damage, 3));
+                $newQuarantined = Decimal::round3(Decimal::maxZero(Decimal::sub($quarantined, $damage, 3)));
+                $newReserved = $reserved;
 
-            $stock->update(['quantity_on_hand' => $newOnHand]);
+                if (Decimal::compare(Decimal::sub($newOnHand, $newReserved, 3), '0', 3) < 0
+                    || Decimal::compare($newQuarantined, $newOnHand, 3) > 0) {
+                    throw ValidationException::withMessages([
+                        'quantity' => 'No hay existencias suficientes para registrar la baja.',
+                    ]);
+                }
+
+                $stock->update([
+                    'quantity_on_hand' => $newOnHand,
+                    'quantity_quarantined' => $newQuarantined,
+                ]);
+            } else {
+                $newOnHand = Decimal::round3(Decimal::add($onHand, $quantity, 3));
+
+                if (Decimal::compare($newOnHand, '0', 3) < 0
+                    || Decimal::compare(Decimal::sub(Decimal::sub($newOnHand, $reserved, 3), $quarantined, 3), '0', 3) < 0) {
+                    throw ValidationException::withMessages([
+                        'quantity' => 'No hay existencias suficientes en el almacén.',
+                    ]);
+                }
+
+                $stock->update(['quantity_on_hand' => $newOnHand]);
+            }
 
             if ($lot !== null) {
                 $lot = InventoryLot::query()->lockForUpdate()->findOrFail($lot->id);
-                $newAvailable = Decimal::round3(Decimal::add((string) $lot->quantity_available, $quantity, 3));
+                $newAvailable = $movementType === MovementType::Quarantine
+                    ? (string) $lot->quantity_available
+                    : Decimal::round3(Decimal::add((string) $lot->quantity_available, $quantity, 3));
 
                 if (Decimal::compare($newAvailable, '0', 3) < 0) {
                     throw ValidationException::withMessages([
@@ -115,7 +165,10 @@ class RecordInventoryMovement
                     ]);
                 }
 
-                $status = $this->lotStatus($lot, $newAvailable);
+                $status = $movementType === MovementType::Quarantine
+                    || ($movementType === MovementType::Damage && $lot->status === LotStatus::Quarantine && Decimal::compare($newAvailable, '0', 3) > 0)
+                    ? LotStatus::Quarantine
+                    : $this->lotStatus($lot, $newAvailable);
 
                 $lot->update([
                     'quantity_available' => $newAvailable,

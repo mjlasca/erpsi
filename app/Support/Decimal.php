@@ -73,6 +73,11 @@ final class Decimal
         return self::compare($value, '0', $scale) < 0 ? self::add('0', '0', $scale) : $value;
     }
 
+    public static function minPositive(string $left, string $right, int $scale = 2): string
+    {
+        return self::compare($left, $right, $scale) <= 0 ? $left : $right;
+    }
+
     /**
      * @param  iterable<int, string|int|float>  $values
      */

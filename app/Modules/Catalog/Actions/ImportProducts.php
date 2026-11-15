@@ -7,11 +7,15 @@ use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductCategory;
 use App\Modules\Catalog\Models\Unit;
 use App\Support\Decimal;
+use App\Support\Tenancy\TenantContext;
+use App\Support\Tenancy\TenantLimitChecker;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ImportProducts
 {
+    public function __construct(protected TenantLimitChecker $limits) {}
+
     /**
      * @param  array<int, array<string, string>>  $rows
      */
@@ -155,6 +159,10 @@ class ImportProducts
             throw ValidationException::withMessages([
                 'file' => implode(' ', array_slice($errors, 0, 5)),
             ]);
+        }
+
+        if ($tenant = app(TenantContext::class)->tenant()) {
+            $this->limits->assertProducts($tenant, count($products));
         }
 
         DB::transaction(function () use ($products): void {

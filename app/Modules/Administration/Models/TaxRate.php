@@ -2,6 +2,7 @@
 
 namespace App\Modules\Administration\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use App\Modules\Administration\Policies\TaxRatePolicy;
 use App\Modules\Purchasing\Models\PurchaseDetail;
 use App\Modules\Sales\Models\SaleDetail;
@@ -29,7 +30,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class TaxRate extends Model
 {
     /** @use HasFactory<TaxRateFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected function casts(): array
     {

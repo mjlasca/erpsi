@@ -2,6 +2,7 @@
 
 namespace App\Modules\Cash\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use App\Models\User;
 use App\Modules\Cash\Policies\CashReconciliationPolicy;
 use Database\Factories\CashReconciliationFactory;
@@ -27,7 +28,7 @@ use Illuminate\Support\Carbon;
 class CashReconciliation extends Model
 {
     /** @use HasFactory<CashReconciliationFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected function casts(): array
     {

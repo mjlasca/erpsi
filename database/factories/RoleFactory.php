@@ -39,6 +39,7 @@ class RoleFactory extends Factory
                 'payments.payments.view',
                 'payments.payments.create',
                 'payments.allocations.manage',
+                'cash.sessions.*',
                 'inventory.stock.view',
             ],
         ]);

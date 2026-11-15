@@ -7,6 +7,8 @@ use App\Modules\Inventory\Models\Warehouse;
 use App\Modules\Inventory\Requests\StoreWarehouseRequest;
 use App\Modules\Inventory\Requests\UpdateWarehouseRequest;
 use App\Modules\Inventory\Resources\WarehouseResource;
+use App\Support\Tenancy\TenantContext;
+use App\Support\Tenancy\TenantLimitChecker;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -43,9 +45,13 @@ class WarehouseController extends Controller
         return Inertia::render('Inventory/Warehouses/Create');
     }
 
-    public function store(StoreWarehouseRequest $request): RedirectResponse
+    public function store(StoreWarehouseRequest $request, TenantLimitChecker $limits): RedirectResponse
     {
         $this->authorize('create', Warehouse::class);
+
+        if ($tenant = app(TenantContext::class)->tenant()) {
+            $limits->assertWarehouses($tenant);
+        }
 
         $warehouse = Warehouse::query()->create($request->validated());
 

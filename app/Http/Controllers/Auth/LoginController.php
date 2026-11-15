@@ -25,6 +25,16 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+        $user = $request->user();
+        $hasActiveTenant = $user?->tenants()
+            ->wherePivot('is_active', true)
+            ->where('tenants.is_active', true)
+            ->exists() ?? false;
+
+        if ($user?->is_platform_admin && ! $hasActiveTenant) {
+            return redirect()->route('platform.dashboard');
+        }
+
         return redirect()->intended(route('dashboard'));
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Sales\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use App\Modules\Payments\Models\Payment;
 use App\Modules\Sales\Policies\CustomerPolicy;
 use Database\Factories\CustomerFactory;
@@ -46,7 +47,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Customer extends Model
 {
     /** @use HasFactory<CustomerFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected $appends = ['full_name'];
 

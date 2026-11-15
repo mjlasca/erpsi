@@ -2,6 +2,7 @@
 
 namespace App\Modules\Inventory\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Inventory\Enums\LotStatus;
@@ -59,7 +60,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class InventoryLot extends Model
 {
     /** @use HasFactory<InventoryLotFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected function casts(): array
     {

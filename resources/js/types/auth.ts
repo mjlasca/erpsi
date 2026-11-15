@@ -10,6 +10,9 @@ export type User = {
     } | null;
     permissions?: string[];
     email_verified_at?: string | null;
+    locale?: string | null;
+    timezone?: string | null;
+    is_platform_admin?: boolean;
     created_at?: string;
     updated_at?: string;
     [key: string]: unknown;

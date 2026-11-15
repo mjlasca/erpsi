@@ -11,6 +11,7 @@ import {
     Spinner,
     Textarea,
 } from '@/Components/Ui/Primitives';
+import { useTranslation } from '@/lib/i18n';
 import type { FormField } from '@/types/erp';
 
 type FormData = Record<string, string | boolean>;
@@ -71,6 +72,7 @@ export default function ResourceForm({
     children?: ReactNode;
     formKey?: string;
 }) {
+    const { t } = useTranslation();
     const form = useForm<FormData>(
         formKey ?? `${method}:${action}`,
         initialData(fields, initial),
@@ -221,7 +223,7 @@ export default function ResourceForm({
                             href={cancelHref}
                             className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"
                         >
-                            Cancelar
+                            {t('common.cancel')}
                         </Link>
                         <Button type="submit" disabled={form.processing}>
                             {form.processing && <Spinner />}

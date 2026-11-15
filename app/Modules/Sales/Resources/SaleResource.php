@@ -32,6 +32,8 @@ class SaleResource extends JsonResource
             'total' => $this->total,
             'paid_amount' => $this->paid_amount,
             'balance' => $this->balance,
+            'returned_amount' => $this->returned_amount,
+            'refunded_amount' => $this->refunded_amount,
             'status' => $this->status->value,
             'status_label' => $this->status->label(),
             'notes' => $this->notes,

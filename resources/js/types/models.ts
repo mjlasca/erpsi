@@ -225,6 +225,8 @@ export type Purchase = {
     total: string;
     paid_amount: string;
     balance: string;
+    returned_amount: string;
+    refunded_amount: string;
     status: string;
     status_label: string;
     notes?: string | null;
@@ -267,6 +269,8 @@ export type Sale = {
     total: string;
     paid_amount: string;
     balance: string;
+    returned_amount: string;
+    refunded_amount: string;
     status: string;
     status_label: string;
     notes?: string | null;
@@ -330,6 +334,82 @@ export type AdminUser = {
 export type SelectOption = {
     value: string;
     label: string;
+};
+
+export type ReturnDetail = {
+    id: number;
+    sale_detail_id?: number;
+    purchase_detail_id?: number;
+    product_id: number;
+    product_variant_id?: number | null;
+    inventory_lot_id?: number | null;
+    quantity: string;
+    unit_price: string;
+    discount: string;
+    tax_rate: string;
+    tax_amount: string;
+    subtotal: string;
+    total: string;
+    disposition?: string;
+    disposition_label?: string;
+    product?: Pick<Product, 'id' | 'name' | 'sku'>;
+    variant?: Pick<ProductVariant, 'id' | 'name' | 'sku'> | null;
+    lot?: Pick<InventoryLot, 'id' | 'code'> | null;
+};
+
+export type SaleReturn = {
+    id: number;
+    sale_id: number;
+    return_number: string;
+    return_date: string;
+    status: string;
+    status_label: string;
+    reason?: string | null;
+    subtotal: string;
+    tax_amount: string;
+    total: string;
+    credited_amount: string;
+    refunded_amount: string;
+    refund_method?: string | null;
+    notes?: string | null;
+    confirmed_at?: string | null;
+    cancelled_at?: string | null;
+    sale?: Sale;
+    details?: ReturnDetail[];
+};
+
+export type PurchaseReturn = Omit<SaleReturn, 'sale_id' | 'sale'> & {
+    purchase_id: number;
+    purchase?: Purchase;
+};
+
+export type CashSession = {
+    id: number;
+    session_number: string;
+    business_date: string;
+    status: string;
+    status_label: string;
+    opening_balance: string;
+    expected_cash: string;
+    counted_cash: string | null;
+    difference: string | null;
+    notes?: string | null;
+    opened_at: string;
+    closed_at?: string | null;
+    warehouse?: Pick<Warehouse, 'id' | 'name' | 'code'> | null;
+    opener?: { id: number; name: string } | null;
+    closer?: { id: number; name: string } | null;
+};
+
+export type StockDifference = {
+    key: string;
+    product_name: string;
+    sku: string;
+    variant_name: string;
+    warehouse_name: string;
+    opening: string;
+    closing: string;
+    difference: string;
 };
 
 export type CashSummary = {

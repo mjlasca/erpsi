@@ -2,6 +2,7 @@
 
 namespace App\Modules\Catalog\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use App\Modules\Catalog\Enums\UnitType;
 use App\Modules\Catalog\Policies\UnitPolicy;
 use Database\Factories\UnitFactory;
@@ -28,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Unit extends Model
 {
     /** @use HasFactory<UnitFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected function casts(): array
     {

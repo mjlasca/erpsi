@@ -2,6 +2,7 @@
 
 namespace App\Modules\Inventory\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Inventory\Policies\InventoryStockPolicy;
@@ -25,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property numeric-string $quantity_on_hand
  * @property numeric-string $quantity_reserved
  * @property numeric-string $quantity_minimum
+ * @property numeric-string $quantity_quarantined
  * @property-read string $quantity_available
  */
 #[Table('inventory_stock')]
@@ -35,13 +37,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'quantity_on_hand',
     'quantity_reserved',
     'quantity_minimum',
+    'quantity_quarantined',
 ])]
 #[UseFactory(InventoryStockFactory::class)]
 #[UsePolicy(InventoryStockPolicy::class)]
 class InventoryStock extends Model
 {
     /** @use HasFactory<InventoryStockFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected $appends = ['quantity_available'];
 
@@ -51,6 +54,7 @@ class InventoryStock extends Model
             'quantity_on_hand' => 'decimal:3',
             'quantity_reserved' => 'decimal:3',
             'quantity_minimum' => 'decimal:3',
+            'quantity_quarantined' => 'decimal:3',
         ];
     }
 
@@ -58,7 +62,11 @@ class InventoryStock extends Model
     protected function quantityAvailable(): Attribute
     {
         return Attribute::get(
-            fn (): string => bcsub((string) $this->quantity_on_hand, (string) $this->quantity_reserved, 3),
+            fn (): string => bcsub(
+                bcsub((string) $this->quantity_on_hand, (string) $this->quantity_reserved, 3),
+                (string) $this->quantity_quarantined,
+                3,
+            ),
         );
     }
 

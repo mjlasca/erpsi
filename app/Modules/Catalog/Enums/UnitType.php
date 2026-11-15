@@ -14,12 +14,12 @@ enum UnitType: string
     public function label(): string
     {
         return match ($this) {
-            self::Quantity => 'Cantidad',
-            self::Area => 'Área',
-            self::Length => 'Longitud',
-            self::Weight => 'Peso',
-            self::Volume => 'Volumen',
-            self::Other => 'Otro',
+            self::Quantity => __('enums.unit_type.quantity'),
+            self::Area => __('enums.unit_type.area'),
+            self::Length => __('enums.unit_type.length'),
+            self::Weight => __('enums.unit_type.weight'),
+            self::Volume => __('enums.unit_type.volume'),
+            self::Other => __('enums.unit_type.other'),
         };
     }
 

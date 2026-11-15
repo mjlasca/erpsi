@@ -5,12 +5,23 @@ import {
     Badge,
     DeleteButton,
     Input,
+    LinkButton,
     RowLink,
 } from '@/Components/Ui/Primitives';
 import { formatDate, formatMoney } from '@/lib/format';
+import { useTranslation } from '@/lib/i18n';
+import { withQuery } from '@/lib/url';
 import type { Customer, Sale } from '@/types/models';
 import type { Filters, Paginated, SelectOption } from '@/types/erp';
-import { create, destroy, edit, index, show } from '@/routes/sales/sales';
+import {
+    create,
+    destroy,
+    edit,
+    exportMethod,
+    index,
+    show,
+} from '@/routes/sales/sales';
+import { index as returnsIndex } from '@/routes/sales/returns';
 
 const statusTone = (status: string) => {
     switch (status) {
@@ -36,6 +47,8 @@ export default function SalesIndex({
     customers: Customer[];
     statuses: SelectOption[];
 }) {
+    const { t } = useTranslation();
+
     return (
         <ErpLayout>
             <ResourceIndex
@@ -48,6 +61,22 @@ export default function SalesIndex({
                 createHref={create.url()}
                 createPermission="sales.sales.create"
                 createLabel="Nueva venta"
+                extraActions={
+                    <>
+                        <LinkButton
+                            href={returnsIndex.url()}
+                            variant="secondary"
+                        >
+                            {t('returns.salesTitle')}
+                        </LinkButton>
+                        <a
+                            href={withQuery(exportMethod.url(), filters)}
+                            className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        >
+                            {t('common.exportCsv')}
+                        </a>
+                    </>
+                }
                 filterControls={
                     <>
                         <FilterSelect

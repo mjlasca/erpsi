@@ -5,6 +5,7 @@ namespace App\Modules\Sales\Actions;
 use App\Models\User;
 use App\Modules\Inventory\Actions\RecordInventoryMovement;
 use App\Modules\Inventory\Enums\MovementType;
+use App\Modules\Sales\Enums\ReturnStatus;
 use App\Modules\Sales\Enums\SaleStatus;
 use App\Modules\Sales\Models\Sale;
 use App\Support\Decimal;
@@ -29,6 +30,12 @@ class CancelSale
             if ($sale->allocations()->exists() || Decimal::compare((string) $sale->paid_amount, '0', 2) > 0) {
                 throw ValidationException::withMessages([
                     'status' => 'No se puede cancelar una venta con pagos aplicados.',
+                ]);
+            }
+
+            if ($sale->returns()->where('status', ReturnStatus::Confirmed)->exists()) {
+                throw ValidationException::withMessages([
+                    'status' => 'No se puede cancelar una venta con devoluciones confirmadas.',
                 ]);
             }
 

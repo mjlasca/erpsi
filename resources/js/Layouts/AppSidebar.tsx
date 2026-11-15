@@ -13,9 +13,11 @@ import {
     Boxes,
     CreditCard,
     Wallet,
+    Shield,
     type LucideIcon,
 } from 'lucide-react';
 import { dashboard } from '@/routes';
+import { dashboard as platformDashboard } from '@/routes/platform';
 import { useCan } from '@/lib/permissions';
 import { cn } from '@/lib/utils';
 import { index as productsIndex } from '@/routes/catalog/products';
@@ -29,14 +31,18 @@ import { index as lotsIndex } from '@/routes/inventory/lots';
 import { index as warehousesIndex } from '@/routes/inventory/warehouses';
 import { create as transferCreate } from '@/routes/inventory/transfers';
 import { index as purchasesIndex } from '@/routes/purchasing/purchases';
+import { index as purchaseReturnsIndex } from '@/routes/purchasing/returns';
 import { index as suppliersIndex } from '@/routes/purchasing/suppliers';
 import { index as salesIndex } from '@/routes/sales/sales';
+import { index as saleReturnsIndex } from '@/routes/sales/returns';
 import { index as customersIndex } from '@/routes/sales/customers';
 import { index as paymentsIndex } from '@/routes/payments/payments';
-import { index as cashIndex } from '@/routes/cash/reconciliations';
+import { index as cashSessionsIndex } from '@/routes/cash/sessions';
+import { edit as settingsEdit } from '@/routes/admin/settings';
 import { index as rolesIndex } from '@/routes/admin/roles';
 import { index as usersIndex } from '@/routes/admin/users';
 import { index as taxRatesIndex } from '@/routes/admin/tax-rates';
+import { useTranslation } from '@/lib/i18n';
 
 interface MenuItem {
     label: string;
@@ -46,136 +52,151 @@ interface MenuItem {
     children?: MenuItem[];
 }
 
-const menuItems: MenuItem[] = [
+const menuItems = (t: (key: string) => string): MenuItem[] => [
     {
-        label: 'Dashboard',
+        label: t('nav.dashboard'),
         href: dashboard.url(),
         icon: LayoutDashboard,
     },
     {
-        label: 'Catálogo',
+        label: t('nav.catalog'),
         icon: Package,
         children: [
             {
-                label: 'Productos',
+                label: t('nav.products'),
                 href: productsIndex.url(),
                 permission: 'catalog.products.view',
             },
             {
-                label: 'Categorías',
+                label: t('nav.categories'),
                 href: categoriesIndex.url(),
                 permission: 'catalog.categories.view',
             },
             {
-                label: 'Unidades',
+                label: t('nav.units'),
                 href: unitsIndex.url(),
                 permission: 'catalog.units.view',
             },
             {
-                label: 'Variantes',
+                label: t('nav.variants'),
                 href: variantsIndex.url(),
                 permission: 'catalog.variants.view',
             },
             {
-                label: 'Atributos',
+                label: t('nav.attributes'),
                 href: attributesIndex.url(),
                 permission: 'catalog.attributes.view',
             },
         ],
     },
     {
-        label: 'Inventario',
+        label: t('nav.inventory'),
         icon: Boxes,
         children: [
             {
-                label: 'Existencias',
+                label: t('nav.stock'),
                 href: stockIndex.url(),
                 permission: 'inventory.stock.view',
             },
             {
-                label: 'Movimientos',
+                label: t('nav.movements'),
                 href: movementsIndex.url(),
                 permission: 'inventory.movements.view',
             },
             {
-                label: 'Lotes',
+                label: t('nav.lots'),
                 href: lotsIndex.url(),
                 permission: 'inventory.lots.view',
             },
             {
-                label: 'Transferencias',
+                label: t('nav.transfers'),
                 href: transferCreate.url(),
                 permission: 'inventory.movements.create',
             },
             {
-                label: 'Almacenes',
+                label: t('nav.warehouses'),
                 href: warehousesIndex.url(),
                 permission: 'inventory.warehouses.view',
             },
         ],
     },
     {
-        label: 'Compras',
+        label: t('nav.purchasing'),
         icon: ShoppingCart,
         children: [
             {
-                label: 'Compras',
+                label: t('nav.purchasing'),
                 href: purchasesIndex.url(),
                 permission: 'purchasing.purchases.view',
             },
             {
-                label: 'Proveedores',
+                label: t('nav.purchaseReturns'),
+                href: purchaseReturnsIndex.url(),
+                permission: 'purchasing.returns.view',
+            },
+            {
+                label: t('nav.suppliers'),
                 href: suppliersIndex.url(),
                 permission: 'purchasing.suppliers.view',
             },
         ],
     },
     {
-        label: 'Ventas',
+        label: t('nav.sales'),
         icon: Receipt,
         children: [
             {
-                label: 'Ventas',
+                label: t('nav.sales'),
                 href: salesIndex.url(),
                 permission: 'sales.sales.view',
             },
             {
-                label: 'Clientes',
+                label: t('nav.saleReturns'),
+                href: saleReturnsIndex.url(),
+                permission: 'sales.returns.view',
+            },
+            {
+                label: t('nav.customers'),
                 href: customersIndex.url(),
                 permission: 'sales.customers.view',
             },
         ],
     },
     {
-        label: 'Pagos',
+        label: t('nav.payments'),
         href: paymentsIndex.url(),
         icon: CreditCard,
         permission: 'payments.payments.view',
     },
     {
-        label: 'Arqueo',
-        href: cashIndex.url(),
+        label: t('nav.cash'),
+        href: cashSessionsIndex.url(),
         icon: Wallet,
-        permission: 'cash.reconciliations.view',
+        permission: 'cash.sessions.view',
     },
     {
-        label: 'Administración',
+        label: t('nav.administration'),
         icon: Settings,
         children: [
             {
-                label: 'Usuarios',
+                label: t('nav.users'),
                 href: usersIndex.url(),
                 permission: 'administration.users.view',
             },
             {
-                label: 'Roles',
+                label: t('nav.roles'),
                 href: rolesIndex.url(),
                 permission: 'administration.roles.view',
             },
             {
-                label: 'Impuestos',
+                label: t('nav.taxes'),
                 href: taxRatesIndex.url(),
                 permission: 'administration.tax_rates.view',
+            },
+            {
+                label: t('nav.settings'),
+                href: settingsEdit.url(),
+                permission: 'administration.settings.view',
             },
         ],
     },
@@ -386,9 +407,29 @@ export default function AppSidebar({
     onClose: () => void;
     onToggleCollapsed: () => void;
 }) {
-    const { url } = usePage();
+    const page = usePage();
+    const { url } = page;
     const can = useCan();
-    const visibleItems = filterMenu(menuItems, can);
+    const { t } = useTranslation();
+    const isPlatformAdmin = Boolean(
+        (
+            page.props as unknown as {
+                auth?: { user?: { is_platform_admin?: boolean } | null };
+            }
+        ).auth?.user?.is_platform_admin,
+    );
+    const items = menuItems(t);
+
+    if (isPlatformAdmin) {
+        items.push({
+            label: t('nav.platform'),
+            href: platformDashboard.url(),
+            icon: Shield,
+            permission: undefined,
+        });
+    }
+
+    const visibleItems = filterMenu(items, can);
     const isCollapsed = collapsed && !mobileOpen;
 
     return (
@@ -454,7 +495,7 @@ export default function AppSidebar({
                             isCollapsed && 'lg:hidden',
                         )}
                     >
-                        Menú principal
+                        {t('nav.main')}
                     </p>
 
                     {visibleItems.map((item) => (
@@ -487,7 +528,7 @@ export default function AppSidebar({
 
                         <div className={cn(isCollapsed && 'lg:hidden')}>
                             <p className="text-xs font-medium text-gray-700">
-                                Sistema ERP
+                                ERPsi
                             </p>
                             <p className="text-xs text-gray-400">
                                 Versión 1.0.0

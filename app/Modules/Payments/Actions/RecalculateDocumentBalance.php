@@ -16,7 +16,8 @@ class RecalculateDocumentBalance
             $document = $document::query()->lockForUpdate()->findOrFail($document->id);
 
             $paidAmount = Decimal::sum($document->allocations()->pluck('amount'), 2);
-            $balance = Decimal::maxZero(Decimal::sub((string) $document->total, $paidAmount, 2));
+            $netTotal = Decimal::maxZero(Decimal::sub((string) $document->total, (string) $document->returned_amount, 2));
+            $balance = Decimal::maxZero(Decimal::sub($netTotal, $paidAmount, 2));
 
             $attributes = [
                 'paid_amount' => $paidAmount,
@@ -24,7 +25,7 @@ class RecalculateDocumentBalance
             ];
 
             if ($document instanceof Sale && ! $document->isDraft() && ! $document->isCancelled()) {
-                $attributes['status'] = $this->saleStatus($paidAmount, (string) $document->total);
+                $attributes['status'] = $this->saleStatus($paidAmount, $netTotal);
             }
 
             $document->update($attributes);

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Purchasing\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use App\Models\User;
 use App\Modules\Inventory\Models\Warehouse;
 use App\Modules\Payments\Models\PaymentAllocation;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -24,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $supplier_id
  * @property string|null $supplier_invoice
  * @property int $warehouse_id
- * @property string $purchase_date
+ * @property Carbon $purchase_date
  * @property string $subtotal
  * @property string $discount
  * @property string $tax_amount
@@ -49,6 +51,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'total',
     'paid_amount',
     'balance',
+    'returned_amount',
+    'refunded_amount',
     'status',
     'notes',
     'created_by',
@@ -60,7 +64,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Purchase extends Model
 {
     /** @use HasFactory<PurchaseFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected function casts(): array
     {
@@ -72,6 +76,8 @@ class Purchase extends Model
             'total' => 'decimal:2',
             'paid_amount' => 'decimal:2',
             'balance' => 'decimal:2',
+            'returned_amount' => 'decimal:2',
+            'refunded_amount' => 'decimal:2',
             'status' => PurchaseStatus::class,
             'received_at' => 'datetime',
             'cancelled_at' => 'datetime',
@@ -106,6 +112,12 @@ class Purchase extends Model
     public function allocations(): HasMany
     {
         return $this->hasMany(PaymentAllocation::class);
+    }
+
+    /** @return HasMany<PurchaseReturn, $this> */
+    public function returns(): HasMany
+    {
+        return $this->hasMany(PurchaseReturn::class);
     }
 
     public function isDraft(): bool

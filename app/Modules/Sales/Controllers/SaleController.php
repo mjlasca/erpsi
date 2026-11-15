@@ -3,6 +3,7 @@
 namespace App\Modules\Sales\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\GenerateExport;
 use App\Modules\Administration\Models\TaxRate;
 use App\Modules\Administration\Resources\TaxRateResource;
 use App\Modules\Inventory\Models\Warehouse;
@@ -16,6 +17,10 @@ use App\Modules\Sales\Models\SaleDetail;
 use App\Modules\Sales\Requests\StoreSaleRequest;
 use App\Modules\Sales\Requests\UpdateSaleRequest;
 use App\Modules\Sales\Resources\SaleResource;
+use App\Modules\Sales\Resources\SaleReturnResource;
+use App\Support\Exports\ExportBuilder;
+use App\Support\Tenancy\TenantContext;
+use App\Support\Tenancy\TenantLimitChecker;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +28,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SaleController extends Controller
 {
@@ -65,6 +71,21 @@ class SaleController extends Controller
         ]);
     }
 
+    public function export(Request $request, ExportBuilder $builder): StreamedResponse|RedirectResponse
+    {
+        $this->authorize('viewAny', Sale::class);
+
+        $filters = $request->only(['search', 'status', 'customer_id', 'from', 'to']);
+
+        if ($export = $builder->queueIfLarge('sales', $filters)) {
+            GenerateExport::dispatch($export->id);
+
+            return back()->with('success', __('messages.export_queued'));
+        }
+
+        return $builder->download('sales', $filters);
+    }
+
     public function create(): Response
     {
         $this->authorize('create', Sale::class);
@@ -72,9 +93,13 @@ class SaleController extends Controller
         return Inertia::render('Sales/Sales/Create', $this->formOptions());
     }
 
-    public function store(StoreSaleRequest $request): RedirectResponse
+    public function store(StoreSaleRequest $request, TenantLimitChecker $limits): RedirectResponse
     {
         $this->authorize('create', Sale::class);
+
+        if ($tenant = app(TenantContext::class)->tenant()) {
+            $limits->assertMonthlySales($tenant);
+        }
 
         $validated = $request->validated();
         $details = $validated['details'];
@@ -83,7 +108,7 @@ class SaleController extends Controller
         $sale = DB::transaction(function () use ($validated, $details, $request): Sale {
             $sale = Sale::query()->create([
                 ...$validated,
-                'invoice_number' => 'INV-'.Str::upper((string) Str::ulid()),
+                'invoice_number' => $this->documentNumber('invoice_prefix', 'INV'),
                 'status' => SaleStatus::Draft,
                 'created_by' => $request->user()?->id,
             ]);
@@ -112,10 +137,12 @@ class SaleController extends Controller
             'details.taxRate',
             'details.lotAllocations.lot',
             'allocations.payment',
+            'returns',
         ]);
 
         return Inertia::render('Sales/Sales/Show', [
             'sale' => (new SaleResource($sale))->resolve(),
+            'returns' => SaleReturnResource::collection($sale->returns)->resolve(),
             'paymentMethods' => PaymentMethod::options(),
         ]);
     }
@@ -171,6 +198,14 @@ class SaleController extends Controller
         return redirect()
             ->route('sales.sales.show', $sale)
             ->with('success', 'Venta cancelada correctamente.');
+    }
+
+    protected function documentNumber(string $prefixColumn, string $default): string
+    {
+        $tenant = app(TenantContext::class)->tenant();
+        $prefix = $tenant === null ? $default : $tenant->{$prefixColumn};
+
+        return $prefix.'-'.Str::upper((string) Str::ulid());
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Modules\Sales\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use App\Modules\Inventory\Models\InventoryLot;
 use App\Modules\Sales\Policies\SaleDetailLotAllocationPolicy;
 use Database\Factories\SaleDetailLotAllocationFactory;
@@ -25,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class SaleDetailLotAllocation extends Model
 {
     /** @use HasFactory<SaleDetailLotAllocationFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected function casts(): array
     {

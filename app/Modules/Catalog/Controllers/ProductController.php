@@ -3,6 +3,7 @@
 namespace App\Modules\Catalog\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\GenerateExport;
 use App\Modules\Catalog\Enums\ProductType;
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductCategory;
@@ -10,11 +11,15 @@ use App\Modules\Catalog\Models\Unit;
 use App\Modules\Catalog\Requests\StoreProductRequest;
 use App\Modules\Catalog\Requests\UpdateProductRequest;
 use App\Modules\Catalog\Resources\ProductResource;
+use App\Support\Exports\ExportBuilder;
+use App\Support\Tenancy\TenantContext;
+use App\Support\Tenancy\TenantLimitChecker;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ProductController extends Controller
 {
@@ -66,6 +71,21 @@ class ProductController extends Controller
         ]);
     }
 
+    public function export(Request $request, ExportBuilder $builder): StreamedResponse|RedirectResponse
+    {
+        $this->authorize('viewAny', Product::class);
+
+        $filters = $request->only(['search', 'category_id', 'is_active']);
+
+        if ($export = $builder->queueIfLarge('products', $filters)) {
+            GenerateExport::dispatch($export->id);
+
+            return back()->with('success', __('messages.export_queued'));
+        }
+
+        return $builder->download('products', $filters);
+    }
+
     public function create(): Response
     {
         $this->authorize('create', Product::class);
@@ -73,9 +93,13 @@ class ProductController extends Controller
         return Inertia::render('Catalog/Products/Create', $this->formOptions());
     }
 
-    public function store(StoreProductRequest $request): RedirectResponse
+    public function store(StoreProductRequest $request, TenantLimitChecker $limits): RedirectResponse
     {
         $this->authorize('create', Product::class);
+
+        if ($tenant = app(TenantContext::class)->tenant()) {
+            $limits->assertProducts($tenant);
+        }
 
         $product = Product::query()->create($request->validated());
 

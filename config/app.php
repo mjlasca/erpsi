@@ -80,9 +80,15 @@ return [
 
     'locale' => env('APP_LOCALE', 'es'),
 
+    'supported_locales' => ['es', 'en'],
+
     'fallback_locale' => env('APP_FALLBACK_LOCALE', 'es'),
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
+
+    'default_currency' => env('APP_DEFAULT_CURRENCY', 'MXN'),
+
+    'default_tenant_timezone' => env('APP_DEFAULT_TENANT_TIMEZONE', 'UTC'),
 
     /*
     |--------------------------------------------------------------------------

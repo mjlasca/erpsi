@@ -2,6 +2,7 @@
 
 namespace App\Modules\Administration\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use App\Models\User;
 use App\Modules\Administration\Policies\RolePolicy;
 use Database\Factories\RoleFactory;
@@ -27,7 +28,7 @@ use Illuminate\Support\Str;
 class Role extends Model
 {
     /** @use HasFactory<RoleFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected function casts(): array
     {

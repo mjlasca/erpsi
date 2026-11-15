@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Administration\Models\Role;
 use App\Modules\Catalog\Enums\ProductType;
@@ -13,16 +14,20 @@ use App\Modules\Payments\Enums\PaymentType;
 use App\Modules\Payments\Models\Payment;
 use App\Modules\Purchasing\Models\Supplier;
 use App\Modules\Sales\Models\Customer;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Database\Seeder;
 
 class E2eSeeder extends Seeder
 {
     public function run(): void
     {
+        $tenant = Tenant::query()->where('slug', 'default')->firstOrFail();
+        app(TenantContext::class)->set($tenant);
+
         $salesRole = Role::query()->where('name', 'Sales')->firstOrFail();
         $inventoryRole = Role::query()->where('name', 'Inventory Manager')->firstOrFail();
 
-        User::query()->updateOrCreate(
+        $salesUser = User::query()->updateOrCreate(
             ['email' => 'sales@erpsi.test'],
             [
                 'name' => 'Vendedor E2E',
@@ -33,7 +38,7 @@ class E2eSeeder extends Seeder
             ],
         );
 
-        User::query()->updateOrCreate(
+        $inventoryUser = User::query()->updateOrCreate(
             ['email' => 'inventory@erpsi.test'],
             [
                 'name' => 'Inventario E2E',
@@ -43,6 +48,13 @@ class E2eSeeder extends Seeder
                 'email_verified_at' => now(),
             ],
         );
+
+        $salesUser->tenants()->syncWithoutDetaching([
+            $tenant->id => ['role_id' => $salesRole->id, 'is_default' => true, 'is_active' => true],
+        ]);
+        $inventoryUser->tenants()->syncWithoutDetaching([
+            $tenant->id => ['role_id' => $inventoryRole->id, 'is_default' => true, 'is_active' => true],
+        ]);
 
         Supplier::query()->updateOrCreate(
             ['name' => 'Proveedor E2E'],

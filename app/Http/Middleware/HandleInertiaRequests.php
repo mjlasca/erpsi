@@ -2,8 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\PlatformSetting;
 use App\Modules\Administration\Support\Permissions;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -37,7 +40,9 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
-        $user?->loadMissing('role');
+        $context = app(TenantContext::class);
+        $tenant = $context->tenant();
+        $role = $user?->currentRole();
 
         $can = [];
 
@@ -49,7 +54,7 @@ class HandleInertiaRequests extends Middleware
 
         return [
             ...parent::share($request),
-            'name' => config('app.name'),
+            'name' => PlatformSetting::safeValue('platform_name', (string) config('app.name')),
             'can' => $can,
             'auth' => [
                 'user' => $user === null ? null : [
@@ -57,13 +62,41 @@ class HandleInertiaRequests extends Middleware
                     'name' => $user->name,
                     'email' => $user->email,
                     'is_active' => $user->is_active,
-                    'role' => $user->role === null ? null : [
-                        'id' => $user->role->id,
-                        'name' => $user->role->name,
+                    'role' => $role === null ? null : [
+                        'id' => $role->id,
+                        'name' => $role->name,
                     ],
-                    'permissions' => $user->role === null ? [] : $user->role->permissions,
+                    'permissions' => $role === null ? [] : $role->permissions,
+                    'is_platform_admin' => $user->is_platform_admin,
+                    'locale' => $user->locale,
+                    'timezone' => $user->timezone,
                 ],
             ],
+            'locale' => $context->locale(),
+            'timezone' => $user === null ? $context->timezone() : ($user->timezone ?? $context->timezone()),
+            'currency' => $tenant === null ? config('app.default_currency', 'MXN') : $tenant->currency,
+            'supportedLocales' => config('app.supported_locales', ['es', 'en']),
+            'tenant' => $tenant === null ? null : [
+                'id' => $tenant->id,
+                'name' => $tenant->name,
+                'slug' => $tenant->slug,
+                'locale' => $tenant->locale,
+                'timezone' => $tenant->timezone,
+                'currency' => $tenant->currency,
+                'logo_url' => $tenant->logo_path === null
+                    ? null
+                    : (str_starts_with($tenant->logo_path, 'http') ? $tenant->logo_path : Storage::disk('public')->url($tenant->logo_path)),
+            ],
+            'supportMode' => $context->isSupportMode(),
+            'supportTenant' => $context->isSupportMode() && $tenant !== null
+                ? ['id' => $tenant->id, 'name' => $tenant->name]
+                : null,
+            'tenants' => $user === null ? [] : $user->tenants()
+                ->wherePivot('is_active', true)
+                ->get(['tenants.id', 'tenants.name', 'tenants.slug'])
+                ->map(fn ($item): array => ['id' => $item->id, 'name' => $item->name])
+                ->values()
+                ->all(),
             'flash' => [
                 'success' => fn (): mixed => $request->session()->get('success'),
                 'error' => fn (): mixed => $request->session()->get('error'),

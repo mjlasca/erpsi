@@ -2,6 +2,7 @@
 
 namespace App\Modules\Payments\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use App\Modules\Payments\Policies\PaymentAllocationPolicy;
 use App\Modules\Purchasing\Models\Purchase;
 use App\Modules\Sales\Models\Sale;
@@ -26,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class PaymentAllocation extends Model
 {
     /** @use HasFactory<PaymentAllocationFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected function casts(): array
     {

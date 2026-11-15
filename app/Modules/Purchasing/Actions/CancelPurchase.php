@@ -8,6 +8,7 @@ use App\Modules\Inventory\Enums\LotStatus;
 use App\Modules\Inventory\Enums\MovementType;
 use App\Modules\Purchasing\Enums\PurchaseStatus;
 use App\Modules\Purchasing\Models\Purchase;
+use App\Modules\Sales\Enums\ReturnStatus;
 use App\Support\Decimal;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -30,6 +31,12 @@ class CancelPurchase
             if ($purchase->allocations()->exists() || Decimal::compare((string) $purchase->paid_amount, '0', 2) > 0) {
                 throw ValidationException::withMessages([
                     'status' => 'No se puede cancelar una compra con pagos aplicados.',
+                ]);
+            }
+
+            if ($purchase->returns()->where('status', ReturnStatus::Confirmed)->exists()) {
+                throw ValidationException::withMessages([
+                    'status' => 'No se puede cancelar una compra con devoluciones confirmadas.',
                 ]);
             }
 

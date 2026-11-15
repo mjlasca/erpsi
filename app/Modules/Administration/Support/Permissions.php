@@ -41,6 +41,7 @@ final class Permissions
             'inventory.stock.view' => 'Ver existencias',
             'inventory.movements.view' => 'Ver movimientos',
             'inventory.movements.create' => 'Registrar movimientos',
+            'inventory.damages.manage' => 'Registrar daños y cuarentena',
             'inventory.lots.view' => 'Ver lotes',
             'inventory.lots.create' => 'Crear lotes',
             'inventory.lots.update' => 'Editar lotes',
@@ -57,6 +58,10 @@ final class Permissions
             'purchasing.purchases.delete' => 'Eliminar compras',
             'purchasing.purchases.pay' => 'Pagar compras',
             'purchasing.purchases.cancel' => 'Cancelar compras',
+            'purchasing.returns.view' => 'Ver devoluciones de compras',
+            'purchasing.returns.create' => 'Crear devoluciones de compras',
+            'purchasing.returns.confirm' => 'Confirmar devoluciones de compras',
+            'purchasing.returns.cancel' => 'Anular devoluciones de compras',
         ],
         'Ventas' => [
             'sales.customers.view' => 'Ver clientes',
@@ -69,6 +74,10 @@ final class Permissions
             'sales.sales.delete' => 'Eliminar ventas',
             'sales.sales.pay' => 'Pagar ventas',
             'sales.sales.cancel' => 'Cancelar ventas',
+            'sales.returns.view' => 'Ver devoluciones de ventas',
+            'sales.returns.create' => 'Crear devoluciones de ventas',
+            'sales.returns.confirm' => 'Confirmar devoluciones de ventas',
+            'sales.returns.cancel' => 'Anular devoluciones de ventas',
         ],
         'Pagos' => [
             'payments.payments.view' => 'Ver pagos',
@@ -82,6 +91,10 @@ final class Permissions
             'cash.reconciliations.create' => 'Crear arqueos',
             'cash.reconciliations.update' => 'Editar arqueos',
             'cash.reconciliations.delete' => 'Eliminar arqueos',
+            'cash.sessions.view' => 'Ver sesiones de caja',
+            'cash.sessions.create' => 'Abrir sesiones de caja',
+            'cash.sessions.close' => 'Cerrar sesiones de caja',
+            'cash.sessions.export' => 'Exportar sesiones de caja',
         ],
         'Administración' => [
             'administration.users.view' => 'Ver usuarios',
@@ -96,6 +109,9 @@ final class Permissions
             'administration.tax_rates.create' => 'Crear impuestos',
             'administration.tax_rates.update' => 'Editar impuestos',
             'administration.tax_rates.delete' => 'Eliminar impuestos',
+            'administration.settings.view' => 'Ver configuración de la empresa',
+            'administration.settings.update' => 'Editar configuración de la empresa',
+            'administration.users.manage_memberships' => 'Gestionar accesos de usuarios',
         ],
     ];
 

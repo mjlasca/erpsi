@@ -12,10 +12,10 @@ enum PurchaseStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Draft => 'Borrador',
-            self::Received => 'Recibida',
-            self::Paid => 'Pagada',
-            self::Cancelled => 'Cancelada',
+            self::Draft => __('enums.purchase_status.draft'),
+            self::Received => __('enums.purchase_status.received'),
+            self::Paid => __('enums.purchase_status.paid'),
+            self::Cancelled => __('enums.purchase_status.cancelled'),
         };
     }
 

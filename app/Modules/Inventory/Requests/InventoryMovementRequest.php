@@ -25,7 +25,12 @@ class InventoryMovementRequest extends FormRequest
             'inventory_lot_id' => ['nullable', 'integer', 'exists:inventory_lots,id'],
             'movement_type' => [
                 'required',
-                Rule::in([MovementType::Return->value, MovementType::Adjustment->value]),
+                Rule::in([
+                    MovementType::Return->value,
+                    MovementType::Adjustment->value,
+                    MovementType::Quarantine->value,
+                    MovementType::Damage->value,
+                ]),
             ],
             'quantity' => ['required', 'numeric', 'not_in:0'],
             'unit_cost' => ['nullable', 'numeric', 'min:0'],

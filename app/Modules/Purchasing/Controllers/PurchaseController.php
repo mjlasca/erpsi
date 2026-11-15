@@ -3,6 +3,7 @@
 namespace App\Modules\Purchasing\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\GenerateExport;
 use App\Modules\Administration\Models\TaxRate;
 use App\Modules\Administration\Resources\TaxRateResource;
 use App\Modules\Inventory\Models\Warehouse;
@@ -16,6 +17,9 @@ use App\Modules\Purchasing\Models\Supplier;
 use App\Modules\Purchasing\Requests\StorePurchaseRequest;
 use App\Modules\Purchasing\Requests\UpdatePurchaseRequest;
 use App\Modules\Purchasing\Resources\PurchaseResource;
+use App\Modules\Purchasing\Resources\PurchaseReturnResource;
+use App\Support\Exports\ExportBuilder;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,6 +27,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PurchaseController extends Controller
 {
@@ -61,6 +66,21 @@ class PurchaseController extends Controller
         ]);
     }
 
+    public function export(Request $request, ExportBuilder $builder): StreamedResponse|RedirectResponse
+    {
+        $this->authorize('viewAny', Purchase::class);
+
+        $filters = $request->only(['search', 'status', 'supplier_id', 'from', 'to']);
+
+        if ($export = $builder->queueIfLarge('purchases', $filters)) {
+            GenerateExport::dispatch($export->id);
+
+            return back()->with('success', __('messages.export_queued'));
+        }
+
+        return $builder->download('purchases', $filters);
+    }
+
     public function create(): Response
     {
         $this->authorize('create', Purchase::class);
@@ -79,7 +99,9 @@ class PurchaseController extends Controller
         $purchase = DB::transaction(function () use ($validated, $details, $request): Purchase {
             $purchase = Purchase::query()->create([
                 ...$validated,
-                'purchase_number' => 'PUR-'.Str::upper((string) Str::ulid()),
+                'purchase_number' => (app(TenantContext::class)->tenant() === null
+                    ? 'COMP'
+                    : app(TenantContext::class)->tenant()->purchase_prefix).'-'.Str::upper((string) Str::ulid()),
                 'status' => PurchaseStatus::Draft,
                 'created_by' => $request->user()?->id,
             ]);
@@ -107,10 +129,12 @@ class PurchaseController extends Controller
             'details.variant',
             'details.taxRate',
             'allocations.payment',
+            'returns',
         ]);
 
         return Inertia::render('Purchasing/Purchases/Show', [
             'purchase' => (new PurchaseResource($purchase))->resolve(),
+            'returns' => PurchaseReturnResource::collection($purchase->returns)->resolve(),
             'paymentMethods' => PaymentMethod::options(),
         ]);
     }

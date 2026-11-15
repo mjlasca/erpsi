@@ -66,7 +66,12 @@ class InventoryMovementController extends Controller
             )->resolve(),
             'movementTypes' => array_values(array_filter(
                 MovementType::manualOptions(),
-                fn (array $option): bool => in_array($option['value'], [MovementType::Return->value, MovementType::Adjustment->value], true),
+                fn (array $option): bool => in_array($option['value'], [
+                    MovementType::Return->value,
+                    MovementType::Adjustment->value,
+                    MovementType::Quarantine->value,
+                    MovementType::Damage->value,
+                ], true),
             )),
             'selectedProductId' => $request->integer('product_id') ?: null,
         ]);
@@ -75,6 +80,12 @@ class InventoryMovementController extends Controller
     public function store(StoreInventoryMovementRequest $request, RecordInventoryMovement $recordMovement): RedirectResponse
     {
         $this->authorize('create', InventoryMovement::class);
+
+        $movementType = MovementType::from($request->string('movement_type')->value());
+
+        if (in_array($movementType, [MovementType::Damage, MovementType::Quarantine], true)) {
+            abort_unless($request->user()?->hasPermission('inventory.damages.manage'), 403);
+        }
 
         $product = Product::query()->findOrFail($request->integer('product_id'));
         $variant = $request->filled('product_variant_id')
@@ -94,7 +105,7 @@ class InventoryMovementController extends Controller
         $recordMovement->execute(
             product: $product,
             warehouse: $warehouse,
-            movementType: MovementType::from($request->string('movement_type')->value()),
+            movementType: $movementType,
             quantity: (string) $request->input('quantity'),
             variant: $variant,
             lot: $lot,

@@ -74,7 +74,7 @@ export default function MovementsCreate({
             type: 'number',
             step: '0.001',
             required: true,
-            help: 'Usa un número negativo para disminuir existencias.',
+            help: 'Usa un número negativo para disminuir existencias o registrar una baja por daño.',
         },
         {
             name: 'unit_cost',
@@ -100,7 +100,7 @@ export default function MovementsCreate({
         <ErpLayout>
             <ResourceForm
                 title="Registrar movimiento"
-                description="Ajustes y devoluciones manuales. Las compras y ventas generan sus propios movimientos."
+                description="Ajustes, devoluciones, cuarentena y bajas por daño. Las compras y ventas generan sus propios movimientos."
                 fields={fields}
                 initial={{
                     movement_type: 'ADJUSTMENT',

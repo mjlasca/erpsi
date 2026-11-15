@@ -39,7 +39,8 @@ class RecalculatePurchaseTotals
                 $total = Decimal::add($total, $lineTotal, 2);
             }
 
-            $balance = Decimal::maxZero(Decimal::sub($total, (string) $purchase->paid_amount, 2));
+            $netTotal = Decimal::maxZero(Decimal::sub($total, (string) $purchase->returned_amount, 2));
+            $balance = Decimal::maxZero(Decimal::sub($netTotal, (string) $purchase->paid_amount, 2));
 
             $purchase->update([
                 'subtotal' => $subtotal,

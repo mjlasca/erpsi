@@ -11,9 +11,9 @@ enum ProductType: string
     public function label(): string
     {
         return match ($this) {
-            self::Goods => 'Producto',
-            self::Service => 'Servicio',
-            self::Bundle => 'Paquete',
+            self::Goods => __('enums.product_type.goods'),
+            self::Service => __('enums.product_type.service'),
+            self::Bundle => __('enums.product_type.bundle'),
         };
     }
 

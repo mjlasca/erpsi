@@ -11,6 +11,7 @@ import {
     Select,
 } from '@/Components/Ui/Primitives';
 import { text } from '@/lib/format';
+import { useTranslation } from '@/lib/i18n';
 import { useCan } from '@/lib/permissions';
 import type { Column, Filters, Paginated } from '@/types/erp';
 
@@ -46,6 +47,7 @@ export default function ResourceIndex<T extends { id: number }>({
     emptyMessage?: string;
 }) {
     const can = useCan();
+    const { t } = useTranslation();
     const showCreate = Boolean(
         createHref && (!createPermission || can(createPermission)),
     );
@@ -106,7 +108,7 @@ export default function ResourceIndex<T extends { id: number }>({
                         type="submit"
                         className="inline-flex h-10 items-center justify-center rounded-lg bg-gray-900 px-4 text-sm font-medium text-white transition-colors hover:bg-gray-800"
                     >
-                        Filtrar
+                        {t('common.filter')}
                     </button>
 
                     {hasFilters && (
@@ -115,7 +117,7 @@ export default function ResourceIndex<T extends { id: number }>({
                             className="inline-flex h-10 items-center gap-1 rounded-lg px-3 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-100"
                         >
                             <X className="h-4 w-4" />
-                            Limpiar
+                            {t('common.clear')}
                         </Link>
                     )}
                 </form>
@@ -137,7 +139,7 @@ export default function ResourceIndex<T extends { id: number }>({
                                     ))}
                                     {actions && (
                                         <th className="px-5 py-3 text-right text-xs font-semibold tracking-wide text-gray-500 uppercase">
-                                            Acciones
+                                            {t('common.actions')}
                                         </th>
                                     )}
                                 </tr>

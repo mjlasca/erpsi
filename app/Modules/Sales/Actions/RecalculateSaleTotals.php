@@ -41,7 +41,8 @@ class RecalculateSaleTotals
             }
 
             $paidAmount = Decimal::sum($sale->allocations()->pluck('amount'), 2);
-            $balance = Decimal::maxZero(Decimal::sub($total, $paidAmount, 2));
+            $netTotal = Decimal::maxZero(Decimal::sub($total, (string) $sale->returned_amount, 2));
+            $balance = Decimal::maxZero(Decimal::sub($netTotal, $paidAmount, 2));
 
             $attributes = [
                 'subtotal' => $subtotal,
@@ -53,7 +54,7 @@ class RecalculateSaleTotals
             ];
 
             if (! $sale->isDraft() && ! $sale->isCancelled()) {
-                $attributes['status'] = $this->statusFor($paidAmount, $total);
+                $attributes['status'] = $this->statusFor($paidAmount, $netTotal);
             }
 
             $sale->update($attributes);

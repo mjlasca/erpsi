@@ -5,6 +5,7 @@ interface AppHeaderProps {
     name: string;
     avatarUrl?: string | null;
     onMenuClick: () => void;
+    tenant?: { id: number; name: string } | null;
 }
 
 export default function AppHeader({

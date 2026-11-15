@@ -1,5 +1,9 @@
 <?php
 
+use App\Models\Tenant;
+use App\Models\User;
+use App\Modules\Administration\Models\Role;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -44,7 +48,40 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function makeTenant(string $slug = 'acme'): Tenant
 {
-    // ..
+    return Tenant::query()->create([
+        'name' => 'Empresa '.$slug,
+        'slug' => $slug,
+        'locale' => 'es',
+        'timezone' => 'UTC',
+        'currency' => 'MXN',
+    ]);
+}
+
+function makeTenantUser(
+    Tenant $tenant,
+    ?Role $role = null,
+    bool $platformAdmin = false,
+): User {
+    $role ??= app(TenantContext::class)->run(
+        $tenant,
+        fn () => Role::query()
+            ->where('name', 'Administrator')
+            ->first()
+            ?? Role::factory()->administrator()->create(),
+    );
+
+    $user = User::factory()->create([
+        'role_id' => $role->id,
+        'is_platform_admin' => $platformAdmin,
+    ]);
+
+    $user->tenants()->attach($tenant->id, [
+        'role_id' => $role->id,
+        'is_default' => true,
+        'is_active' => true,
+    ]);
+
+    return $user;
 }

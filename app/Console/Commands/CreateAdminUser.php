@@ -2,8 +2,10 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Administration\Models\Role;
+use App\Support\Tenancy\TenantContext;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
@@ -40,6 +42,16 @@ class CreateAdminUser extends Command
             return self::FAILURE;
         }
 
+        $tenant = Tenant::query()->orderBy('id')->first()
+            ?? Tenant::query()->create([
+                'name' => 'Empresa principal',
+                'slug' => 'default',
+                'locale' => config('app.locale'),
+                'timezone' => config('app.timezone'),
+            ]);
+
+        app(TenantContext::class)->set($tenant);
+
         $role = Role::firstOrCreate(
             ['name' => 'Administrator'],
             ['permissions' => ['*'], 'is_active' => true],
@@ -54,8 +66,13 @@ class CreateAdminUser extends Command
                 'password' => $password,
                 'role_id' => $role->id,
                 'is_active' => true,
+                'is_platform_admin' => true,
             ],
         );
+
+        $user->tenants()->syncWithoutDetaching([
+            $tenant->id => ['role_id' => $role->id, 'is_default' => true, 'is_active' => true],
+        ]);
 
         $this->info("Administrador disponible: {$user->email}");
 

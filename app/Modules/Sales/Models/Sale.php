@@ -2,6 +2,7 @@
 
 namespace App\Modules\Sales\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use App\Models\User;
 use App\Modules\Inventory\Models\Warehouse;
 use App\Modules\Payments\Models\PaymentAllocation;
@@ -17,14 +18,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property string $invoice_number
  * @property int $customer_id
  * @property int $warehouse_id
- * @property string $sale_date
- * @property string|null $due_date
+ * @property Carbon $sale_date
+ * @property Carbon|null $due_date
  * @property string $subtotal
  * @property string $discount
  * @property string $tax_amount
@@ -49,6 +51,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'total',
     'paid_amount',
     'balance',
+    'returned_amount',
+    'refunded_amount',
     'status',
     'notes',
     'created_by',
@@ -60,7 +64,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Sale extends Model
 {
     /** @use HasFactory<SaleFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected function casts(): array
     {
@@ -73,6 +77,8 @@ class Sale extends Model
             'total' => 'decimal:2',
             'paid_amount' => 'decimal:2',
             'balance' => 'decimal:2',
+            'returned_amount' => 'decimal:2',
+            'refunded_amount' => 'decimal:2',
             'status' => SaleStatus::class,
             'confirmed_at' => 'datetime',
             'cancelled_at' => 'datetime',
@@ -107,6 +113,12 @@ class Sale extends Model
     public function allocations(): HasMany
     {
         return $this->hasMany(PaymentAllocation::class);
+    }
+
+    /** @return HasMany<SaleReturn, $this> */
+    public function returns(): HasMany
+    {
+        return $this->hasMany(SaleReturn::class);
     }
 
     public function isDraft(): bool

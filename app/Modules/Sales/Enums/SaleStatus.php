@@ -13,11 +13,11 @@ enum SaleStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Draft => 'Borrador',
-            self::Confirmed => 'Confirmada',
-            self::Partial => 'Pago parcial',
-            self::Paid => 'Pagada',
-            self::Cancelled => 'Cancelada',
+            self::Draft => __('enums.sale_status.draft'),
+            self::Confirmed => __('enums.sale_status.confirmed'),
+            self::Partial => __('enums.sale_status.partial'),
+            self::Paid => __('enums.sale_status.paid'),
+            self::Cancelled => __('enums.sale_status.cancelled'),
         };
     }
 

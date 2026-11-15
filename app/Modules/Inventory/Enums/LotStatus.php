@@ -9,15 +9,17 @@ enum LotStatus: string
     case Partial = 'PARTIAL';
     case Sold = 'SOLD';
     case Cancelled = 'CANCELLED';
+    case Quarantine = 'QUARANTINE';
 
     public function label(): string
     {
         return match ($this) {
-            self::Available => 'Disponible',
-            self::Reserved => 'Reservado',
-            self::Partial => 'Parcial',
-            self::Sold => 'Vendido',
-            self::Cancelled => 'Anulado',
+            self::Available => __('enums.lot_status.available'),
+            self::Reserved => __('enums.lot_status.reserved'),
+            self::Partial => __('enums.lot_status.partial'),
+            self::Sold => __('enums.lot_status.sold'),
+            self::Cancelled => __('enums.lot_status.cancelled'),
+            self::Quarantine => __('enums.lot_status.quarantine'),
         };
     }
 

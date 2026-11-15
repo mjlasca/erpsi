@@ -2,6 +2,7 @@
 
 namespace App\Modules\Catalog\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use App\Modules\Catalog\Enums\ProductType;
 use App\Modules\Catalog\Policies\ProductPolicy;
 use App\Modules\Inventory\Models\InventoryLot;
@@ -58,7 +59,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected function casts(): array
     {

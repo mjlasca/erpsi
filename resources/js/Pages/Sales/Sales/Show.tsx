@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import Can from '@/Components/Ui/Can';
 import DocumentPaymentDialog from '@/Components/Ui/DocumentPaymentDialog';
 import ErpLayout from '@/Layouts/ErpLayout';
@@ -14,9 +14,14 @@ import {
     LinkButton,
 } from '@/Components/Ui/Primitives';
 import { formatDate, formatMoney, formatNumber } from '@/lib/format';
-import type { Sale } from '@/types/models';
+import { useTranslation } from '@/lib/i18n';
+import type { Sale, SaleReturn } from '@/types/models';
 import type { SelectOption } from '@/types/erp';
 import { cancel, destroy, edit, index, pay } from '@/routes/sales/sales';
+import {
+    create as returnCreate,
+    show as returnShow,
+} from '@/routes/sales/returns';
 
 const statusTone = (status: string) => {
     switch (status) {
@@ -33,12 +38,15 @@ const statusTone = (status: string) => {
 
 export default function SalesShow({
     sale,
+    returns = [],
     paymentMethods,
 }: {
     sale: Sale;
+    returns?: SaleReturn[];
     paymentMethods: SelectOption[];
 }) {
     const [payOpen, setPayOpen] = useState(false);
+    const { t } = useTranslation();
 
     return (
         <ErpLayout>
@@ -67,6 +75,17 @@ export default function SalesShow({
                                 </Can>
                             </>
                         )}
+                        {sale.status !== 'CANCELLED' &&
+                            sale.status !== 'DRAFT' && (
+                                <Can permission="sales.returns.create">
+                                    <LinkButton
+                                        href={returnCreate.url(sale.id)}
+                                        variant="secondary"
+                                    >
+                                        {t('returns.create')}
+                                    </LinkButton>
+                                </Can>
+                            )}
                         {sale.status !== 'CANCELLED' && (
                             <Can permission="sales.sales.cancel">
                                 <ConfirmButton
@@ -235,6 +254,38 @@ export default function SalesShow({
                             </tbody>
                         </table>
                     </div>
+                </Card>
+
+                <Card>
+                    <CardHeader title={t('returns.salesTitle')} />
+                    {!returns.length ? (
+                        <p className="px-5 py-8 text-center text-sm text-gray-500">
+                            {t('returns.empty')}
+                        </p>
+                    ) : (
+                        <div className="divide-y divide-gray-100">
+                            {returns.map((item) => (
+                                <Link
+                                    key={item.id}
+                                    href={returnShow.url(item.id)}
+                                    className="flex items-center justify-between px-5 py-3 text-sm transition-colors hover:bg-gray-50"
+                                >
+                                    <div>
+                                        <p className="font-medium text-gray-900">
+                                            {item.return_number}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                            {formatDate(item.return_date)} ·{' '}
+                                            {item.status_label}
+                                        </p>
+                                    </div>
+                                    <span className="font-medium text-gray-900">
+                                        {formatMoney(item.total)}
+                                    </span>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
                 </Card>
 
                 <Card>

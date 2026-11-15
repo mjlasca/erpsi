@@ -6,12 +6,16 @@ enum PaymentType: string
 {
     case CustomerPayment = 'CUSTOMER_PAYMENT';
     case SupplierPayment = 'SUPPLIER_PAYMENT';
+    case CustomerRefund = 'CUSTOMER_REFUND';
+    case SupplierRefund = 'SUPPLIER_REFUND';
 
     public function label(): string
     {
         return match ($this) {
-            self::CustomerPayment => 'Cobro a cliente',
-            self::SupplierPayment => 'Pago a proveedor',
+            self::CustomerPayment => __('enums.payment_type.customer_payment'),
+            self::SupplierPayment => __('enums.payment_type.supplier_payment'),
+            self::CustomerRefund => __('enums.payment_type.customer_refund'),
+            self::SupplierRefund => __('enums.payment_type.supplier_refund'),
         };
     }
 

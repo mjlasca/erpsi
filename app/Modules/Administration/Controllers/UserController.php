@@ -8,6 +8,8 @@ use App\Modules\Administration\Models\Role;
 use App\Modules\Administration\Requests\StoreUserRequest;
 use App\Modules\Administration\Requests\UpdateUserRequest;
 use App\Modules\Administration\Resources\UserResource;
+use App\Support\Tenancy\TenantContext;
+use App\Support\Tenancy\TenantLimitChecker;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,8 +23,16 @@ class UserController extends Controller
     {
         $this->authorize('viewAny', User::class);
 
+        $tenantId = app(TenantContext::class)->id();
+
         $users = User::query()
             ->with('role')
+            ->when($tenantId !== null, fn ($query) => $query->whereHas(
+                'tenants',
+                fn ($query) => $query
+                    ->where('tenants.id', $tenantId)
+                    ->where('tenant_user.is_active', true),
+            ))
             ->when($request->string('search')->trim()->value(), function ($query, string $search): void {
                 $query->where(function ($query) use ($search): void {
                     $query->where('name', 'like', "%{$search}%")
@@ -51,13 +61,29 @@ class UserController extends Controller
         ]);
     }
 
-    public function store(StoreUserRequest $request): RedirectResponse
+    public function store(StoreUserRequest $request, TenantLimitChecker $limits): RedirectResponse
     {
         $this->authorize('create', User::class);
+
+        if ($tenant = app(TenantContext::class)->tenant()) {
+            $limits->assertUsers($tenant);
+        }
 
         $user = DB::transaction(function () use ($request): User {
             $user = User::query()->create($request->validated());
             $user->forceFill(['is_active' => $request->boolean('is_active', true)])->save();
+
+            $tenantId = app(TenantContext::class)->id();
+
+            if ($tenantId !== null) {
+                $user->tenants()->syncWithoutDetaching([
+                    $tenantId => [
+                        'role_id' => $user->role_id,
+                        'is_default' => true,
+                        'is_active' => true,
+                    ],
+                ]);
+            }
 
             return $user;
         });
@@ -119,6 +145,17 @@ class UserController extends Controller
 
         $user->update($validated);
 
+        $tenantId = app(TenantContext::class)->id();
+
+        if ($tenantId !== null) {
+            $user->tenants()->syncWithoutDetaching([
+                $tenantId => [
+                    'role_id' => $validated['role_id'] ?? $user->role_id,
+                    'is_active' => $user->is_active,
+                ],
+            ]);
+        }
+
         return redirect()
             ->route('admin.users.show', $user)
             ->with('success', 'Usuario actualizado correctamente.');
@@ -128,7 +165,17 @@ class UserController extends Controller
     {
         $this->authorize('delete', $user);
 
-        $user->delete();
+        $tenantId = app(TenantContext::class)->id();
+
+        if ($tenantId !== null) {
+            $user->tenants()->detach($tenantId);
+
+            if (! $user->tenants()->exists()) {
+                $user->delete();
+            }
+        } else {
+            $user->delete();
+        }
 
         return redirect()
             ->route('admin.users.index')

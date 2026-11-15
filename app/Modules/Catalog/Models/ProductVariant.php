@@ -2,6 +2,7 @@
 
 namespace App\Modules\Catalog\Models;
 
+use App\Models\Concerns\BelongsToTenant;
 use App\Modules\Catalog\Policies\ProductVariantPolicy;
 use App\Modules\Inventory\Models\InventoryLot;
 use App\Modules\Inventory\Models\InventoryMovement;
@@ -35,7 +36,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ProductVariant extends Model
 {
     /** @use HasFactory<ProductVariantFactory> */
-    use HasFactory;
+    use BelongsToTenant, HasFactory;
 
     protected function casts(): array
     {
