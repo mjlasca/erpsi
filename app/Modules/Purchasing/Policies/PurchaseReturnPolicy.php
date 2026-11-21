@@ -5,7 +5,6 @@ namespace App\Modules\Purchasing\Policies;
 use App\Models\User;
 use App\Modules\Administration\Policies\BasePolicy;
 use App\Modules\Purchasing\Models\PurchaseReturn;
-use App\Support\Tenancy\TenantContext;
 use Illuminate\Database\Eloquent\Model;
 
 class PurchaseReturnPolicy extends BasePolicy
@@ -24,7 +23,7 @@ class PurchaseReturnPolicy extends BasePolicy
     {
         return $model instanceof PurchaseReturn
             && $this->can($user, 'view')
-            && $model->tenant_id === app(TenantContext::class)->id();
+            && $this->belongsToCurrentTenant($model);
     }
 
     public function create(User $user): bool
@@ -34,11 +33,15 @@ class PurchaseReturnPolicy extends BasePolicy
 
     public function confirm(User $user, PurchaseReturn $return): bool
     {
-        return $return->isDraft() && $this->can($user, 'confirm');
+        return $this->belongsToCurrentTenant($return)
+            && $return->isDraft()
+            && $this->can($user, 'confirm');
     }
 
     public function cancel(User $user, PurchaseReturn $return): bool
     {
-        return $return->isConfirmed() && $this->can($user, 'cancel');
+        return $this->belongsToCurrentTenant($return)
+            && $return->isConfirmed()
+            && $this->can($user, 'cancel');
     }
 }

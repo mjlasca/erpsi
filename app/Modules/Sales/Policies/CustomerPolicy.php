@@ -16,7 +16,7 @@ class CustomerPolicy extends BasePolicy
 
     public function delete(User $user, Model $model): bool
     {
-        if (! $model instanceof Customer || ! $this->can($user, 'delete')) {
+        if (! $model instanceof Customer || ! $this->allows($user, $model, 'delete')) {
             return false;
         }
 

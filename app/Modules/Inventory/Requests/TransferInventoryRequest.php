@@ -2,6 +2,7 @@
 
 namespace App\Modules\Inventory\Requests;
 
+use App\Support\Tenancy\TenantExists;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -18,16 +19,16 @@ class TransferInventoryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'product_id' => ['required', 'integer', 'exists:products,id'],
-            'product_variant_id' => ['nullable', 'integer', 'exists:product_variants,id'],
-            'from_warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
+            'product_id' => ['required', 'integer', new TenantExists('products')],
+            'product_variant_id' => ['nullable', 'integer', new TenantExists('product_variants')],
+            'from_warehouse_id' => ['required', 'integer', new TenantExists('warehouses')],
             'to_warehouse_id' => [
                 'required',
                 'integer',
-                'exists:warehouses,id',
+                new TenantExists('warehouses'),
                 Rule::notIn([$this->input('from_warehouse_id')]),
             ],
-            'inventory_lot_id' => ['nullable', 'integer', 'exists:inventory_lots,id'],
+            'inventory_lot_id' => ['nullable', 'integer', new TenantExists('inventory_lots')],
             'quantity' => ['required', 'numeric', 'gt:0'],
             'notes' => ['nullable', 'string'],
         ];

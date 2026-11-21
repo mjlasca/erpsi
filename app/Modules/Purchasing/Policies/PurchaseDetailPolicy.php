@@ -22,6 +22,7 @@ class PurchaseDetailPolicy extends BasePolicy
     public function update(User $user, Model $model): bool
     {
         return $model instanceof PurchaseDetail
+            && $this->belongsToCurrentTenant($model)
             && $model->purchase->isDraft()
             && $user->hasPermission('purchasing.purchases.update');
     }
@@ -29,6 +30,7 @@ class PurchaseDetailPolicy extends BasePolicy
     public function delete(User $user, Model $model): bool
     {
         return $model instanceof PurchaseDetail
+            && $this->belongsToCurrentTenant($model)
             && $model->purchase->isDraft()
             && $user->hasPermission('purchasing.purchases.update');
     }

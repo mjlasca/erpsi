@@ -18,18 +18,19 @@ class PaymentPolicy extends BasePolicy
     {
         return $model instanceof Payment
             && ! $model->allocations()->exists()
-            && $this->can($user, 'update');
+            && $this->allows($user, $model, 'update');
     }
 
     public function delete(User $user, Model $model): bool
     {
         return $model instanceof Payment
             && ! $model->allocations()->exists()
-            && $this->can($user, 'delete');
+            && $this->allows($user, $model, 'delete');
     }
 
     public function allocate(User $user, Payment $payment): bool
     {
-        return $user->hasPermission('payments.allocations.manage');
+        return $this->belongsToCurrentTenant($payment)
+            && $user->hasPermission('payments.allocations.manage');
     }
 }

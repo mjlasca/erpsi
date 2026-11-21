@@ -3,6 +3,7 @@
 namespace App\Modules\Inventory\Requests;
 
 use App\Modules\Inventory\Enums\LotStatus;
+use App\Support\Tenancy\TenantExists;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,9 +23,9 @@ class InventoryLotRequest extends FormRequest
         $creating = $lot === null;
 
         return [
-            'product_id' => [$creating ? 'required' : 'sometimes', 'integer', 'exists:products,id'],
-            'product_variant_id' => ['nullable', 'integer', 'exists:product_variants,id'],
-            'warehouse_id' => [$creating ? 'required' : 'sometimes', 'integer', 'exists:warehouses,id'],
+            'product_id' => [$creating ? 'required' : 'sometimes', 'integer', new TenantExists('products')],
+            'product_variant_id' => ['nullable', 'integer', new TenantExists('product_variants')],
+            'warehouse_id' => [$creating ? 'required' : 'sometimes', 'integer', new TenantExists('warehouses')],
             'code' => [$creating ? 'required' : 'sometimes', 'string', 'max:80', Rule::unique('inventory_lots', 'code')->ignore($lot)],
             'lot_number' => ['nullable', 'string', 'max:80'],
             'serial_number' => ['nullable', 'string', 'max:100'],

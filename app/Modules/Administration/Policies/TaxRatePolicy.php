@@ -15,7 +15,7 @@ class TaxRatePolicy extends BasePolicy
 
     public function delete(User $user, Model $model): bool
     {
-        if (! $model instanceof TaxRate || ! $this->can($user, 'delete')) {
+        if (! $model instanceof TaxRate || ! $this->allows($user, $model, 'delete')) {
             return false;
         }
 

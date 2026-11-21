@@ -3,6 +3,7 @@
 namespace App\Modules\Inventory\Requests;
 
 use App\Modules\Inventory\Enums\MovementType;
+use App\Support\Tenancy\TenantExists;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -19,10 +20,10 @@ class InventoryMovementRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'product_id' => ['required', 'integer', 'exists:products,id'],
-            'product_variant_id' => ['nullable', 'integer', 'exists:product_variants,id'],
-            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
-            'inventory_lot_id' => ['nullable', 'integer', 'exists:inventory_lots,id'],
+            'product_id' => ['required', 'integer', new TenantExists('products')],
+            'product_variant_id' => ['nullable', 'integer', new TenantExists('product_variants')],
+            'warehouse_id' => ['required', 'integer', new TenantExists('warehouses')],
+            'inventory_lot_id' => ['nullable', 'integer', new TenantExists('inventory_lots')],
             'movement_type' => [
                 'required',
                 Rule::in([

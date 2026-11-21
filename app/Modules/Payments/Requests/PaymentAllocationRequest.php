@@ -2,6 +2,7 @@
 
 namespace App\Modules\Payments\Requests;
 
+use App\Support\Tenancy\TenantExists;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -18,8 +19,8 @@ class PaymentAllocationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'sale_id' => ['nullable', 'integer', 'exists:sales,id'],
-            'purchase_id' => ['nullable', 'integer', 'exists:purchases,id'],
+            'sale_id' => ['nullable', 'integer', new TenantExists('sales')],
+            'purchase_id' => ['nullable', 'integer', new TenantExists('purchases')],
             'amount' => ['required', 'numeric', 'gt:0'],
         ];
     }

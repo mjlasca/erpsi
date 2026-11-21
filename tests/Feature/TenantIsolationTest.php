@@ -1,7 +1,15 @@
 <?php
 
+use App\Http\Middleware\ResolveTenant;
 use App\Modules\Catalog\Models\Product;
+use App\Modules\Inventory\Models\Warehouse;
+use App\Modules\Payments\Models\Payment;
+use App\Modules\Payments\Models\PaymentAllocation;
+use App\Modules\Sales\Models\Customer;
+use App\Modules\Sales\Models\Sale;
 use App\Support\Tenancy\TenantContext;
+use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 
 it('scopes tenant data and prevents cross-tenant access', function () {
     $tenantA = makeTenant('alpha');
@@ -21,19 +29,142 @@ it('scopes tenant data and prevents cross-tenant access', function () {
     expect($productA->tenant_id)->toBe($tenantA->id);
     expect($productB->tenant_id)->toBe($tenantB->id);
 
+    app(TenantContext::class)->set(null);
+
     $this->actingAs($userA)
         ->get(route('catalog.products.show', $productA))
         ->assertOk();
 
+    app(TenantContext::class)->set(null);
+
     $this->actingAs($userA)
         ->get(route('catalog.products.show', $productB))
         ->assertNotFound();
+
+    app(TenantContext::class)->set(null);
 
     $this->actingAs($userB)
         ->get(route('catalog.products.index'))
         ->assertInertia(fn ($page) => $page
             ->where('products.data.0.name', 'Beta product')
             ->has('products.data', 1));
+});
+
+it('resolves the tenant before binding route models', function () {
+    app(Kernel::class)->bootstrap();
+
+    $group = app('router')->getMiddlewareGroups()['web'];
+
+    $tenantPosition = array_search(ResolveTenant::class, $group, true);
+    $bindingPosition = array_search(SubstituteBindings::class, $group, true);
+
+    expect($tenantPosition)->toBeInt()
+        ->and($bindingPosition)->toBeInt()
+        ->and($tenantPosition)->toBeLessThan($bindingPosition);
+});
+
+it('blocks route model binding across companies', function () {
+    $tenantA = makeTenant('binding-a');
+    $tenantB = makeTenant('binding-b');
+    $userA = makeTenantUser($tenantA);
+
+    $saleB = app(TenantContext::class)->run(
+        $tenantB,
+        fn () => Sale::factory()->create(),
+    );
+
+    app(TenantContext::class)->set(null);
+
+    $this->actingAs($userA)
+        ->get(route('sales.sales.show', $saleB))
+        ->assertNotFound();
+
+    app(TenantContext::class)->set(null);
+
+    $this->actingAs($userA)
+        ->delete(route('sales.sales.destroy', $saleB))
+        ->assertNotFound();
+
+    expect(Sale::query()->withoutGlobalScope('tenant')->whereKey($saleB->id)->exists())->toBeTrue();
+});
+
+it('denies policy access to models from another company', function () {
+    $tenantA = makeTenant('policy-a');
+    $tenantB = makeTenant('policy-b');
+    $userA = makeTenantUser($tenantA);
+
+    $saleB = app(TenantContext::class)->run(
+        $tenantB,
+        fn () => Sale::factory()->create(),
+    );
+
+    app(TenantContext::class)->run($tenantA, function () use ($userA, $saleB): void {
+        expect($userA->can('view', $saleB))->toBeFalse()
+            ->and($userA->can('update', $saleB))->toBeFalse()
+            ->and($userA->can('delete', $saleB))->toBeFalse();
+    });
+});
+
+it('rejects references to records from another company', function () {
+    $tenantA = makeTenant('refs-a');
+    $tenantB = makeTenant('refs-b');
+    $userA = makeTenantUser($tenantA);
+
+    [$warehouseA, $productA] = app(TenantContext::class)->run($tenantA, fn (): array => [
+        Warehouse::factory()->create(),
+        Product::factory()->create(),
+    ]);
+
+    $customerB = app(TenantContext::class)->run(
+        $tenantB,
+        fn () => Customer::factory()->create(),
+    );
+
+    app(TenantContext::class)->set(null);
+
+    $this->actingAs($userA)
+        ->post(route('sales.sales.store'), [
+            'customer_id' => $customerB->id,
+            'warehouse_id' => $warehouseA->id,
+            'sale_date' => now()->toDateString(),
+            'details' => [
+                [
+                    'product_id' => $productA->id,
+                    'quantity' => 1,
+                    'unit_price' => 10,
+                ],
+            ],
+        ])
+        ->assertSessionHasErrors('customer_id');
+
+    expect(Sale::query()->withoutGlobalScope('tenant')->count())->toBe(0);
+});
+
+it('rejects payment allocations to documents from another company', function () {
+    $tenantA = makeTenant('alloc-a');
+    $tenantB = makeTenant('alloc-b');
+    $userA = makeTenantUser($tenantA);
+
+    $paymentA = app(TenantContext::class)->run(
+        $tenantA,
+        fn () => Payment::factory()->create(),
+    );
+
+    $saleB = app(TenantContext::class)->run(
+        $tenantB,
+        fn () => Sale::factory()->confirmed()->create(),
+    );
+
+    app(TenantContext::class)->set(null);
+
+    $this->actingAs($userA)
+        ->post(route('payments.allocations.store', $paymentA), [
+            'sale_id' => $saleB->id,
+            'amount' => 5,
+        ])
+        ->assertSessionHasErrors('sale_id');
+
+    expect(PaymentAllocation::query()->withoutGlobalScope('tenant')->count())->toBe(0);
 });
 
 it('uses the user locale preference over the tenant locale', function () {

@@ -15,7 +15,7 @@ class RolePolicy extends BasePolicy
 
     public function delete(User $user, Model $model): bool
     {
-        if (! $model instanceof Role || ! $this->can($user, 'delete')) {
+        if (! $model instanceof Role || ! $this->allows($user, $model, 'delete')) {
             return false;
         }
 

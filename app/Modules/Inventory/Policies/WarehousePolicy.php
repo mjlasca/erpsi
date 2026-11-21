@@ -16,7 +16,7 @@ class WarehousePolicy extends BasePolicy
 
     public function delete(User $user, Model $model): bool
     {
-        if (! $model instanceof Warehouse || ! $this->can($user, 'delete')) {
+        if (! $model instanceof Warehouse || ! $this->allows($user, $model, 'delete')) {
             return false;
         }
 

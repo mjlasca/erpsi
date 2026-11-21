@@ -3,6 +3,7 @@
 namespace App\Modules\Purchasing\Requests;
 
 use App\Modules\Catalog\Models\ProductVariant;
+use App\Support\Tenancy\TenantExists;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -19,19 +20,19 @@ class PurchaseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'supplier_id' => ['required', 'integer', 'exists:suppliers,id'],
+            'supplier_id' => ['required', 'integer', new TenantExists('suppliers')],
             'supplier_invoice' => ['nullable', 'string', 'max:100'],
-            'warehouse_id' => ['required', 'integer', 'exists:warehouses,id'],
+            'warehouse_id' => ['required', 'integer', new TenantExists('warehouses')],
             'purchase_date' => ['required', 'date'],
             'notes' => ['nullable', 'string'],
             'details' => ['required', 'array', 'min:1'],
             'details.*.id' => ['nullable', 'integer'],
-            'details.*.product_id' => ['required', 'integer', 'exists:products,id'],
-            'details.*.product_variant_id' => ['nullable', 'integer', 'exists:product_variants,id'],
+            'details.*.product_id' => ['required', 'integer', new TenantExists('products')],
+            'details.*.product_variant_id' => ['nullable', 'integer', new TenantExists('product_variants')],
             'details.*.quantity' => ['required', 'numeric', 'gt:0'],
             'details.*.unit_price' => ['required', 'numeric', 'min:0'],
             'details.*.discount' => ['nullable', 'numeric', 'min:0'],
-            'details.*.tax_rate_id' => ['nullable', 'integer', 'exists:tax_rates,id'],
+            'details.*.tax_rate_id' => ['nullable', 'integer', new TenantExists('tax_rates')],
         ];
     }
 

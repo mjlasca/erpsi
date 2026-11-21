@@ -4,6 +4,7 @@ namespace App\Modules\Sales\Requests;
 
 use App\Modules\Catalog\Models\ProductVariant;
 use App\Modules\Sales\Models\Sale;
+use App\Support\Tenancy\TenantExists;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -23,12 +24,12 @@ class SaleDetailRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'product_id' => ['required', 'integer', 'exists:products,id'],
-            'product_variant_id' => ['nullable', 'integer', 'exists:product_variants,id'],
+            'product_id' => ['required', 'integer', new TenantExists('products')],
+            'product_variant_id' => ['nullable', 'integer', new TenantExists('product_variants')],
             'quantity' => ['required', 'numeric', 'gt:0'],
             'unit_price' => ['required', 'numeric', 'min:0'],
             'discount' => ['nullable', 'numeric', 'min:0'],
-            'tax_rate_id' => ['nullable', 'integer', 'exists:tax_rates,id'],
+            'tax_rate_id' => ['nullable', 'integer', new TenantExists('tax_rates')],
         ];
     }
 

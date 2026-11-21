@@ -18,24 +18,27 @@ class PurchasePolicy extends BasePolicy
     {
         return $model instanceof Purchase
             && $model->isDraft()
-            && $this->can($user, 'update');
+            && $this->allows($user, $model, 'update');
     }
 
     public function delete(User $user, Model $model): bool
     {
         return $model instanceof Purchase
             && $model->isDraft()
-            && $this->can($user, 'delete');
+            && $this->allows($user, $model, 'delete');
     }
 
     public function pay(User $user, Purchase $purchase): bool
     {
-        return $purchase->isDraft() && $user->hasPermission('purchasing.purchases.pay');
+        return $this->belongsToCurrentTenant($purchase)
+            && $purchase->isDraft()
+            && $user->hasPermission('purchasing.purchases.pay');
     }
 
     public function cancel(User $user, Purchase $purchase): bool
     {
-        return ! $purchase->isCancelled()
+        return $this->belongsToCurrentTenant($purchase)
+            && ! $purchase->isCancelled()
             && ! $purchase->allocations()->exists()
             && (float) $purchase->paid_amount === 0.0
             && $user->hasPermission('purchasing.purchases.cancel');

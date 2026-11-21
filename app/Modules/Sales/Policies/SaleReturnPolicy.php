@@ -5,7 +5,6 @@ namespace App\Modules\Sales\Policies;
 use App\Models\User;
 use App\Modules\Administration\Policies\BasePolicy;
 use App\Modules\Sales\Models\SaleReturn;
-use App\Support\Tenancy\TenantContext;
 use Illuminate\Database\Eloquent\Model;
 
 class SaleReturnPolicy extends BasePolicy
@@ -24,7 +23,7 @@ class SaleReturnPolicy extends BasePolicy
     {
         return $model instanceof SaleReturn
             && $this->can($user, 'view')
-            && $model->tenant_id === app(TenantContext::class)->id();
+            && $this->belongsToCurrentTenant($model);
     }
 
     public function create(User $user): bool
@@ -34,11 +33,15 @@ class SaleReturnPolicy extends BasePolicy
 
     public function confirm(User $user, SaleReturn $return): bool
     {
-        return $return->isDraft() && $this->can($user, 'confirm');
+        return $this->belongsToCurrentTenant($return)
+            && $return->isDraft()
+            && $this->can($user, 'confirm');
     }
 
     public function cancel(User $user, SaleReturn $return): bool
     {
-        return $return->isConfirmed() && $this->can($user, 'cancel');
+        return $this->belongsToCurrentTenant($return)
+            && $return->isConfirmed()
+            && $this->can($user, 'cancel');
     }
 }

@@ -16,7 +16,7 @@ class ProductCategoryPolicy extends BasePolicy
 
     public function delete(User $user, Model $model): bool
     {
-        if (! $model instanceof ProductCategory || ! $this->can($user, 'delete')) {
+        if (! $model instanceof ProductCategory || ! $this->allows($user, $model, 'delete')) {
             return false;
         }
 

@@ -25,6 +25,7 @@ class PaymentAllocationPolicy extends BasePolicy
 
     public function delete(User $user, Model $model): bool
     {
-        return $user->hasPermission('payments.allocations.manage');
+        return $this->belongsToCurrentTenant($model)
+            && $user->hasPermission('payments.allocations.manage');
     }
 }

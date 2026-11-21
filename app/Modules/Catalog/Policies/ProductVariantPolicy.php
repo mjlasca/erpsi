@@ -16,7 +16,7 @@ class ProductVariantPolicy extends BasePolicy
 
     public function delete(User $user, Model $model): bool
     {
-        if (! $model instanceof ProductVariant || ! $this->can($user, 'delete')) {
+        if (! $model instanceof ProductVariant || ! $this->allows($user, $model, 'delete')) {
             return false;
         }
 

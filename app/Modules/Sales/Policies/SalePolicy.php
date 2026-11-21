@@ -18,24 +18,27 @@ class SalePolicy extends BasePolicy
     {
         return $model instanceof Sale
             && $model->isDraft()
-            && $this->can($user, 'update');
+            && $this->allows($user, $model, 'update');
     }
 
     public function delete(User $user, Model $model): bool
     {
         return $model instanceof Sale
             && $model->isDraft()
-            && $this->can($user, 'delete');
+            && $this->allows($user, $model, 'delete');
     }
 
     public function pay(User $user, Sale $sale): bool
     {
-        return $sale->isDraft() && $user->hasPermission('sales.sales.pay');
+        return $this->belongsToCurrentTenant($sale)
+            && $sale->isDraft()
+            && $user->hasPermission('sales.sales.pay');
     }
 
     public function cancel(User $user, Sale $sale): bool
     {
-        return ! $sale->isCancelled()
+        return $this->belongsToCurrentTenant($sale)
+            && ! $sale->isCancelled()
             && ! $sale->allocations()->exists()
             && (float) $sale->paid_amount === 0.0
             && $user->hasPermission('sales.sales.cancel');

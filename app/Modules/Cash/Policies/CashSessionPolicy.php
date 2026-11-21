@@ -15,6 +15,8 @@ class CashSessionPolicy extends BasePolicy
 
     public function close(User $user, CashSession $session): bool
     {
-        return $session->isOpen() && $this->can($user, 'close');
+        return $this->belongsToCurrentTenant($session)
+            && $session->isOpen()
+            && $this->can($user, 'close');
     }
 }

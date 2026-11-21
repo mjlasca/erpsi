@@ -16,7 +16,7 @@ class SupplierPolicy extends BasePolicy
 
     public function delete(User $user, Model $model): bool
     {
-        if (! $model instanceof Supplier || ! $this->can($user, 'delete')) {
+        if (! $model instanceof Supplier || ! $this->allows($user, $model, 'delete')) {
             return false;
         }
 

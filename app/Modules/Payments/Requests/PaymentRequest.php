@@ -4,6 +4,7 @@ namespace App\Modules\Payments\Requests;
 
 use App\Modules\Payments\Enums\PaymentMethod;
 use App\Modules\Payments\Enums\PaymentType;
+use App\Support\Tenancy\TenantExists;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -24,13 +25,13 @@ class PaymentRequest extends FormRequest
             'customer_id' => [
                 'nullable',
                 'integer',
-                'exists:customers,id',
+                new TenantExists('customers'),
                 Rule::requiredIf($this->input('payment_type') === PaymentType::CustomerPayment->value),
             ],
             'supplier_id' => [
                 'nullable',
                 'integer',
-                'exists:suppliers,id',
+                new TenantExists('suppliers'),
                 Rule::requiredIf($this->input('payment_type') === PaymentType::SupplierPayment->value),
             ],
             'payment_date' => ['required', 'date'],

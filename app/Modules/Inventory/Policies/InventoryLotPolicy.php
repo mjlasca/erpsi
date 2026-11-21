@@ -16,7 +16,7 @@ class InventoryLotPolicy extends BasePolicy
 
     public function delete(User $user, Model $model): bool
     {
-        if (! $model instanceof InventoryLot || ! $this->can($user, 'delete')) {
+        if (! $model instanceof InventoryLot || ! $this->allows($user, $model, 'delete')) {
             return false;
         }
 
