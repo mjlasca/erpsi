@@ -3,8 +3,9 @@
 namespace App\Modules\Catalog\Requests;
 
 use App\Modules\Catalog\Models\Product;
+use App\Support\Tenancy\TenantExists;
+use App\Support\Tenancy\TenantUnique;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class ProductVariantRequest extends FormRequest
 {
@@ -30,17 +31,16 @@ class ProductVariantRequest extends FormRequest
         $variant = $this->route('variant');
 
         return [
-            'product_id' => ['required', 'integer', 'exists:products,id'],
-            'sku' => ['required', 'string', 'max:50', Rule::unique('product_variants', 'sku')->ignore($variant)],
+            'product_id' => ['required', 'integer', new TenantExists('products')],
+            'sku' => ['required', 'string', 'max:50', TenantUnique::make('product_variants', 'sku', $variant)],
             'name' => [
                 'required',
                 'string',
                 'max:150',
-                Rule::unique('product_variants', 'name')
-                    ->where(fn ($query) => $query->where('product_id', $this->integer('product_id')))
-                    ->ignore($variant),
+                TenantUnique::make('product_variants', 'name', $variant)
+                    ->where(fn ($query) => $query->where('product_id', $this->integer('product_id'))),
             ],
-            'barcode' => ['nullable', 'string', 'max:100', Rule::unique('product_variants', 'barcode')->ignore($variant)],
+            'barcode' => ['nullable', 'string', 'max:100', TenantUnique::make('product_variants', 'barcode', $variant)],
             'cost_price' => ['nullable', 'numeric', 'min:0'],
             'sale_price' => ['nullable', 'numeric', 'min:0'],
             'is_active' => ['boolean'],

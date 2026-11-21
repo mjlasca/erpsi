@@ -4,6 +4,7 @@ namespace App\Modules\Catalog\Requests;
 
 use App\Modules\Catalog\Models\Product;
 use App\Modules\Catalog\Models\ProductVariant;
+use App\Support\Tenancy\TenantExists;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -29,9 +30,9 @@ class ProductAttributeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'product_id' => ['required', 'integer', 'exists:products,id'],
-            'product_variant_id' => ['nullable', 'integer', 'exists:product_variants,id'],
-            'unit_id' => ['nullable', 'integer', 'exists:units,id'],
+            'product_id' => ['required', 'integer', new TenantExists('products')],
+            'product_variant_id' => ['nullable', 'integer', new TenantExists('product_variants')],
+            'unit_id' => ['nullable', 'integer', new TenantExists('units')],
             'name' => ['required', 'string', 'max:100'],
             'value' => ['required', 'string', 'max:255'],
             'sort_order' => ['nullable', 'integer', 'min:0'],

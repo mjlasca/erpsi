@@ -2,6 +2,7 @@
 
 namespace App\Modules\Administration\Requests;
 
+use App\Support\Tenancy\TenantExists;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -24,7 +25,7 @@ class UserRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user)],
-            'role_id' => ['nullable', 'integer', 'exists:roles,id'],
+            'role_id' => ['nullable', 'integer', new TenantExists('roles')],
             'is_active' => ['boolean'],
             'password' => [
                 $creating ? 'required' : 'nullable',

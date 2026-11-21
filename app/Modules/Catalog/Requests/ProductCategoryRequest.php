@@ -3,6 +3,7 @@
 namespace App\Modules\Catalog\Requests;
 
 use App\Modules\Catalog\Models\ProductCategory;
+use App\Support\Tenancy\TenantExists;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -25,7 +26,7 @@ class ProductCategoryRequest extends FormRequest
             'parent_id' => [
                 'nullable',
                 'integer',
-                'exists:product_categories,id',
+                new TenantExists('product_categories'),
                 Rule::notIn($notSelf),
             ],
             'name' => ['required', 'string', 'max:100'],

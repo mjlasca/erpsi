@@ -167,6 +167,33 @@ it('rejects payment allocations to documents from another company', function () 
     expect(PaymentAllocation::query()->withoutGlobalScope('tenant')->count())->toBe(0);
 });
 
+it('allows the same unique values across companies', function () {
+    $tenantA = makeTenant('unique-a');
+    $tenantB = makeTenant('unique-b');
+    $userA = makeTenantUser($tenantA);
+    $userB = makeTenantUser($tenantB);
+
+    app(TenantContext::class)->set(null);
+
+    $this->actingAs($userA)
+        ->post(route('inventory.warehouses.store'), ['code' => 'WH-01', 'name' => 'Principal'])
+        ->assertSessionHasNoErrors();
+
+    app(TenantContext::class)->set(null);
+
+    $this->actingAs($userB)
+        ->post(route('inventory.warehouses.store'), ['code' => 'WH-01', 'name' => 'Principal'])
+        ->assertSessionHasNoErrors();
+
+    expect(Warehouse::query()->withoutGlobalScope('tenant')->count())->toBe(2);
+
+    app(TenantContext::class)->set(null);
+
+    $this->actingAs($userA)
+        ->post(route('inventory.warehouses.store'), ['code' => 'WH-01', 'name' => 'Sucursal'])
+        ->assertSessionHasErrors('code');
+});
+
 it('uses the user locale preference over the tenant locale', function () {
     $tenant = makeTenant('locale');
     $tenant->update(['locale' => 'es']);

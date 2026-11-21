@@ -2,8 +2,8 @@
 
 namespace App\Modules\Purchasing\Requests;
 
+use App\Support\Tenancy\TenantUnique;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class SupplierRequest extends FormRequest
 {
@@ -22,7 +22,7 @@ class SupplierRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:150'],
             'company_name' => ['nullable', 'string', 'max:150'],
-            'tax_id' => ['nullable', 'string', 'max:50', Rule::unique('suppliers', 'tax_id')->ignore($supplier)],
+            'tax_id' => ['nullable', 'string', 'max:50', TenantUnique::make('suppliers', 'tax_id', $supplier)],
             'email' => ['nullable', 'email', 'max:150'],
             'phone' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'string', 'max:255'],

@@ -2,8 +2,8 @@
 
 namespace App\Modules\Sales\Requests;
 
+use App\Support\Tenancy\TenantUnique;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class CustomerRequest extends FormRequest
 {
@@ -27,7 +27,7 @@ class CustomerRequest extends FormRequest
             'phone' => ['nullable', 'string', 'max:50'],
             'billing_address' => ['nullable', 'string'],
             'shipping_address' => ['nullable', 'string'],
-            'tax_id' => ['nullable', 'string', 'max:50', Rule::unique('customers', 'tax_id')->ignore($customer)],
+            'tax_id' => ['nullable', 'string', 'max:50', TenantUnique::make('customers', 'tax_id', $customer)],
             'notes' => ['nullable', 'string'],
             'is_active' => ['boolean'],
         ];

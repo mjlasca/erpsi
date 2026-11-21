@@ -3,6 +3,7 @@
 namespace App\Modules\Catalog\Requests;
 
 use App\Modules\Catalog\Enums\UnitType;
+use App\Support\Tenancy\TenantUnique;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,7 +23,7 @@ class UnitRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:50'],
-            'abbreviation' => ['required', 'string', 'max:10', Rule::unique('units', 'abbreviation')->ignore($unit)],
+            'abbreviation' => ['required', 'string', 'max:10', TenantUnique::make('units', 'abbreviation', $unit)],
             'unit_type' => ['nullable', Rule::enum(UnitType::class)],
             'allows_decimal' => ['boolean'],
             'is_active' => ['boolean'],

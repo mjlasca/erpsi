@@ -3,6 +3,8 @@
 namespace App\Modules\Catalog\Requests;
 
 use App\Modules\Catalog\Enums\ProductType;
+use App\Support\Tenancy\TenantExists;
+use App\Support\Tenancy\TenantUnique;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -22,14 +24,14 @@ class ProductRequest extends FormRequest
         $product = $this->route('product');
 
         return [
-            'sku' => ['required', 'string', 'max:50', Rule::unique('products', 'sku')->ignore($product)],
+            'sku' => ['required', 'string', 'max:50', TenantUnique::make('products', 'sku', $product)],
             'name' => ['required', 'string', 'max:150'],
             'description' => ['nullable', 'string'],
-            'category_id' => ['nullable', 'integer', 'exists:product_categories,id'],
-            'unit_id' => ['required', 'integer', 'exists:units,id'],
+            'category_id' => ['nullable', 'integer', new TenantExists('product_categories')],
+            'unit_id' => ['required', 'integer', new TenantExists('units')],
             'product_type' => ['required', Rule::enum(ProductType::class)],
             'brand' => ['nullable', 'string', 'max:100'],
-            'barcode' => ['nullable', 'string', 'max:100', Rule::unique('products', 'barcode')->ignore($product)],
+            'barcode' => ['nullable', 'string', 'max:100', TenantUnique::make('products', 'barcode', $product)],
             'cost_price' => ['required', 'numeric', 'min:0'],
             'sale_price' => ['required', 'numeric', 'min:0'],
             'min_stock' => ['required', 'numeric', 'min:0'],
