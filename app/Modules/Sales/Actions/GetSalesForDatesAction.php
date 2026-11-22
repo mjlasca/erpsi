@@ -5,6 +5,7 @@ namespace App\Modules\Sales\Actions;
 use App\Modules\Sales\Models\Sale;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Collection;
+use Carbon\CarbonImmutable;
 
 class GetSalesForDatesAction
 {
@@ -19,15 +20,11 @@ class GetSalesForDatesAction
         string $endDate
     ): Collection {
 
-        return DB::transaction(function () use ($startDate, $endDate): Collection {
-            $sales = Sale::query()
-                ->whereBetween('created_at', [
-                    $startDate,
-                    $endDate,
-                ])
-                ->get();
+        $start = CarbonImmutable::parse($startDate)->startOfDay();
+        $end = CarbonImmutable::parse($endDate)->endOfDay();
 
-            return $sales;
-        });
+        return Sale::query()
+            ->whereBetween('sale_date', [$start, $end])
+            ->get();
     }
 }

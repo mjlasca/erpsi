@@ -34,11 +34,11 @@ class SalesTool extends Tool
         $validated = $request->validate([
             'startDate' => [
                 'required',
-                'date_format:Y-m-d',
+                'date_format:Y-m-d H:i:s',
             ],
             'endDate' => [
                 'required',
-                'date_format:Y-m-d',
+                'date_format:Y-m-d H:i:s',
                 'after:startDate',
             ],
         ]);
@@ -61,12 +61,12 @@ class SalesTool extends Tool
         return [
             'startDate' => $schema->string()
                 ->description(
-                    'Start date format YYYY-MM-DD. Example: 2026-11-21'
+                    'Start date format YYYY-MM-DD HH:MM:SS. Example: 2026-11-21 00:00:00'
                 )
                 ->required(),
             'endDate' => $schema->string()
                 ->description(
-                    'EndDate format YYYY-MM-DD. Example: 2026-11-21'
+                    'EndDate format YYYY-MM-DD HH:MM:SS. Example: 2026-11-21 23:59:59'
                 )
                 ->required(),
         ];
