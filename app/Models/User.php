@@ -18,6 +18,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Laravel\Passport\HasApiTokens;
+use Laravel\Passport\Contracts\OAuthenticatable;
 
 /**
  * @property int $id
@@ -38,10 +40,10 @@ use Illuminate\Support\Facades\DB;
 #[Fillable(['name', 'email', 'password', 'role_id', 'is_active', 'locale', 'timezone', 'is_platform_admin'])]
 #[Hidden(['password', 'remember_token'])]
 #[UsePolicy(UserPolicy::class)]
-class User extends Authenticatable
+class User extends Authenticatable implements OAuthenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
 
     /**
      * Get the attributes that should be cast.
